@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     entity_hash_key: str = Field(min_length=32)
     # required: refuse to start without NER. optional: run regex+classifier only (dev hosts).
     ner_mode: Literal["required", "optional", "disabled"] = "required"
+    # Optional local LLM reviewer for uncertain injection verdicts (OpenAI-compatible endpoint you
+    # host, e.g. http://ollama:11434/v1). Empty = disabled. Never point this at a third-party API:
+    # it receives the untrusted content under review.
+    llm_reviewer_url: str = ""
+    llm_reviewer_model: str = "llama3.1:8b"
+    llm_reviewer_timeout_s: float = Field(default=3.0, gt=0, le=30)
 
     @field_validator("cors_origins", mode="before")
     @classmethod

@@ -2,7 +2,6 @@
 pytest==9.2.0
 pytest-asyncio==1.4.1.post1
 pytest-cov==7.1.0
-httpx==0.28.1
 fakeredis==2.40.0
 ruff==0.17.3
 bandit==1.9.4

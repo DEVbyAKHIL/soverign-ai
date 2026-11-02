@@ -11,7 +11,7 @@ All endpoints except `/healthz`, `/readyz`, `/metrics` and the development token
 |---|---|---|---|
 | POST | `/v1/ai/infer` | `ai:invoke` | 2 |
 | POST | `/v1/ai/embed` | `ai:invoke` | 2 |
-| POST | `/v1/rag/query` | `ai:invoke` | 4 (not yet) |
+| POST | `/v1/rag/query` | `ai:invoke` | 4 |
 | GET | `/v1/decisions/{decision_id}` | `audit:read` | 2 |
 | GET | `/v1/audit/events` | `audit:read` | 2 |
 | GET | `/v1/audit/verify` | `audit:read` | 2 |
@@ -62,6 +62,12 @@ Response:
   "review_status": "not_required | pending",
   "policy_set_version": "caf25e67fd43f2dd",
   "data_classification": "confidential",   // effective, after detection
+  "intent": {"label": "prompt_injection", "confidence": 0.9, "risk_score": 0.93,
+             "signals": ["instruction_override"]},   // the caller's own input
+  "content_verdicts": [                    // one per part; doc_id set for RAG documents
+    {"part": 0, "source": "direct", "label": "prompt_injection", "risk_score": 0.93,
+     "signals": ["instruction_override"], "doc_id": null}
+  ],
   "detections": [
     {"entity_type": "EMAIL", "confidence": 0.99, "detector": "regex", "model_version": "regex-1.0.0+terms-2",
      "start_offset": 45, "end_offset": 61, "part": 0, "risk_level": "medium"}
@@ -81,6 +87,27 @@ The gateway does not forward requests to a model yet. It returns only the decisi
 is always `null`. When policies redact, mask or pseudonymise, `transformed_content` holds the content
 exactly as it may be forwarded. `part` is 0 for the prompt (or first embedding input) and 1.. for
 attachments (or further inputs).
+
+## POST /v1/rag/query
+
+Same envelope as `/v1/ai/infer`, with a query and the retrieved documents in place of `prompt`:
+
+```json
+{
+  "...": "request_id, tenant_id, caller_*, requested_*, destination_jurisdiction, declared_purpose",
+  "query": "What is the refund policy?",
+  "documents": [
+    {"doc_id": "kb-1", "source": "kb/refunds.md", "content": "…", "classification": "internal"}
+  ]
+}
+```
+
+* The query is direct input; every document is indirect, untrusted input.
+* A document's `classification` sets a floor for the request's classification.
+* If any document carries an injection, the request is quarantined (`action_taken: "quarantine"`,
+  `review_status: "pending"`). `content_verdicts` shows which `doc_id` was responsible.
+* When transformed, `transformed_content` is `{"query": "...", "documents": [{"doc_id", "content"}]}`.
+* Limits: query ≤ 32,000 characters, ≤ 50 documents, each ≤ 20,000 characters.
 
 ## POST /v1/reviews/{decision_id}/decision
 

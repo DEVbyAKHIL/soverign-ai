@@ -16,7 +16,8 @@ ignore = ["B008"]
 "tests/**" = ["S101", "S105", "S106"]
 "tests/unit/test_regex_detector.py" = ["E501", "S101", "S105", "S106"]
 "migrations/**" = ["E501"]
-"ml/data/**" = ["E501"]
+"ml/data/**" = ["E501", "S608"]  # generators emit SQL *sample text*, never executed
+"detection/injection/rules.py" = ["E501"]  # regex tables read better unwrapped
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

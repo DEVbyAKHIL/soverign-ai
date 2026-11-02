@@ -1,0 +1,18 @@
+policy_id: quarantine_indirect_injection
+version: 1.0.0
+name: Quarantine indirect prompt injection
+description: Attachments or retrieved documents that carry instructions aimed at the AI are quarantined for review
+severity: critical
+match:
+  indirect_intent_label:
+    - prompt_injection
+    - jailbreak_attempt
+    - data_exfiltration_attempt
+    - system_prompt_extraction_attempt
+actions:
+  - quarantine
+  - alert
+  - create_review_case
+audit:
+  retain_days: 365
+  store_reason: true

@@ -29,7 +29,7 @@ async def test_list_policies(client, make_token):
     r = await client.get("/v1/policies", headers=_h(make_token, "developer"))
     assert r.status_code == 200
     body = r.json()
-    assert len(body["policies"]) == 7
+    assert len(body["policies"]) == len(load_policy_dir(get_settings().policy_dir).policies)
     assert body["policies"][0]["severity"] == "critical"
     assert all(len(p["sha256"]) == 64 for p in body["policies"])
 
@@ -102,13 +102,14 @@ async def test_policy_sync_versioning():
     base = load_policy_dir(get_settings().policy_dir)
     try:
         async for s in get_session():
+            n = len(base.policies)
             assert await sync_policies(s, base) == {
-                "inserted": 7,
+                "inserted": n,
                 "unchanged": 0,
                 "deactivated": 0,
             }
         async for s in get_session():
-            assert (await sync_policies(s, base))["unchanged"] == 7
+            assert (await sync_policies(s, base))["unchanged"] == len(base.policies)
 
         # Same version, different content -> refused.
         route = base.get("route_confidential_to_eu")
@@ -126,7 +127,7 @@ async def test_policy_sync_versioning():
         )
         async for s in get_session():
             stats = await sync_policies(s, PolicySet.build([*others, bumped]))
-            assert stats == {"inserted": 1, "unchanged": 6, "deactivated": 1}
+            assert stats == {"inserted": 1, "unchanged": len(base.policies) - 1, "deactivated": 1}
             rows = (
                 (
                     await s.execute(

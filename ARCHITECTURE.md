@@ -14,7 +14,7 @@ migrate (one-shot): alembic upgrade head && python -m policy.sync
 | `policy/` | Policy schema and safety validation (`validator.py`), loading and versioning (`loader.py`), deterministic evaluation (`engine.py`), DB version sync (`sync.py`). |
 | `audit/` | Per-tenant SHA-256 hash chain (`hash_chain.py`), append and verify (`service.py`). |
 | `migrations/` | Alembic. `audit_events` is append-only via a Postgres trigger. |
-| `detection/` | Layered sensitive-data detection (`pii/`), transforms (`transforms.py`), entity catalogue (`types.py`). `injection/` and `output/` are reserved for Phases 4 and 6. |
+| `detection/` | Sensitive-data detection (`pii/`), prompt-injection / intent detection (`injection/`), transforms (`transforms.py`), entity catalogue (`types.py`), shared JSON linear-model runtime (`linear_model.py`). `output/` is reserved for Phase 6. |
 | `ml/` | Synthetic data generator, classifier training, evaluation scripts. |
 | `agents/` | Phase 5 (empty for now). |
 
@@ -26,7 +26,10 @@ migrate (one-shot): alembic upgrade head && python -m policy.sync
 4. **Detection** (in a worker thread): runs the layers below over the prompt and every attachment.
    The result yields the effective classification, `data_sensitivity` categories, `entity_types` and a
    risk score. Unlabelled data starts as `confidential`; detection can raise the classification but never lowers it.
-   *(Phases 4–5 add intent label and anomaly score.)*
+   Intent analysis runs per part in the same worker: the prompt or query is **direct** input;
+   attachments, retrieved RAG documents and embedding inputs are **indirect**. The worst direct
+   verdict becomes `intent_label`, the worst indirect one `indirect_intent_label`, and the risk score
+   combines sensitive-data and injection risk (noisy-OR). *(Phase 5 adds the anomaly score.)*
 5. **Policy evaluation**: pure and deterministic (see below).
 6. **Persist**: in one DB transaction, insert the `decisions` row and append a `decision.created` audit event to the tenant's hash chain. Neither is stored without the other.
 7. **Side effects**: `alert` emits a structured warning log and increments `gateway_policy_alerts_total`. `create_review_case` / `require_human_review` set `review_status = pending`.
@@ -62,6 +65,36 @@ The raw prompt is **never stored**. The audit event records a SHA-256 fingerprin
   Each entity gets the strongest applicable transform. See `docs/privacy.md`.
 * Detected values are stored only as keyed per-tenant hashes. See `docs/privacy.md` and `docs/model-cards.md`.
 
+## Prompt-injection and intent detection
+
+| Layer | Component | Role |
+|---|---|---|
+| Normalisation | `injection/rules.py` | NFKC, zero-width removal, whitespace collapse, leetspeak folding, base64 payload decoding |
+| Rules | `injection/rules.py` | Named signals (`instruction_override`, `guardrail_bypass`, `mode_switch`, `persona_hijack`, `system_prompt_request`, `data_export_request`, `exfil_channel`, `delimiter_injection`, `tool_hijack`, `ai_directed_instruction`, `encoded_payload`, `obfuscation`), each with a label and a weight |
+| Classifier | `injection/classifier.py` | char_wb 2–5-gram TF-IDF + logistic regression (JSON, no pickle); long inputs are scored on the first and last 4,000 characters |
+| Reviewer (optional) | `injection/llm_reviewer.py` | Self-hosted OpenAI-compatible LLM. Only consulted in the uncertain band, never overrides a strong rule hit, only accepts enum labels; any failure means "suspicious" |
+
+Verdict logic (`injection/detector.py`): a strong rule hit (weight ≥ 0.70) decides the label.
+Otherwise the classifier's attack class applies above the source's attack threshold. On **indirect**
+content the classifier needs a corroborating rule signal or ≥ 0.80 confidence, because per-document
+false positives compound across retrieved documents. Below that, the uncertain band is labelled
+`suspicious`. Thresholds were chosen on a validation set that is separate from the reported test set.
+
+Policies:
+
+| Policy | Match | Actions |
+|---|---|---|
+| `block_system_prompt_extraction` | `intent_label` ∈ attacks | deny, alert |
+| `quarantine_indirect_injection` | `indirect_intent_label` ∈ attacks | quarantine, alert, create_review_case |
+| `alert_suspicious_intent` / `alert_suspicious_documents` | `suspicious` | allow, alert |
+
+An explicit `allow` (such as allow + alert) never overrides the built-in default deny for `unknown`
+jurisdictions or `high_risk` data.
+
+`POST /v1/rag/query` takes the query plus the documents your retriever returned. Each document gets
+its own verdict (`content_verdicts[].doc_id`), so callers can see which document was poisoned. The
+query and documents also go through PII detection and transforms like any other request.
+
 ## Audit trail
 
 * `event_hash = SHA-256(previous_hash + canonical_json(event))`, where canonical JSON has sorted keys and no whitespace. The first event's `previous_hash` is 64 zeros.
@@ -73,3 +106,5 @@ The raw prompt is **never stored**. The audit event records a SHA-256 fingerprin
 
 * `audit_events.tenant_id`, `audit_events.seq` (identity), unique `(tenant_id, seq)`.
 * `decisions.policy_set_version`, `decisions.review_status`, unique `(tenant_id, request_id)` for idempotency.
+* Migration 0003: `detections.part`, `detections.risk_level`.
+* Migration 0004: `decisions.intent_label`, `decisions.indirect_intent_label` (indexed by tenant).

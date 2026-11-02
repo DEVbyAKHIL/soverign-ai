@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram
 
+from detection.injection.detector import get_injection_detector
 from detection.pipeline import get_pipeline
 from gateway.config import get_settings
 from gateway.core.errors import register_error_handlers
@@ -124,7 +125,14 @@ def create_app() -> FastAPI:
     )
     # Fail closed: with NER_MODE=required a missing NER model prevents start-up.
     app.state.detector = get_pipeline(settings.ner_mode)
-    log.info("detector_loaded", **app.state.detector.model_versions)
+    app.state.injection = get_injection_detector(
+        settings.llm_reviewer_url, settings.llm_reviewer_model, settings.llm_reviewer_timeout_s
+    )
+    log.info(
+        "detector_loaded",
+        **app.state.detector.model_versions,
+        **app.state.injection.model_versions,
+    )
     for router in (health, auth, infer, decisions, audit, policies):
         app.include_router(router.router)
     return app

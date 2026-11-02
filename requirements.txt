@@ -8,6 +8,7 @@ asyncpg==0.32.0
 alembic==1.20.1
 redis==8.1.0
 PyJWT==2.15.1
+httpx==0.28.1
 structlog==26.1.0
 prometheus-client==0.26.0
 PyYAML==6.0.3

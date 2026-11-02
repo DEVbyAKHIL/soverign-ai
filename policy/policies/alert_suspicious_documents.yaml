@@ -1,0 +1,14 @@
+policy_id: alert_suspicious_documents
+version: 1.0.0
+name: Alert on suspicious documents
+description: Attachments or retrieved documents with uncertain injection signals are allowed but alerted
+severity: low
+match:
+  indirect_intent_label:
+    - suspicious
+actions:
+  - allow
+  - alert
+audit:
+  retain_days: 365
+  store_reason: true

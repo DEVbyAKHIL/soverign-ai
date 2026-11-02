@@ -11,8 +11,9 @@ A policy-enforcement and audit gateway for AI workloads. It sits between users, 
 | 1 | Foundation: FastAPI, Postgres, Redis, JWT, tenancy, health, logging, Docker, CI, React skeleton | **Done** |
 | 2 | Policy-as-code engine, decision service, hash-chained audit trail, decision/audit/policy/review APIs | **Done** |
 | 3 | Layered PII / sensitive-data detection (regex+validators, Presidio NER, sensitivity classifier), redaction, masking, pseudonymisation, keyed hashing, evaluation | **Done** |
-| 4 | Prompt-injection and intent-risk classification | Next |
-| 5–8 | Agent anomalies, response guardrails, dashboard, hardening | Planned |
+| 4 | Prompt-injection and intent-risk detection (rules, char-n-gram classifier, optional local LLM reviewer), direct vs indirect injection, `/v1/rag/query` | **Done** |
+| 5 | Agent behaviour anomaly detection | Next |
+| 6–8 | Response guardrails, dashboard, hardening | Planned |
 
 ## Quick start (Docker)
 
@@ -52,7 +53,7 @@ are skipped (`NER_MODE=optional` in tests). The Docker test runner always runs t
 
 ```bash
 make test-docker      # full suite on Linux against the gateway_test database
-make evaluate         # PII detection metrics (see EVALUATION.md)
+make evaluate         # PII + injection detection metrics (see EVALUATION.md)
 ```
 
 ## Policies
@@ -76,5 +77,5 @@ Roles → scopes are defined in `gateway/core/security.py`.
 ## Layout
 
 See `ARCHITECTURE.md`. Implemented: `gateway/`, `policy/`, `audit/`, `detection/` (PII), `ml/`
-(synthetic data, training, evaluation). Placeholders for later phases: `detection/injection`,
+(synthetic data, training, evaluation). Placeholders for later phases:
 `detection/output`, `agents/`. Further reading: `EVALUATION.md`, `docs/model-cards.md`, `docs/privacy.md`.

@@ -33,6 +33,9 @@ def test_repository_policies_load():
         "redact_secrets",
         "mask_payment_data",
         "pseudonymise_pii_for_eu_models",
+        "quarantine_indirect_injection",
+        "alert_suspicious_intent",
+        "alert_suspicious_documents",
     }
     assert len(ps.version) == 16
 

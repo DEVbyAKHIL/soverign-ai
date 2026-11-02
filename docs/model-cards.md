@@ -49,3 +49,32 @@ the version of each component it used (`decisions.model_versions`, audit `event_
 `risk = 1 - Π(1 - weight(entity) × confidence)` (noisy-OR) over all detected entities. Weights are
 in `detection/types.py`, e.g. credit card 0.95, email 0.6, organisation 0.1. Phases 4 and 5 add
 injection and agent-anomaly signals.
+
+## Injection rules: `injection-rules-1.0.0`
+
+* **What:** about 20 regular expressions over normalised text (NFKC, zero-width removal, leetspeak folding),
+  plus base64 payload decoding. Each rule emits a named signal with a label and weight
+  (`detection/injection/rules.py`). Patterns cover English plus common German/French/Spanish override phrasing.
+* **Strengths:** deterministic, explainable, sub-millisecond; strong rule hits (≥ 0.70) decide the label.
+* **Limits:** novel phrasings, other languages, and attacks split across turns or documents are missed.
+
+## Injection / intent classifier: `injection-charlr-1.0.0`
+
+* **What:** char_wb 2–5-gram TF-IDF (40k features) + class-balanced multinomial logistic regression
+  over 5 classes (benign + 4 attack classes). JSON artifact; parity with scikit-learn tested.
+* **Training data:** synthetic templates (`ml/data/injection.py`): direct attacks, attacks embedded
+  in documents, benign prompts, look-alikes, and technical/KB content. `--extra-csv` adds a local,
+  licence-checked public dataset.
+* **Held-out-template results (classifier alone):** see `metrics` in the artifact. Combined detector
+  results are in `EVALUATION.md`.
+* **Known failure modes:** learns topic vocabulary from the attack payloads (mitigated by
+  corroboration on documents); data exfiltration phrased as an ordinary request.
+* **Spec deviation:** the spec asks for a compact transformer. The same reasoning as for the
+  sensitivity classifier applies; the `LinearTextModel` interface allows an ONNX backend later.
+
+## Local LLM reviewer (optional)
+
+* **What:** any self-hosted OpenAI-compatible chat model (`LLM_REVIEWER_URL`, `LLM_REVIEWER_MODEL`).
+* **When:** only for verdicts in the uncertain band. It cannot override strong rule hits.
+* **Safety:** delimited untrusted input, temperature 0, enum-validated JSON verdict, 3 s timeout; any
+  failure falls back to `suspicious`. Adds latency only to uncertain requests.

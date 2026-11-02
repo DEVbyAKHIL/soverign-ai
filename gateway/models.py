@@ -141,6 +141,8 @@ class Detection(Base):
     model_version: Mapped[str] = mapped_column(Text, nullable=False)
     start_offset: Mapped[int] = mapped_column(Integer, nullable=False)
     end_offset: Mapped[int] = mapped_column(Integer, nullable=False)
+    part: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    risk_level: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'low'"))
     created_at: Mapped[datetime] = _ts()
 
 

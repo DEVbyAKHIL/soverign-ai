@@ -14,7 +14,9 @@ ignore = ["B008"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
+"tests/unit/test_regex_detector.py" = ["E501", "S101", "S105", "S106"]
 "migrations/**" = ["E501"]
+"ml/data/**" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -28,4 +30,4 @@ exclude_dirs = ["tests", "frontend", "migrations"]
 [tool.coverage.run]
 # SQLAlchemy's async layer runs DB code in greenlets; without this, coverage under-reports.
 concurrency = ["greenlet", "thread"]
-source = ["gateway", "policy", "audit"]
+source = ["gateway", "policy", "audit", "detection"]

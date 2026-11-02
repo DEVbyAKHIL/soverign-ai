@@ -1,4 +1,4 @@
-.PHONY: help install lint format test security up down logs migrate frontend-install frontend-dev sbom
+.PHONY: help install lint format test test-docker evaluate security up down logs migrate frontend-install frontend-dev sbom
 
 PY ?= python
 
@@ -20,9 +20,9 @@ test:
 	pytest
 
 security:
-	bandit -c pyproject.toml -r gateway policy audit
+	bandit -c pyproject.toml -r gateway policy audit detection
 	pip-audit -r requirements.txt
-	semgrep --config p/python --config p/secrets --error gateway policy audit
+	semgrep --config p/python --config p/secrets --error gateway policy audit detection
 
 up:
 	docker compose up --build -d
@@ -44,3 +44,10 @@ frontend-dev:
 
 sbom:
 	trivy fs --format cyclonedx --output sbom.json .
+
+test-docker:
+	docker compose exec -T postgres sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -tc "select 1 from pg_database where datname='"'"'gateway_test'"'"'" | grep -q 1 || createdb -U "$$POSTGRES_USER" gateway_test'
+	docker compose --profile test run --rm --build tests
+
+evaluate:
+	docker compose --profile test run --rm --build tests python -m ml.evaluation.evaluate_pii

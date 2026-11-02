@@ -63,6 +63,22 @@ services:
     read_only: true
     tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
 
+  # Full test suite on Linux, including NER. Not started by `up`:
+  #   docker compose --profile test run --rm tests
+  # Uses a separate gateway_test database (created on first run) - never the app database.
+  tests:
+    profiles: ["test"]
+    build: { context: ., dockerfile: infra/docker/test.Dockerfile }
+    environment:
+      ENVIRONMENT: test
+      NER_MODE: required
+      TEST_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/gateway_test
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    <<: *hardening
+    tmpfs: ["/tmp"]
+
 volumes:
   pgdata:
   redisdata:

@@ -21,8 +21,8 @@ PRECEDENCE = {
     "quarantine": 90,
     "require_human_review": 80,
     "route_to_approved_model": 70,
-    "pseudonymise": 60,
-    "redact": 50,
+    "redact": 60,
+    "pseudonymise": 50,
     "mask": 40,
     "allow": 10,
 }
@@ -66,6 +66,7 @@ class PolicyDecision:
     actions: tuple[str, ...]
     side_effects: tuple[str, ...]
     transforms: tuple[str, ...]
+    transform_plan: tuple[tuple[str, frozenset[str] | None], ...]
     matched_policies: tuple[str, ...]
     decisive_policy: str
     route_to: dict[str, str] | None
@@ -158,10 +159,15 @@ def evaluate(ctx: EvaluationContext, policy_set: PolicySet) -> PolicyDecision:
         explanation = "Allowed: no policy restricts this request."
 
     # Transforms only apply when the request is not blocked or held.
-    transforms = (
-        tuple(t for t in TRANSFORMS if t in actions)
-        if FINAL_DECISION[decisive] in ("allow", "allow_with_modification")
-        else ()
+    proceeds = FINAL_DECISION[decisive] in ("allow", "allow_with_modification")
+    transforms = tuple(t for t in TRANSFORMS if t in actions) if proceeds else ()
+    # Each transforming policy applies to the entity types it matched on, or to all
+    # sensitive entities when it matched on something broader (e.g. data_sensitivity).
+    transform_plan = tuple(
+        (t, frozenset(p.match["entity_types"]) if "entity_types" in p.match else None)
+        for p, _ in matched
+        for t in p.actions
+        if t in TRANSFORMS and proceeds
     )
     requires_review = decisive == "require_human_review" or "create_review_case" in side_effects
 
@@ -171,6 +177,7 @@ def evaluate(ctx: EvaluationContext, policy_set: PolicySet) -> PolicyDecision:
         actions=tuple(sorted(actions)),
         side_effects=side_effects,
         transforms=transforms,
+        transform_plan=transform_plan,
         matched_policies=tuple(p.ref for p, _ in matched),
         decisive_policy=decisive_ref,
         route_to=route_to,

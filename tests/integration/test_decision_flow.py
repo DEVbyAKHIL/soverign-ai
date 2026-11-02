@@ -40,7 +40,7 @@ def _body(token: str, **over) -> dict:
         "destination_jurisdiction": "eu",
         "declared_purpose": "customer_support_summarisation",
         "data_classification": "internal",
-        "prompt": "Summarise this synthetic ticket for Jane Example.",
+        "prompt": "Summarise the attached release notes in three bullet points.",
     }
     body.update(over)
     return body
@@ -305,7 +305,7 @@ async def test_decision_records_policy_and_model_versions(client, make_token):
     assert detail["policy_set_version"] == body["policy_set_version"]
     assert detail["model_versions"]["policy_set"] == body["policy_set_version"]
     event_data = detail["audit_events"][0]["event_data"]
-    assert len(event_data["policies_evaluated"]) == 4
+    assert len(event_data["policies_evaluated"]) == 7
     assert event_data["redaction_map"] is None
 
 

@@ -10,8 +10,9 @@ A policy-enforcement and audit gateway for AI workloads. It sits between users, 
 |---|---|---|
 | 1 | Foundation: FastAPI, Postgres, Redis, JWT, tenancy, health, logging, Docker, CI, React skeleton | **Done** |
 | 2 | Policy-as-code engine, decision service, hash-chained audit trail, decision/audit/policy/review APIs | **Done** |
-| 3 | PII and sensitive-data detection, redaction | Next |
-| 4–8 | Injection classification, agent anomalies, response guardrails, dashboard, hardening | Planned |
+| 3 | Layered PII / sensitive-data detection (regex+validators, Presidio NER, sensitivity classifier), redaction, masking, pseudonymisation, keyed hashing, evaluation | **Done** |
+| 4 | Prompt-injection and intent-risk classification | Next |
+| 5–8 | Agent anomalies, response guardrails, dashboard, hardening | Planned |
 
 ## Quick start (Docker)
 
@@ -44,6 +45,16 @@ pytest
 
 Use `127.0.0.1`, not `localhost`. On Windows, `localhost` tries IPv6 first and adds about 2 s per connection.
 
+### Full suite on Linux (includes NER)
+
+spaCy's compiled libraries can be blocked by Windows Smart App Control, so on such hosts the NER tests
+are skipped (`NER_MODE=optional` in tests). The Docker test runner always runs them with NER required:
+
+```bash
+make test-docker      # full suite on Linux against the gateway_test database
+make evaluate         # PII detection metrics (see EVALUATION.md)
+```
+
 ## Policies
 
 Policies are YAML files in `policy/policies/` (see `ARCHITECTURE.md` for the semantics and
@@ -64,5 +75,6 @@ Roles → scopes are defined in `gateway/core/security.py`.
 
 ## Layout
 
-See `ARCHITECTURE.md`. Implemented: `gateway/`, `policy/`, `audit/`. Placeholders for later phases:
-`detection/`, `agents/`, `ml/`.
+See `ARCHITECTURE.md`. Implemented: `gateway/`, `policy/`, `audit/`, `detection/` (PII), `ml/`
+(synthetic data, training, evaluation). Placeholders for later phases: `detection/injection`,
+`detection/output`, `agents/`. Further reading: `EVALUATION.md`, `docs/model-cards.md`, `docs/privacy.md`.

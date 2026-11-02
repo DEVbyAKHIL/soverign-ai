@@ -1,19 +1,24 @@
-"""Decision pipeline: context -> policy evaluation -> decision + audit in one transaction."""
+"""Decision pipeline: detect -> policy -> transform -> decision + audit, in one transaction."""
 
 import hashlib
 import uuid
+from dataclasses import dataclass
 from decimal import Decimal
 
-from prometheus_client import Counter
+from prometheus_client import Counter, Histogram
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from audit.service import append_event
+from detection.pipeline import DetectionPipeline, DetectionResult
+from detection.transforms import TransformPlan, apply_plan, entity_hash
+from gateway.config import get_settings
 from gateway.core.errors import GatewayError, TenantIsolationError
 from gateway.core.security import Principal
 from gateway.logging_config import get_logger
-from gateway.models import Decision
+from gateway.models import Decision, Detection
 from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest
 from policy.engine import EvaluationContext, PolicyDecision, evaluate
 from policy.loader import PolicySet
@@ -24,10 +29,15 @@ DECISIONS = Counter(
     "gateway_decisions_total", "Policy decisions", ["endpoint", "final_decision", "action"]
 )
 POLICY_ALERTS = Counter("gateway_policy_alerts_total", "Policy alerts raised", ["policy"])
+DETECTIONS = Counter("gateway_detections_total", "Sensitive entities detected", ["entity_type"])
+DETECTION_LATENCY = Histogram(
+    "gateway_detection_seconds",
+    "Sensitive-data detection latency",
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.15, 0.25, 0.5, 1.0),
+)
 
-# Phase 2 has no detectors yet; versions are recorded so later phases slot in.
-MODEL_VERSIONS = {"pii_detector": None, "injection_classifier": None, "anomaly_detector": None}
-SENSITIVE_CLASSES = {"confidential", "restricted", "high_risk"}
+# Filled in by later phases.
+FUTURE_MODELS = {"injection_classifier": None, "anomaly_detector": None}
 
 
 class IdentityMismatch(GatewayError):
@@ -50,6 +60,16 @@ class SeparationOfDuties(GatewayError):
     code = "separation_of_duties"
 
 
+@dataclass(frozen=True)
+class DecisionOutcome:
+    decision: Decision
+    policy: PolicyDecision
+    detection: DetectionResult
+    audit_event_id: uuid.UUID
+    # Content after redaction/masking/pseudonymisation; None if nothing was transformed.
+    transformed_parts: list[str] | None
+
+
 def check_identity(principal: Principal, req: AIRequest) -> None:
     """The body must describe the authenticated caller; it cannot speak for someone else."""
     if (
@@ -60,26 +80,29 @@ def check_identity(principal: Principal, req: AIRequest) -> None:
         raise IdentityMismatch("Request identity does not match the authenticated caller")
 
 
-def build_context(req: AIRequest) -> EvaluationContext:
-    sensitivity = {req.data_classification} & SENSITIVE_CLASSES
+def payload_parts(req: AIRequest) -> list[str]:
+    if isinstance(req, InferRequest):
+        return [req.prompt, *req.attached_content]
+    if isinstance(req, EmbedRequest):
+        return list(req.input)
+    return []  # pragma: no cover
+
+
+def build_context(req: AIRequest, det: DetectionResult) -> EvaluationContext:
     return EvaluationContext(
         caller_type=req.caller_type,
         destination_jurisdiction=req.destination_jurisdiction,
-        data_classification=req.data_classification,
+        data_classification=det.classification,
         requested_model=req.requested_model,
         declared_purpose=req.declared_purpose,
-        data_sensitivity=frozenset(sensitivity),
+        data_sensitivity=det.sensitivity,
+        entity_types=det.entity_types,
+        risk_score=det.risk_score,
     )
 
 
-def _content_fingerprint(req: AIRequest) -> dict:
+def _fingerprint(parts: list[str]) -> dict:
     """Minimal, non-reversible description of the payload. Raw content is never stored."""
-    if isinstance(req, InferRequest):
-        parts = [req.prompt, *req.attached_content]
-    elif isinstance(req, EmbedRequest):
-        parts = list(req.input)
-    else:  # pragma: no cover
-        parts = []
     digest = hashlib.sha256("\x1e".join(parts).encode("utf-8")).hexdigest()
     return {
         "content_sha256": digest,
@@ -94,13 +117,38 @@ async def decide(
     principal: Principal,
     req: AIRequest,
     policy_set: PolicySet,
+    detector: DetectionPipeline,
     endpoint: str,
-) -> tuple[Decision, PolicyDecision, uuid.UUID]:
+) -> DecisionOutcome:
     check_identity(principal, req)
-    ctx = build_context(req)
+    settings = get_settings()
+    parts = payload_parts(req)
+
+    # CPU-bound (regex + NER); keep it off the event loop.
+    det = await run_in_threadpool(detector.analyze, parts, req.data_classification)
+    DETECTION_LATENCY.observe(det.latency_ms / 1000)
+    ctx = build_context(req, det)
     result = evaluate(ctx, policy_set)
     review_status = "pending" if result.requires_review else "not_required"
 
+    transformed: list[str] | None = None
+    redaction_map: list[dict] = []
+    if result.transform_plan:
+        transformed, redaction_map = apply_plan(
+            parts,
+            det.entities,
+            TransformPlan(result.transform_plan),
+            master_key=settings.entity_hash_key,
+            tenant_id=principal.tenant_id,
+        )
+        if not redaction_map:
+            transformed = None
+
+    model_versions = {
+        **det.model_versions,
+        **FUTURE_MODELS,
+        "policy_set": policy_set.version,
+    }
     decision = Decision(
         id=uuid.uuid4(),
         request_id=req.request_id,
@@ -115,7 +163,7 @@ async def decide(
         final_decision=result.final_decision,
         action_taken=result.action_taken,
         policy_ids=list(result.matched_policies) or [result.decisive_policy],
-        model_versions={**MODEL_VERSIONS, "policy_set": policy_set.version},
+        model_versions=model_versions,
         explanation=result.explanation,
         policy_set_version=policy_set.version,
         review_status=review_status,
@@ -126,6 +174,24 @@ async def decide(
     except IntegrityError as exc:
         await session.rollback()
         raise DuplicateRequest("request_id has already been processed for this tenant") from exc
+
+    for e in det.entities:
+        session.add(
+            Detection(
+                decision_id=decision.id,
+                entity_type=e.entity_type,
+                entity_value_hash=entity_hash(
+                    settings.entity_hash_key, principal.tenant_id, e.entity_type, e.value
+                ),
+                confidence=Decimal(str(e.confidence)),
+                detector=e.detector,
+                model_version=e.model_version,
+                start_offset=e.start,
+                end_offset=e.end,
+                part=e.part,
+                risk_level=e.risk_level,
+            )
+        )
 
     event = await append_event(
         session,
@@ -142,9 +208,30 @@ async def decide(
             "requested_endpoint": req.requested_endpoint,
             "destination_jurisdiction": req.destination_jurisdiction,
             "declared_purpose": req.declared_purpose,
-            "data_classification": req.data_classification,
-            "payload": _content_fingerprint(req),
-            "detections": [],
+            "declared_classification": req.data_classification,
+            "effective_classification": det.classification,
+            "payload": _fingerprint(parts),
+            "detections": [
+                {
+                    "entity_type": e.entity_type,
+                    "confidence": e.confidence,
+                    "detector": e.detector,
+                    "model_version": e.model_version,
+                    "part": e.part,
+                    "start": e.start,
+                    "end": e.end,
+                    "risk_level": e.risk_level,
+                }
+                for e in det.entities
+            ],
+            "data_sensitivity": sorted(det.sensitivity),
+            "sensitivity_classifier": (
+                {"label": det.classifier.label, "confidence": det.classifier.confidence}
+                if det.classifier
+                else None
+            ),
+            "detection_signals": list(det.signals),
+            "detection_latency_ms": det.latency_ms,
             "risk_score": ctx.risk_score,
             "agent_anomaly_score": ctx.agent_anomaly_score,
             "policies_evaluated": [t["policy"] for t in result.trace],
@@ -155,15 +242,17 @@ async def decide(
             "action_taken": result.action_taken,
             "route_to": result.route_to,
             "policy_set_version": policy_set.version,
-            "model_versions": decision.model_versions,
+            "model_versions": model_versions,
             "review_status": review_status,
-            "redaction_map": None,
+            "redaction_map": redaction_map or None,
             "explanation": result.explanation,
         },
     )
     await session.commit()
 
     DECISIONS.labels(endpoint, result.final_decision, result.action_taken).inc()
+    for e in det.entities:
+        DETECTIONS.labels(e.entity_type).inc()
     if "alert" in result.side_effects:
         for ref in result.matched_policies:
             POLICY_ALERTS.labels(ref).inc()
@@ -173,8 +262,9 @@ async def decide(
             tenant_id=str(principal.tenant_id),
             action=result.action_taken,
             policies=list(result.matched_policies),
+            entity_types=sorted(det.entity_types),
         )
-    return decision, result, event.id
+    return DecisionOutcome(decision, result, det, event.id, transformed)
 
 
 async def get_decision(

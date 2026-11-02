@@ -12,6 +12,8 @@ class DetectionOut(BaseModel):
     model_version: str | None = None
     start_offset: int | None = None
     end_offset: int | None = None
+    part: int = 0
+    risk_level: str | None = None
 
 
 class DecisionResponse(BaseModel):
@@ -27,7 +29,10 @@ class DecisionResponse(BaseModel):
     route_to: dict[str, str] | None
     review_status: str
     policy_set_version: str
+    data_classification: str  # effective classification after detection
     detections: list[DetectionOut]
+    # The content as it may be forwarded after redaction/masking/pseudonymisation.
+    transformed_content: dict[str, Any] | None = None
     audit_event_id: uuid.UUID
     # Model forwarding is added in a later phase; the gateway currently returns the decision only.
     model_response: Any = None

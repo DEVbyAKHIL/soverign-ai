@@ -11,6 +11,10 @@ os.environ["DATABASE_URL"] = (
     TEST_DATABASE_URL or "postgresql+asyncpg://test:test@localhost:5432/unused_test"
 )
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
+os.environ.setdefault("ENTITY_HASH_KEY", "test-entity-key-" + "k" * 40)
+# Hosts that cannot load spaCy (e.g. Windows Smart App Control) run without NER; the Docker
+# test runner sets NER_MODE=required so NER is always exercised in CI.
+os.environ.setdefault("NER_MODE", "optional")
 
 import asyncpg  # noqa: E402
 import fakeredis  # noqa: E402

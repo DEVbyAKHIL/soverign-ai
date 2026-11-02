@@ -61,7 +61,12 @@ Response:
   "route_to": null,
   "review_status": "not_required | pending",
   "policy_set_version": "caf25e67fd43f2dd",
-  "detections": [],
+  "data_classification": "confidential",   // effective, after detection
+  "detections": [
+    {"entity_type": "EMAIL", "confidence": 0.99, "detector": "regex", "model_version": "regex-1.0.0+terms-2",
+     "start_offset": 45, "end_offset": 61, "part": 0, "risk_level": "medium"}
+  ],
+  "transformed_content": null,             // {"prompt": "...", "attached_content": [...]} when transformed
   "audit_event_id": "uuid",
   "model_response": null
 }
@@ -73,7 +78,9 @@ invalid input. Submitted values are never echoed in error messages; `429` means 
 hit.
 
 The gateway does not forward requests to a model yet. It returns only the decision, so `model_response`
-is always `null`.
+is always `null`. When policies redact, mask or pseudonymise, `transformed_content` holds the content
+exactly as it may be forwarded. `part` is 0 for the prompt (or first embedding input) and 1.. for
+attachments (or further inputs).
 
 ## POST /v1/reviews/{decision_id}/decision
 

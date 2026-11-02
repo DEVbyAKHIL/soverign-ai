@@ -1,0 +1,15 @@
+policy_id: pseudonymise_pii_for_eu_models
+version: 1.0.0
+name: Pseudonymise personal data for EU models
+description: Personal data sent to approved EU endpoints is pseudonymised (data minimisation)
+severity: medium
+match:
+  data_sensitivity:
+    - pii
+  destination_jurisdiction:
+    - eu
+actions:
+  - pseudonymise
+audit:
+  retain_days: 365
+  store_reason: true

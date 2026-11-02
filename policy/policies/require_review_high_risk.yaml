@@ -1,0 +1,14 @@
+policy_id: require_review_high_risk
+version: 1.0.0
+name: Human review for high-risk data
+description: Requests carrying high-risk data must be approved by a human reviewer before processing
+severity: high
+match:
+  data_classification:
+    - high_risk
+actions:
+  - require_human_review
+  - alert
+audit:
+  retain_days: 365
+  store_reason: true

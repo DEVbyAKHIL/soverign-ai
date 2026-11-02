@@ -1,0 +1,20 @@
+# Production overrides: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# TLS terminates at an upstream load balancer / reverse proxy; DB and Redis should be managed services.
+services:
+  postgres:
+    ports: !reset []
+  redis:
+    ports: !reset []
+  gateway:
+    environment:
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        limits: { cpus: "1.0", memory: 1g }
+    ports: !reset []
+    expose: ["8000"]
+  frontend:
+    restart: unless-stopped

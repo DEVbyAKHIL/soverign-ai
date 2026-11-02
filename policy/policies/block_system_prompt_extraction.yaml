@@ -1,0 +1,17 @@
+policy_id: block_system_prompt_extraction
+version: 1.0.0
+name: Block prompt attacks
+description: Block system-prompt extraction, prompt-injection, jailbreak and data-exfiltration attempts
+severity: critical
+match:
+  intent_label:
+    - system_prompt_extraction_attempt
+    - prompt_injection
+    - jailbreak_attempt
+    - data_exfiltration_attempt
+actions:
+  - deny
+  - alert
+audit:
+  retain_days: 365
+  store_reason: true

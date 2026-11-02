@@ -1,0 +1,19 @@
+policy_id: route_confidential_to_eu
+version: 1.0.0
+name: Route confidential data to an EU model
+description: Confidential data bound for an endpoint of unknown jurisdiction is rerouted to the approved EU model
+severity: high
+match:
+  data_classification:
+    - confidential
+  destination_jurisdiction:
+    - unknown
+actions:
+  - route_to_approved_model
+  - alert
+route_to:
+  model: eu-approved-llm
+  jurisdiction: eu
+audit:
+  retain_days: 365
+  store_reason: true

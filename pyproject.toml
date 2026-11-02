@@ -1,0 +1,31 @@
+[project]
+name = "sovereign-ai-access-gateway"
+version = "0.1.0"
+description = "Policy-enforcement and audit gateway for AI workloads"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S", "UP"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+"migrations/**" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--cov --cov-report=term-missing"
+
+[tool.bandit]
+exclude_dirs = ["tests", "frontend", "migrations"]
+
+[tool.coverage.run]
+# SQLAlchemy's async layer runs DB code in greenlets; without this, coverage under-reports.
+concurrency = ["greenlet", "thread"]
+source = ["gateway", "policy", "audit"]

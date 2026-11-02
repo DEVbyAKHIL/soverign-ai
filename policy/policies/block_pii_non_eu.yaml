@@ -1,0 +1,19 @@
+policy_id: block_pii_to_non_eu_models
+version: 1.2.0
+name: Block PII to non-EU models
+description: Block PII or confidential data from being sent to non-EU AI endpoints
+severity: critical
+match:
+  data_sensitivity:
+    - pii
+    - confidential
+    - restricted
+  destination_jurisdiction:
+    - non_eu
+actions:
+  - deny
+  - alert
+  - create_review_case
+audit:
+  retain_days: 365
+  store_reason: true

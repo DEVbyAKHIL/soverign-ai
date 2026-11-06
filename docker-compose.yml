@@ -47,6 +47,8 @@ services:
   gateway:
     build: { context: ., dockerfile: infra/docker/gateway.Dockerfile }
     env_file: .env
+    environment:
+      MODEL_BACKEND_URL: ${MODEL_BACKEND_URL-http://ollama:11434/v1}
     ports: ["127.0.0.1:8000:8000"]
     depends_on:
       migrate: { condition: service_completed_successfully }
@@ -54,6 +56,14 @@ services:
     <<: *hardening
     read_only: true
     tmpfs: ["/tmp"]
+
+  # Local model backend. Approved requests are forwarded here; nothing leaves the host.
+  # Pull models once: docker compose exec ollama ollama pull llama3.2:3b (and nomic-embed-text)
+  ollama:
+    image: ollama/ollama:0.12.6
+    volumes: ["ollamadata:/root/.ollama"]
+    ports: ["127.0.0.1:11434:11434"]
+    security_opt: ["no-new-privileges:true"]
 
   frontend:
     build: { context: ., dockerfile: infra/docker/frontend.Dockerfile }
@@ -82,3 +92,4 @@ services:
 volumes:
   pgdata:
   redisdata:
+  ollamadata:

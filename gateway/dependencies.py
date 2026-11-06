@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.anomaly_detector import AnomalyDetector
 from detection.injection.detector import InjectionDetector
+from detection.output.guardrails import OutputGuard
 from detection.pipeline import DetectionPipeline
 from gateway.config import get_settings
 from gateway.core.rate_limit import RateLimiter
@@ -14,6 +15,7 @@ from gateway.core.security import Principal, get_current_principal
 from gateway.core.tenant import TenantScope
 from gateway.db import get_session
 from gateway.redis_client import get_redis
+from gateway.services.model_client import ModelClient
 from policy.loader import PolicySet
 
 
@@ -40,6 +42,14 @@ def get_detector(request: Request) -> DetectionPipeline:
 
 def get_injection_detector(request: Request) -> InjectionDetector:
     return request.app.state.injection
+
+
+def get_output_guard(request: Request) -> OutputGuard:
+    return request.app.state.output_guard
+
+
+def get_model_client(request: Request) -> ModelClient | None:
+    return getattr(request.app.state, "model_client", None)
 
 
 def get_anomaly_detector(request: Request) -> AnomalyDetector:

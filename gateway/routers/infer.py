@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.anomaly_detector import AnomalyDetector
 from detection.injection.detector import InjectionDetector
+from detection.output.guardrails import OutputGuard
 from detection.pipeline import DetectionPipeline
 from gateway.core.security import Principal, Scope, require_scopes
 from gateway.db import get_session
@@ -12,6 +13,8 @@ from gateway.dependencies import (
     get_anomaly_detector,
     get_detector,
     get_injection_detector,
+    get_model_client,
+    get_output_guard,
     get_policy_set,
     rate_limited,
 )
@@ -24,6 +27,8 @@ from gateway.schemas.responses import (
     IntentOut,
 )
 from gateway.services.decisions import DecisionOutcome, decide
+from gateway.services.forwarding import forward
+from gateway.services.model_client import ModelClient
 from policy.loader import PolicySet
 
 router = APIRouter(tags=["ai"])
@@ -108,6 +113,8 @@ async def _run(
     detector: DetectionPipeline,
     injection: InjectionDetector,
     anomaly: AnomalyDetector,
+    client: ModelClient | None,
+    guard: OutputGuard,
 ) -> DecisionResponse:
     out = await decide(
         session,
@@ -119,7 +126,17 @@ async def _run(
         anomaly_detector=anomaly,
         endpoint=endpoint,
     )
-    return _response(endpoint, body, out)
+    response = _response(endpoint, body, out)
+    response.model_response = await forward(
+        session,
+        principal=principal,
+        req=body,
+        out=out,
+        endpoint=endpoint,
+        client=client,
+        guard=guard,
+    )
+    return response
 
 
 @router.post("/v1/ai/infer", response_model=DecisionResponse)
@@ -132,8 +149,12 @@ async def infer(
     detector: DetectionPipeline = Depends(get_detector),
     injection: InjectionDetector = Depends(get_injection_detector),
     anomaly: AnomalyDetector = Depends(get_anomaly_detector),
+    client: ModelClient | None = Depends(get_model_client),
+    guard: OutputGuard = Depends(get_output_guard),
 ) -> DecisionResponse:
-    return await _run("infer", body, principal, session, policy_set, detector, injection, anomaly)
+    return await _run(
+        "infer", body, principal, session, policy_set, detector, injection, anomaly, client, guard
+    )
 
 
 @router.post("/v1/ai/embed", response_model=DecisionResponse)
@@ -146,8 +167,12 @@ async def embed(
     detector: DetectionPipeline = Depends(get_detector),
     injection: InjectionDetector = Depends(get_injection_detector),
     anomaly: AnomalyDetector = Depends(get_anomaly_detector),
+    client: ModelClient | None = Depends(get_model_client),
+    guard: OutputGuard = Depends(get_output_guard),
 ) -> DecisionResponse:
-    return await _run("embed", body, principal, session, policy_set, detector, injection, anomaly)
+    return await _run(
+        "embed", body, principal, session, policy_set, detector, injection, anomaly, client, guard
+    )
 
 
 @router.post("/v1/rag/query", response_model=DecisionResponse)
@@ -160,10 +185,14 @@ async def rag_query(
     detector: DetectionPipeline = Depends(get_detector),
     injection: InjectionDetector = Depends(get_injection_detector),
     anomaly: AnomalyDetector = Depends(get_anomaly_detector),
+    client: ModelClient | None = Depends(get_model_client),
+    guard: OutputGuard = Depends(get_output_guard),
 ) -> DecisionResponse:
     """Inspect a RAG query and its retrieved documents before they reach a model.
 
     Each document gets its own verdict in `content_verdicts` (with `doc_id`), so a caller whose
     request is quarantined can see which documents were poisoned.
     """
-    return await _run("rag", body, principal, session, policy_set, detector, injection, anomaly)
+    return await _run(
+        "rag", body, principal, session, policy_set, detector, injection, anomaly, client, guard
+    )

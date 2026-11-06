@@ -85,22 +85,47 @@ classifier, drive the decisions that matter.
 
 ## Prompt-injection and intent detection (Phase 4)
 
-Combined detector (rules + `injection-charlr-1.0.0` classifier, no LLM reviewer). Test: 1050 rows built from **held-out templates**
-(seed 91): attacks in four classes, direct and embedded in documents, plus benign prompts and
-look-alikes. Thresholds were tuned on a separate validation set (seed 333). Reproduce:
-`python -m ml.evaluation.evaluate_injection` (results in `ml/evaluation/results/injection_eval.json`).
+Combined detector (rules + `injection-charlr-1.1.0` classifier, no LLM reviewer). Test: 1050 rows
+built from **held-out templates** (seed 91): attacks in four classes, direct and embedded in
+documents, plus benign prompts and look-alikes. Thresholds were tuned on a separate validation set
+(seed 333). Reproduce: `python -m ml.evaluation.evaluate_injection` (results in
+`ml/evaluation/results/injection_eval.json`).
 
-| Metric (attack vs benign, blocking labels only) | Value |
-|---|---|
-| Precision | **1.000** |
-| Recall | **0.865** (direct 0.947, indirect 0.655) |
-| F1 | **0.928** |
-| False-positive rate | **0.000** |
-| ROC-AUC (risk score) | 0.996 |
-| Attacks routed to `suspicious` instead (alert only) | 12.2% |
-| Benign prompts routed to `suspicious` (alert only) | 3.3% |
+| Metric (attack vs benign, blocking labels only) | 1.0.0 (synthetic only) | **1.1.0 (+ real data)** |
+|---|---|---|
+| Precision | 1.000 | **1.000** |
+| Recall | 0.865 (direct 0.947, indirect 0.655) | **0.822** (direct 0.880, indirect 0.673) |
+| F1 | 0.928 | **0.902** |
+| False-positive rate | 0.000 | **0.000** |
+| ROC-AUC (risk score) | 0.996 | 0.995 |
+| Attacks routed to `suspicious` instead (alert only) | 12.2% | 16.8% |
+| Benign prompts routed to `suspicious` (alert only) | 3.3% | 5.6% |
 
-Recall by label: prompt_injection 0.90 · jailbreak 0.94 · system-prompt extraction 0.89 ·
+### Real data: deepset/prompt-injections
+
+Version 1.1.0 adds the **train split** of
+[deepset/prompt-injections](https://huggingface.co/datasets/deepset/prompt-injections) (Apache-2.0,
+546 rows, English and German, 203 injections mapped to `prompt_injection`) to the synthetic corpus.
+It is evaluated on that dataset's **test split** (116 rows, 60 injections), which is never trained
+on. Reproduce: `python -m ml.evaluation.evaluate_real_injection` (results in
+`ml/evaluation/results/injection_real_eval.json`; data in `ml/data/external/`).
+
+| Real test split | 1.0.0 (synthetic only) | **1.1.0** |
+|---|---|---|
+| Recall (blocking labels) | 0.300 | **0.783** |
+| Precision (blocking labels) | 0.947 | **1.000** |
+| False-positive rate | 0.018 | **0.000** |
+| Recall incl. `suspicious` (alerted) | 0.483 | **0.900** |
+| ROC-AUC | 0.757 | **0.976** |
+
+The synthetic-only model missed 70% of real attacks, so its synthetic scores reflected template fit
+rather than real-world performance. Adding the real data more than doubles real recall. The cost:
+on the synthetic hold-out, direct recall falls from 0.947 to 0.880 and
+system-prompt extraction from 0.89 to 0.72, because the real
+data has a single attack label. The named adversarial suite and look-alike checks are unchanged.
+116 test rows is small, so treat the real-data figures as indicative (about ±8 points).
+
+Recall by label (1.1.0): prompt_injection 0.89 · jailbreak 0.95 · system-prompt extraction 0.72 ·
 data exfiltration **0.73** (the weakest class: many exfiltration phrasings look like ordinary requests).
 
 | Robustness check | Result |
@@ -108,9 +133,9 @@ data exfiltration **0.73** (the weakest class: many exfiltration phrasings look 
 | Spec's named attacks plus variants (zero-width, leetspeak, base64, German, markdown beacon, indirect) | **13 / 13** flagged |
 | Look-alike benign prompts ("ignore the noise", "what is a system prompt?", "enable developer mode on my phone") | **0 / 8** flagged |
 | Technical attachments: code, config, CSV/JSON, prose (300) | 0% attack, 0% suspicious |
-| Unseen format: log lines (300) | 0% attack, 0.3% suspicious |
-| Hand-written knowledge-base sentences (10) | 0% attack, **30% suspicious** (alert noise) |
-| Latency | p50 0.3 ms per prompt; 16 ms for 8,000 characters |
+| Unseen format: log lines (300) | 0% attack, 2.7% suspicious (1.0.0: 0.3%) |
+| Hand-written knowledge-base sentences (10) | 0% attack, **20% suspicious** (1.0.0: 30%; alert noise) |
+| Latency | p50 0.4 ms per prompt; 23 ms for 8,000 characters |
 
 Design decisions this evaluation drove:
 * **Technical text:** the first model labelled config snippets as exfiltration (0.86) and most logs or
@@ -125,7 +150,7 @@ Design decisions this evaluation drove:
 
 Limits: synthetic English-centric data, a fixed payload vocabulary, and no adaptive attacker. Expect
 lower recall against novel attacks. Enable the LLM reviewer for the `suspicious` band. Before relying on
-these numbers, retrain with a vetted public dataset (`--extra-csv`) and real, labelled traffic.
+these numbers, retrain with real, labelled traffic from your own deployment.
 
 ## Agent behaviour anomaly detection (Phase 5)
 

@@ -13,13 +13,15 @@ from prometheus_client import Counter, Histogram
 
 from agents.anomaly_detector import AnomalyDetector
 from detection.injection.detector import get_injection_detector
+from detection.output.guardrails import OutputGuard
 from detection.pipeline import get_pipeline
 from gateway.config import get_settings
 from gateway.core.errors import register_error_handlers
 from gateway.db import dispose_engine
 from gateway.logging_config import configure_logging, get_logger
 from gateway.redis_client import close_redis
-from gateway.routers import agents, audit, auth, decisions, health, infer, policies
+from gateway.routers import agents, audit, auth, dashboard, decisions, health, infer, policies
+from gateway.services.model_client import ModelClient
 from policy.loader import load_policy_dir
 
 REQUESTS = Counter("gateway_http_requests_total", "HTTP requests", ["method", "route", "status"])
@@ -43,6 +45,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     log.info("startup", environment=settings.environment, version=settings.app_version)
     yield
     log.info("shutdown")
+    if getattr(app.state, "model_client", None) is not None:
+        await app.state.model_client.aclose()
     await close_redis()
     await dispose_engine()
 
@@ -130,13 +134,17 @@ def create_app() -> FastAPI:
         settings.llm_reviewer_url, settings.llm_reviewer_model, settings.llm_reviewer_timeout_s
     )
     app.state.anomaly = AnomalyDetector()
+    app.state.output_guard = OutputGuard(app.state.detector, app.state.injection)
+    app.state.model_client = (
+        ModelClient(settings.model_backend_url) if settings.model_backend_url else None
+    )
     log.info(
         "detector_loaded",
         **app.state.detector.model_versions,
         **app.state.injection.model_versions,
         anomaly_detector=app.state.anomaly.version,
     )
-    for router in (health, auth, infer, decisions, audit, policies, agents):
+    for router in (health, auth, infer, decisions, audit, policies, agents, dashboard):
         app.include_router(router.router)
     return app
 

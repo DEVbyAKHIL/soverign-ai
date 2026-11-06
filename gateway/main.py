@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram
 
+from detection.pipeline import get_pipeline
 from gateway.config import get_settings
 from gateway.core.errors import register_error_handlers
 from gateway.db import dispose_engine
@@ -121,6 +122,9 @@ def create_app() -> FastAPI:
         policy_set_version=app.state.policy_set.version,
         policies=[p.ref for p in app.state.policy_set.policies],
     )
+    # Fail closed: with NER_MODE=required a missing NER model prevents start-up.
+    app.state.detector = get_pipeline(settings.ner_mode)
+    log.info("detector_loaded", **app.state.detector.model_versions)
     for router in (health, auth, infer, decisions, audit, policies):
         app.include_router(router.router)
     return app

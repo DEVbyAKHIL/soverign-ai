@@ -12,3 +12,7 @@ structlog==26.1.0
 prometheus-client==0.26.0
 PyYAML==6.0.3
 jsonschema==4.26.0
+phonenumbers==9.0.42
+presidio-analyzer==2.2.366
+spacy==3.8.18
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85

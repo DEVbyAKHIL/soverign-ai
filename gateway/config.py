@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     policy_dir: str = str(Path(__file__).resolve().parents[1] / "policy" / "policies")
     rate_limit_per_minute: int = 60
 
+    # Master key for keyed entity hashes and pseudonyms. Separate from JWT_SECRET; rotating it
+    # changes all future hashes/pseudonyms (old audit records remain verifiable).
+    entity_hash_key: str = Field(min_length=32)
+    # required: refuse to start without NER. optional: run regex+classifier only (dev hosts).
+    ner_mode: Literal["required", "optional", "disabled"] = "required"
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_origins(cls, v: object) -> object:
@@ -44,11 +50,11 @@ class Settings(BaseSettings):
             raise ValueError("Wildcard CORS origin is not permitted")
         return v
 
-    @field_validator("jwt_secret")
+    @field_validator("jwt_secret", "entity_hash_key")
     @classmethod
     def _reject_placeholder(cls, v: str) -> str:
         if v.startswith("CHANGE_ME"):
-            raise ValueError("JWT_SECRET still contains the placeholder value")
+            raise ValueError("secret still contains the placeholder value")
         return v
 
     @property

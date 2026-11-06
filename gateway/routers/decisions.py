@@ -52,6 +52,8 @@ async def _detail(
                 model_version=x.model_version,
                 start_offset=x.start_offset,
                 end_offset=x.end_offset,
+                part=x.part,
+                risk_level=x.risk_level,
             )
             for x in detections
         ],

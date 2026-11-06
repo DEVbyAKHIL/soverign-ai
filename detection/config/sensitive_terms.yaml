@@ -1,0 +1,46 @@
+# Organisation-specific sensitive vocabulary. Versioned in Git like policies.
+# Bump `version` on every change: it is recorded with each detection.
+version: "2"
+
+# Internal project / product code names (matched case-insensitively as whole words).
+internal_projects:
+  - Project Nightingale
+  - Project Atlas-X
+  - Bluefin Initiative
+  - Operation Northwind
+
+# Customer identifier formats. Use one capture group to mark the identifier itself.
+customer_id_patterns:
+  - '\bCUST-\d{4,10}\b'
+  - '\bcustomer\s*(?:id|number|no\.?)\s*[:#]?\s*([A-Z0-9][A-Z0-9-]{3,19})\b'
+
+# Single-word NER hits to ignore: instruction verbs and greetings that the small spaCy model
+# often mislabels as PERSON/ORG at the start of a sentence (e.g. "Summarise this ...").
+ner_ignore_single_tokens:
+  - summarise
+  - summarize
+  - please
+  - translate
+  - explain
+  - write
+  - draft
+  - review
+  - reply
+  - refund
+  - debug
+  - contact
+  - forward
+  - call
+  - ship
+  - charge
+  - wire
+  - update
+  - status
+  - remind
+  - hello
+  - hi
+  - thanks
+  - dear
+  - customer
+  - employee
+  - patient

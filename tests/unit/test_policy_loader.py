@@ -30,6 +30,9 @@ def test_repository_policies_load():
         "require_review_high_risk",
         "block_system_prompt_extraction",
         "route_confidential_to_eu",
+        "redact_secrets",
+        "mask_payment_data",
+        "pseudonymise_pii_for_eu_models",
     }
     assert len(ps.version) == 16
 

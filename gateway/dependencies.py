@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from detection.pipeline import DetectionPipeline
 from gateway.config import get_settings
 from gateway.core.rate_limit import RateLimiter
 from gateway.core.security import Principal, get_current_principal
@@ -29,3 +30,7 @@ async def rate_limited(principal: Principal = Depends(get_current_principal)) ->
 
 def get_policy_set(request: Request) -> PolicySet:
     return request.app.state.policy_set
+
+
+def get_detector(request: Request) -> DetectionPipeline:
+    return request.app.state.detector

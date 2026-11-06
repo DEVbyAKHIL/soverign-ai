@@ -3,11 +3,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from detection.pipeline import DetectionPipeline
 from gateway.core.security import Principal, Scope, require_scopes
 from gateway.db import get_session
-from gateway.dependencies import get_policy_set, rate_limited
+from gateway.dependencies import get_detector, get_policy_set, rate_limited
 from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest
-from gateway.schemas.responses import DecisionResponse
+from gateway.schemas.responses import DecisionResponse, DetectionOut
 from gateway.services.decisions import decide
 from policy.loader import PolicySet
 
@@ -20,10 +21,28 @@ async def _run(
     principal: Principal,
     session: AsyncSession,
     policy_set: PolicySet,
+    detector: DetectionPipeline,
 ) -> DecisionResponse:
-    decision, result, audit_event_id = await decide(
-        session, principal=principal, req=body, policy_set=policy_set, endpoint=endpoint
+    out = await decide(
+        session,
+        principal=principal,
+        req=body,
+        policy_set=policy_set,
+        detector=detector,
+        endpoint=endpoint,
     )
+    result, decision, det = out.policy, out.decision, out.detection
+    transformed = None
+    if out.transformed_parts is not None:
+        key = "input" if endpoint == "embed" else "prompt"
+        transformed = (
+            {"input": out.transformed_parts}
+            if key == "input"
+            else {
+                "prompt": out.transformed_parts[0],
+                "attached_content": out.transformed_parts[1:],
+            }
+        )
     return DecisionResponse(
         decision_id=decision.id,
         request_id=decision.request_id,
@@ -37,8 +56,22 @@ async def _run(
         route_to=result.route_to,
         review_status=decision.review_status,
         policy_set_version=result.policy_set_version,
-        detections=[],
-        audit_event_id=audit_event_id,
+        data_classification=det.classification,
+        detections=[
+            DetectionOut(
+                entity_type=e.entity_type,
+                confidence=e.confidence,
+                detector=e.detector,
+                model_version=e.model_version,
+                start_offset=e.start,
+                end_offset=e.end,
+                part=e.part,
+                risk_level=e.risk_level,
+            )
+            for e in det.entities
+        ],
+        transformed_content=transformed,
+        audit_event_id=out.audit_event_id,
     )
 
 
@@ -49,8 +82,9 @@ async def infer(
     _rl: Principal = Depends(rate_limited),
     session: AsyncSession = Depends(get_session),
     policy_set: PolicySet = Depends(get_policy_set),
+    detector: DetectionPipeline = Depends(get_detector),
 ) -> DecisionResponse:
-    return await _run("infer", body, principal, session, policy_set)
+    return await _run("infer", body, principal, session, policy_set, detector)
 
 
 @router.post("/embed", response_model=DecisionResponse)
@@ -60,5 +94,6 @@ async def embed(
     _rl: Principal = Depends(rate_limited),
     session: AsyncSession = Depends(get_session),
     policy_set: PolicySet = Depends(get_policy_set),
+    detector: DetectionPipeline = Depends(get_detector),
 ) -> DecisionResponse:
-    return await _run("embed", body, principal, session, policy_set)
+    return await _run("embed", body, principal, session, policy_set, detector)

@@ -1,0 +1,14 @@
+policy_id: mask_payment_data
+version: 1.0.0
+name: Mask payment data
+description: Card numbers and IBANs are masked to their last four characters before processing
+severity: high
+match:
+  entity_types:
+    - CREDIT_CARD
+    - IBAN
+actions:
+  - mask
+audit:
+  retain_days: 365
+  store_reason: true

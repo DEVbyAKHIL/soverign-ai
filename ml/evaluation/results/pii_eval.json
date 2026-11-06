@@ -1,0 +1,148 @@
+{
+  "ner_available": true,
+  "model_versions": {
+    "regex_detector": "regex-1.0.0+terms-2",
+    "ner_detector": "presidio-2.2.366+en_core_web_sm-3.8.0",
+    "sensitivity_classifier": "sens-linear-1.0.0"
+  },
+  "documents": 1000,
+  "negative_documents": 300,
+  "micro": {
+    "precision": 0.9255,
+    "recall": 0.9885,
+    "f1": 0.956
+  },
+  "per_entity": {
+    "ADDRESS": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 67,
+      "false_positives": 0
+    },
+    "API_KEY": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 65,
+      "false_positives": 0
+    },
+    "CREDIT_CARD": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 51,
+      "false_positives": 0
+    },
+    "CUSTOMER_ID": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 51,
+      "false_positives": 0
+    },
+    "DATE_OF_BIRTH": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 70,
+      "false_positives": 0
+    },
+    "EMAIL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 187,
+      "false_positives": 0
+    },
+    "FINANCIAL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 121,
+      "false_positives": 0
+    },
+    "IBAN": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 61,
+      "false_positives": 0
+    },
+    "INTERNAL_PROJECT": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 70,
+      "false_positives": 0
+    },
+    "LOCATION": {
+      "precision": 0.8902,
+      "recall": 0.9359,
+      "f1": 0.9125,
+      "support": 78,
+      "false_positives": 9
+    },
+    "MEDICAL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 72,
+      "false_positives": 0
+    },
+    "NATIONAL_ID": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 135,
+      "false_positives": 0
+    },
+    "ORGANISATION": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "false_positives": 129
+    },
+    "PASSPORT": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 69,
+      "false_positives": 0
+    },
+    "PASSWORD": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 81,
+      "false_positives": 0
+    },
+    "PERSON": {
+      "precision": 1.0,
+      "recall": 0.9639,
+      "f1": 0.9816,
+      "support": 415,
+      "false_positives": 0
+    },
+    "PHONE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 142,
+      "false_positives": 0
+    }
+  },
+  "negatives": {
+    "docs_with_any_detection": 0.0533,
+    "docs_with_sensitive_detection_fpr": 0.0,
+    "detected_types": {
+      "ORGANISATION": 16
+    }
+  },
+  "latency_ms_8000_chars": {
+    "p50": 97.38,
+    "p95": 106.73,
+    "max": 133.72
+  }
+}

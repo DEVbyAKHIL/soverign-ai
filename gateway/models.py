@@ -117,6 +117,10 @@ class Decision(Base):
     model_versions: Mapped[dict] = _jsonb()
     explanation: Mapped[str] = mapped_column(Text, nullable=False)
     policy_set_version: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
+    intent_label: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'benign'"))
+    indirect_intent_label: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default=text("'benign'")
+    )
     # not_required | pending | approved | rejected
     review_status: Mapped[str] = mapped_column(
         Text, nullable=False, server_default=text("'not_required'")

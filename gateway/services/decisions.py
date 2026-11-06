@@ -12,14 +12,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
 from audit.service import append_event
+from detection.injection.detector import InjectionDetector, IntentResult, worst
 from detection.pipeline import DetectionPipeline, DetectionResult
 from detection.transforms import TransformPlan, apply_plan, entity_hash
+from detection.types import max_classification
 from gateway.config import get_settings
 from gateway.core.errors import GatewayError, TenantIsolationError
 from gateway.core.security import Principal
 from gateway.logging_config import get_logger
 from gateway.models import Decision, Detection
-from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest
+from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest, RagQueryRequest
 from policy.engine import EvaluationContext, PolicyDecision, evaluate
 from policy.loader import PolicySet
 
@@ -30,6 +32,7 @@ DECISIONS = Counter(
 )
 POLICY_ALERTS = Counter("gateway_policy_alerts_total", "Policy alerts raised", ["policy"])
 DETECTIONS = Counter("gateway_detections_total", "Sensitive entities detected", ["entity_type"])
+INTENTS = Counter("gateway_intent_total", "Intent verdicts per content part", ["label", "source"])
 DETECTION_LATENCY = Histogram(
     "gateway_detection_seconds",
     "Sensitive-data detection latency",
@@ -37,7 +40,7 @@ DETECTION_LATENCY = Histogram(
 )
 
 # Filled in by later phases.
-FUTURE_MODELS = {"injection_classifier": None, "anomaly_detector": None}
+FUTURE_MODELS = {"anomaly_detector": None}
 
 
 class IdentityMismatch(GatewayError):
@@ -68,6 +71,11 @@ class DecisionOutcome:
     audit_event_id: uuid.UUID
     # Content after redaction/masking/pseudonymisation; None if nothing was transformed.
     transformed_parts: list[str] | None
+    intents: tuple[IntentResult, ...]  # one per content part
+
+    @property
+    def direct_intent(self) -> IntentResult:
+        return worst([i for i in self.intents if i.source == "direct"]) or self.intents[0]
 
 
 def check_identity(principal: Principal, req: AIRequest) -> None:
@@ -80,15 +88,38 @@ def check_identity(principal: Principal, req: AIRequest) -> None:
         raise IdentityMismatch("Request identity does not match the authenticated caller")
 
 
-def payload_parts(req: AIRequest) -> list[str]:
+def payload(req: AIRequest) -> tuple[list[str], list[str]]:
+    """Content parts and their source. The caller's own words are "direct"; anything the caller
+    merely passes along (attachments, retrieved documents, text to embed) is "indirect"."""
     if isinstance(req, InferRequest):
-        return [req.prompt, *req.attached_content]
+        attached = list(req.attached_content)
+        return [req.prompt, *attached], ["direct"] + ["indirect"] * len(attached)
+    if isinstance(req, RagQueryRequest):
+        docs = [d.content for d in req.documents]
+        return [req.query, *docs], ["direct"] + ["indirect"] * len(docs)
     if isinstance(req, EmbedRequest):
-        return list(req.input)
-    return []  # pragma: no cover
+        return list(req.input), ["indirect"] * len(req.input)
+    return [], []  # pragma: no cover
 
 
-def build_context(req: AIRequest, det: DetectionResult) -> EvaluationContext:
+def declared_classification(req: AIRequest) -> str:
+    if isinstance(req, RagQueryRequest):
+        labels = [d.classification for d in req.documents if d.classification]
+        return max_classification(req.data_classification, *labels)
+    return req.data_classification
+
+
+def combined_risk(det: DetectionResult, intents: list[IntentResult]) -> float:
+    """Noisy-OR of sensitive-data risk and the highest injection risk."""
+    injection = max((i.risk_score for i in intents), default=0.0)
+    return round(1 - (1 - det.risk_score) * (1 - injection), 4)
+
+
+def build_context(
+    req: AIRequest, det: DetectionResult, intents: list[IntentResult]
+) -> EvaluationContext:
+    direct = worst([i for i in intents if i.source == "direct"])
+    indirect = worst([i for i in intents if i.source == "indirect"])
     return EvaluationContext(
         caller_type=req.caller_type,
         destination_jurisdiction=req.destination_jurisdiction,
@@ -97,8 +128,25 @@ def build_context(req: AIRequest, det: DetectionResult) -> EvaluationContext:
         declared_purpose=req.declared_purpose,
         data_sensitivity=det.sensitivity,
         entity_types=det.entity_types,
-        risk_score=det.risk_score,
+        intent_label=direct.label if direct else "benign",
+        indirect_intent_label=indirect.label if indirect else "benign",
+        risk_score=combined_risk(det, intents),
     )
+
+
+def _analyze(
+    detector: DetectionPipeline,
+    injection: InjectionDetector,
+    parts: list[str],
+    sources: list[str],
+    declared: str,
+) -> tuple[DetectionResult, list[IntentResult]]:
+    det = detector.analyze(parts, declared)
+    intents = [
+        injection.analyze(text, source, i)
+        for i, (text, source) in enumerate(zip(parts, sources, strict=True))
+    ]
+    return det, intents
 
 
 def _fingerprint(parts: list[str]) -> dict:
@@ -118,16 +166,19 @@ async def decide(
     req: AIRequest,
     policy_set: PolicySet,
     detector: DetectionPipeline,
+    injection: InjectionDetector,
     endpoint: str,
 ) -> DecisionOutcome:
     check_identity(principal, req)
     settings = get_settings()
-    parts = payload_parts(req)
+    parts, sources = payload(req)
 
-    # CPU-bound (regex + NER); keep it off the event loop.
-    det = await run_in_threadpool(detector.analyze, parts, req.data_classification)
+    # CPU-bound (regex, NER, classifiers, optional LLM review); keep it off the event loop.
+    det, intents = await run_in_threadpool(
+        _analyze, detector, injection, parts, sources, declared_classification(req)
+    )
     DETECTION_LATENCY.observe(det.latency_ms / 1000)
-    ctx = build_context(req, det)
+    ctx = build_context(req, det, intents)
     result = evaluate(ctx, policy_set)
     review_status = "pending" if result.requires_review else "not_required"
 
@@ -146,6 +197,7 @@ async def decide(
 
     model_versions = {
         **det.model_versions,
+        **injection.model_versions,
         **FUTURE_MODELS,
         "policy_set": policy_set.version,
     }
@@ -167,6 +219,8 @@ async def decide(
         explanation=result.explanation,
         policy_set_version=policy_set.version,
         review_status=review_status,
+        intent_label=ctx.intent_label,
+        indirect_intent_label=ctx.indirect_intent_label,
     )
     session.add(decision)
     try:
@@ -231,6 +285,16 @@ async def decide(
                 else None
             ),
             "detection_signals": list(det.signals),
+            "intent": {
+                "direct": ctx.intent_label,
+                "indirect": ctx.indirect_intent_label,
+                "parts": [i.as_dict() for i in intents],
+            },
+            "documents": (
+                [{"doc_id": d.doc_id, "source": d.source} for d in req.documents]
+                if isinstance(req, RagQueryRequest)
+                else None
+            ),
             "detection_latency_ms": det.latency_ms,
             "risk_score": ctx.risk_score,
             "agent_anomaly_score": ctx.agent_anomaly_score,
@@ -253,6 +317,8 @@ async def decide(
     DECISIONS.labels(endpoint, result.final_decision, result.action_taken).inc()
     for e in det.entities:
         DETECTIONS.labels(e.entity_type).inc()
+    for i in intents:
+        INTENTS.labels(i.label, i.source).inc()
     if "alert" in result.side_effects:
         for ref in result.matched_policies:
             POLICY_ALERTS.labels(ref).inc()
@@ -263,8 +329,10 @@ async def decide(
             action=result.action_taken,
             policies=list(result.matched_policies),
             entity_types=sorted(det.entity_types),
+            intent=ctx.intent_label,
+            indirect_intent=ctx.indirect_intent_label,
         )
-    return DecisionOutcome(decision, result, det, event.id, transformed)
+    return DecisionOutcome(decision, result, det, event.id, transformed, tuple(intents))
 
 
 async def get_decision(

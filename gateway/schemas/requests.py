@@ -44,6 +44,23 @@ class EmbedRequest(AIRequest):
     input: list[str] = Field(min_length=1, max_length=100)
 
 
+class RetrievedDocument(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    doc_id: str = Field(min_length=1, max_length=200)
+    source: str = Field(min_length=1, max_length=500)
+    content: str = Field(min_length=1, max_length=20_000)
+    classification: Classification | None = None
+
+
+class RagQueryRequest(AIRequest):
+    """A query plus the documents your retriever returned. The gateway inspects both: the query
+    as direct input, each document as indirect (untrusted) input."""
+
+    query: str = Field(min_length=1, max_length=MAX_PROMPT_CHARS)
+    documents: list[RetrievedDocument] = Field(default_factory=list, max_length=50)
+
+
 class ReviewDecisionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

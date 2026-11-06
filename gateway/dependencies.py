@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from detection.injection.detector import InjectionDetector
 from detection.pipeline import DetectionPipeline
 from gateway.config import get_settings
 from gateway.core.rate_limit import RateLimiter
@@ -34,3 +35,7 @@ def get_policy_set(request: Request) -> PolicySet:
 
 def get_detector(request: Request) -> DetectionPipeline:
     return request.app.state.detector
+
+
+def get_injection_detector(request: Request) -> InjectionDetector:
+    return request.app.state.injection

@@ -82,3 +82,47 @@ confidence is at least 0.80. On the held-out set, 36 of 500 predictions cleared 
 36 were correct. Public/internal confusion has no effect, because the classifier never lowers a
 declared classification and the policies don't distinguish the two. Detected entities, not the
 classifier, drive the decisions that matter.
+
+## Prompt-injection and intent detection (Phase 4)
+
+Combined detector (rules + `injection-charlr-1.0.0` classifier, no LLM reviewer). Test: 1050 rows built from **held-out templates**
+(seed 91): attacks in four classes, direct and embedded in documents, plus benign prompts and
+look-alikes. Thresholds were tuned on a separate validation set (seed 333). Reproduce:
+`python -m ml.evaluation.evaluate_injection` (results in `ml/evaluation/results/injection_eval.json`).
+
+| Metric (attack vs benign, blocking labels only) | Value |
+|---|---|
+| Precision | **1.000** |
+| Recall | **0.865** (direct 0.947, indirect 0.655) |
+| F1 | **0.928** |
+| False-positive rate | **0.000** |
+| ROC-AUC (risk score) | 0.996 |
+| Attacks routed to `suspicious` instead (alert only) | 12.2% |
+| Benign prompts routed to `suspicious` (alert only) | 3.3% |
+
+Recall by label: prompt_injection 0.90 · jailbreak 0.94 · system-prompt extraction 0.89 ·
+data exfiltration **0.73** (the weakest class: many exfiltration phrasings look like ordinary requests).
+
+| Robustness check | Result |
+|---|---|
+| Spec's named attacks plus variants (zero-width, leetspeak, base64, German, markdown beacon, indirect) | **13 / 13** flagged |
+| Look-alike benign prompts ("ignore the noise", "what is a system prompt?", "enable developer mode on my phone") | **0 / 8** flagged |
+| Technical attachments: code, config, CSV/JSON, prose (300) | 0% attack, 0% suspicious |
+| Unseen format: log lines (300) | 0% attack, 0.3% suspicious |
+| Hand-written knowledge-base sentences (10) | 0% attack, **30% suspicious** (alert noise) |
+| Latency | p50 0.3 ms per prompt; 16 ms for 8,000 characters |
+
+Design decisions this evaluation drove:
+* **Technical text:** the first model labelled config snippets as exfiltration (0.86) and most logs or
+  code as suspicious. Adding benign technical content, with one format held out, brought this to 0%.
+* **Corroboration on documents:** short knowledge-base sentences like "Refunds are issued within
+  14 days" scored as jailbreak, because the model had learned attack *vocabulary*. A 4% per-document
+  false-positive rate would wrongly quarantine about 19% of 5-document RAG queries. Classifier-only
+  hits on indirect content now need a rule signal or ≥ 0.80 confidence. That lowers indirect
+  blocking recall from 0.79 to 0.66 (validation), but those attacks are still alerted as `suspicious`.
+* **Default deny:** `allow + alert` policies for `suspicious` exposed a gap where an explicit allow
+  bypassed default deny. That's fixed and tested.
+
+Limits: synthetic English-centric data, a fixed payload vocabulary, and no adaptive attacker. Expect
+lower recall against novel attacks. Enable the LLM reviewer for the `suspicious` band. Before relying on
+these numbers, retrain with a vetted public dataset (`--extra-csv`) and real, labelled traffic.

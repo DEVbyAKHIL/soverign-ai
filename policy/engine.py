@@ -54,7 +54,8 @@ class EvaluationContext:
     stage: str = "request"
     data_sensitivity: frozenset[str] = frozenset()
     entity_types: frozenset[str] = frozenset()
-    intent_label: str = "benign"
+    intent_label: str = "benign"  # direct input (prompt / query)
+    indirect_intent_label: str = "benign"  # attachments, retrieved documents, embed inputs
     risk_score: float = 0.0
     agent_anomaly_score: float = 0.0
 
@@ -85,6 +86,7 @@ _LIST_KEYS = {
     "requested_model": "requested_model",
     "declared_purpose": "declared_purpose",
     "intent_label": "intent_label",
+    "indirect_intent_label": "indirect_intent_label",
 }
 _SET_KEYS = {"data_sensitivity": "data_sensitivity", "entity_types": "entity_types"}
 
@@ -139,6 +141,12 @@ def evaluate(ctx: EvaluationContext, policy_set: PolicySet) -> PolicyDecision:
 
     enforceable = [a for a in actions if a in PRECEDENCE]
     side_effects = tuple(a for a in SIDE_EFFECTS if a in actions)
+    # An explicit "allow" (e.g. allow+alert policies) never overrides the built-in default deny.
+    default_deny = (
+        ctx.destination_jurisdiction == "unknown" or ctx.data_classification == "high_risk"
+    )
+    if default_deny and set(enforceable) <= {"allow"}:
+        enforceable = []
 
     if enforceable:
         decisive = max(enforceable, key=lambda a: PRECEDENCE[a])
@@ -147,7 +155,7 @@ def evaluate(ctx: EvaluationContext, policy_set: PolicySet) -> PolicyDecision:
         decisive_ref = decisive_policy.ref
         route_to = decisive_policy.route_to if decisive == "route_to_approved_model" else None
         explanation = _explain(decisive, decisive_policy, matched)
-    elif ctx.destination_jurisdiction == "unknown" or ctx.data_classification == "high_risk":
+    elif default_deny:
         decisive, decisive_ref, route_to = "deny", DEFAULT_DENY, None
         explanation = (
             "Denied by default: no policy explicitly covers a request with "

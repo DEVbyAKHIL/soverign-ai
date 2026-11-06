@@ -1,0 +1,14 @@
+policy_id: alert_suspicious_intent
+version: 1.0.0
+name: Alert on suspicious intent
+description: Uncertain injection signals are allowed but alerted and audited; any stronger policy still wins
+severity: low
+match:
+  intent_label:
+    - suspicious
+actions:
+  - allow
+  - alert
+audit:
+  retain_days: 365
+  store_reason: true

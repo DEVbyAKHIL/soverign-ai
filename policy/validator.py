@@ -73,6 +73,7 @@ POLICY_SCHEMA: dict[str, Any] = {
                 "declared_purpose": _str_list,
                 "entity_types": _str_list,
                 "intent_label": _enum_list(INTENT_LABELS),
+                "indirect_intent_label": _enum_list(INTENT_LABELS),
                 "min_risk_score": _score,
                 "min_agent_anomaly_score": _score,
             },

@@ -51,3 +51,4 @@ test-docker:
 
 evaluate:
 	docker compose --profile test run --rm --build tests python -m ml.evaluation.evaluate_pii
+	docker compose --profile test run --rm tests python -m ml.evaluation.evaluate_injection

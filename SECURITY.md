@@ -13,5 +13,16 @@ Report vulnerabilities privately to the project maintainers; do not open public 
 - Containers: non-root, `no-new-privileges`, dropped capabilities, read-only root filesystem, ports bound to 127.0.0.1.
 - CI: Ruff, Pytest (80% coverage gate), Bandit, Semgrep, pip-audit, Trivy (fs + image), CycloneDX SBOM.
 
+## AI-specific controls (Phases 3–4)
+- Prompts, attachments, retrieved documents and embedding inputs are treated as untrusted. Injection
+  in content the caller *passes along* (indirect) is quarantined even when the caller's own prompt is
+  benign.
+- The optional LLM reviewer must be self-hosted. It receives untrusted content as delimited data, its
+  answer is restricted to a fixed label enum, and it can never downgrade a strong rule match.
+- ML models are plain JSON artifacts (no pickle). spaCy's model is pinned by SHA-256.
+- Source files are checked for invisible/bidirectional control characters ("Trojan Source") by
+  Bandit B613 and `tests/security/test_source_hygiene.py`.
+- The production image contains no `pip`.
+
 ## Production
 Terminate TLS upstream; use managed Postgres/Redis; load secrets from Vault / AWS Secrets Manager / Azure Key Vault / Kubernetes Secrets; rotate DB, Redis and JWT keys; prefer an external OIDC provider with asymmetric keys.

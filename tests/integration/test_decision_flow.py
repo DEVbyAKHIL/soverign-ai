@@ -5,6 +5,8 @@ import uuid
 import asyncpg
 import pytest
 
+from gateway.config import get_settings
+from policy.loader import load_policy_dir
 from tests.conftest import _exec, raw_sql
 
 pytestmark = pytest.mark.usefixtures("clean_db")
@@ -305,7 +307,9 @@ async def test_decision_records_policy_and_model_versions(client, make_token):
     assert detail["policy_set_version"] == body["policy_set_version"]
     assert detail["model_versions"]["policy_set"] == body["policy_set_version"]
     event_data = detail["audit_events"][0]["event_data"]
-    assert len(event_data["policies_evaluated"]) == 7
+    assert len(event_data["policies_evaluated"]) == len(
+        load_policy_dir(get_settings().policy_dir).policies
+    )
     assert event_data["redaction_map"] is None
 
 

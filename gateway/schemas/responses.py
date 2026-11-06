@@ -16,6 +16,22 @@ class DetectionOut(BaseModel):
     risk_level: str | None = None
 
 
+class IntentOut(BaseModel):
+    label: str
+    confidence: float
+    risk_score: float
+    signals: list[str]
+
+
+class ContentVerdict(BaseModel):
+    part: int
+    source: str  # direct | indirect
+    label: str
+    risk_score: float
+    signals: list[str]
+    doc_id: str | None = None
+
+
 class DecisionResponse(BaseModel):
     decision_id: uuid.UUID
     request_id: uuid.UUID
@@ -30,6 +46,8 @@ class DecisionResponse(BaseModel):
     review_status: str
     policy_set_version: str
     data_classification: str  # effective classification after detection
+    intent: IntentOut  # verdict for the caller's own input (prompt / query)
+    content_verdicts: list[ContentVerdict]  # every part, including attachments / documents
     detections: list[DetectionOut]
     # The content as it may be forwarded after redaction/masking/pseudonymisation.
     transformed_content: dict[str, Any] | None = None

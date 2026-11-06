@@ -221,3 +221,38 @@ def test_explicit_allow_carries_side_effects():
     )
     d = evaluate(ctx(), ps)
     assert d.action_taken == "allow" and d.side_effects == ("alert",)
+
+
+# --- Phase 4: intent ---------------------------------------------------------
+
+
+def test_explicit_allow_never_overrides_default_deny():
+    ps = PolicySet.build(
+        [_policy("allow_and_alert", ["allow", "alert"], {"intent_label": ["suspicious"]})]
+    )
+    d = evaluate(ctx(intent_label="suspicious", destination_jurisdiction="unknown"), ps)
+    assert (d.action_taken, d.decisive_policy) == ("deny", DEFAULT_DENY)
+    assert d.side_effects == ("alert",)  # the alert still fires
+    assert evaluate(ctx(intent_label="suspicious"), ps).action_taken == "allow"
+
+
+def test_indirect_injection_is_quarantined(repo_policies):
+    d = evaluate(ctx(indirect_intent_label="prompt_injection"), repo_policies)
+    assert (d.final_decision, d.action_taken) == ("deny", "quarantine")
+    assert d.decisive_policy == "quarantine_indirect_injection@1.0.0"
+    assert d.requires_review
+
+
+def test_direct_attack_beats_indirect_quarantine(repo_policies):
+    d = evaluate(
+        ctx(intent_label="jailbreak_attempt", indirect_intent_label="prompt_injection"),
+        repo_policies,
+    )
+    assert d.action_taken == "deny"
+
+
+def test_suspicious_is_allowed_with_alert(repo_policies):
+    d = evaluate(ctx(intent_label="suspicious"), repo_policies)
+    assert d.action_taken == "allow" and "alert" in d.side_effects
+    d = evaluate(ctx(indirect_intent_label="suspicious"), repo_policies)
+    assert d.action_taken == "allow" and "alert" in d.side_effects

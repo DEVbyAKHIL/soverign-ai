@@ -32,6 +32,40 @@ class ContentVerdict(BaseModel):
     doc_id: str | None = None
 
 
+class AgentAnomalyOut(BaseModel):
+    agent_id: str
+    anomaly_score: float
+    is_anomalous: bool
+    reasons: list[str]
+    method: str
+    model_version: str
+    features: dict[str, float]
+    baseline_events: int
+    requests_per_minute: float
+
+
+class AgentOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    agent_type: str
+    owner_id: uuid.UUID
+    allowed_models: list[str]
+    allowed_tools: list[str]
+    max_requests_per_minute: int
+    risk_score: float
+    created_at: datetime
+
+
+class AgentRiskOut(BaseModel):
+    agent: AgentOut
+    risk_score: float  # long-running (EWMA of anomaly scores)
+    current: AgentAnomalyOut  # computed now over the last 10 minutes
+    events_7d: int
+    denied_7d: int
+    sensitive_fields_7d: int
+    last_seen: datetime | None
+
+
 class DecisionResponse(BaseModel):
     decision_id: uuid.UUID
     request_id: uuid.UUID
@@ -48,6 +82,7 @@ class DecisionResponse(BaseModel):
     data_classification: str  # effective classification after detection
     intent: IntentOut  # verdict for the caller's own input (prompt / query)
     content_verdicts: list[ContentVerdict]  # every part, including attachments / documents
+    agent: AgentAnomalyOut | None = None  # behaviour verdict when the request involves an agent
     detections: list[DetectionOut]
     # The content as it may be forwarded after redaction/masking/pseudonymisation.
     transformed_content: dict[str, Any] | None = None

@@ -126,3 +126,57 @@ Design decisions this evaluation drove:
 Limits: synthetic English-centric data, a fixed payload vocabulary, and no adaptive attacker. Expect
 lower recall against novel attacks. Enable the LLM reviewer for the `suspicious` band. Before relying on
 these numbers, retrain with a vetted public dataset (`--extra-csv`) and real, labelled traffic.
+
+## Agent behaviour anomaly detection (Phase 5)
+
+Simulated agents (`ml/data/agents.py`), each with its own rate, working hours, payload size,
+destinations, datasets, tool use and sensitive-data rate. Every agent gets a 7-day baseline. The
+Isolation Forest was trained on normal windows from 120 agents (seed 10). Rule weights and forest
+calibration were tuned on 60 *other* agents (seed 55). The results below are on 60 more agents never
+used before (seed 99): 3960 windows, 30 normal and 36 anomalous per agent, nine anomaly
+types at two severities. Reproduce: `python -m ml.evaluation.evaluate_anomaly`.
+
+| Method | False-positive rate | Strong anomalies caught | Subtle anomalies caught | ROC-AUC |
+|---|---|---|---|---|
+| Isolation Forest alone | 0.6% | 6.7% | 3.8% | 0.799 |
+| Statistical rules alone | 0.5% | 96.5% | 62.1% | 0.954 |
+| **Combined (production)** | **0.7%** | **96.6%** | **63.2%** | **0.967** |
+
+Detection rate of the combined detector by anomaly type:
+
+| Anomaly | Strong | Subtle |
+|---|---|---|
+| burst | 1.00 | 0.96 |
+| data volume | 0.98 | 0.93 |
+| exfiltration | 1.00 | 1.00 |
+| new destination | 1.00 | 1.00 |
+| off hours | 0.93 | 0.80 |
+| denial storm | 0.96 | 0.21 |
+| dataset sweep | 1.00 | 0.63 |
+| tool abuse | 0.97 | 0.08 |
+| retry loop | 0.85 | 0.07 |
+
+* **Explanations:** 97.1% of flagged strong anomalies name the expected reason.
+* **Cold start** (< 1 day of history, absolute rules only): normal 0.0%
+  flagged, denial storms 92.5%, retry loops 57.5%.
+* **Latency:** p50 0.097 ms per evaluation (scoring only). Live agent requests end to end take about 16 ms.
+
+What the evaluation changed:
+* **Rule weights.** In the first version, each reason was named correctly but scored below the 0.7
+  threshold on its own (new destination 0.4, off hours ≤ 0.6, retries ≤ 0.6). As a result, new-destination
+  detection was 1% and off-hours 28%. All weights are now ≥ 0.70, and strengths ramp to full at a
+  "clearly anomalous" level. On the held-out agents, strong-anomaly detection went from 62% to 97%
+  and subtle from 35% to 63% (the retuning itself used only the validation agents).
+* **The Isolation Forest adds little, and the reason is structural.** It only splits within the range of
+  its training data, so a burst 4× beyond anything seen in training lands in the same leaf as the
+  most extreme *normal* window. It can't express "far beyond normal", which is the most common incident.
+  It is kept, as the spec requires, for multivariate combinations. It is calibrated at the 99.5th
+  normal percentile, where it adds about 1 point of subtle-anomaly recall for +0.2 points FPR. A q99
+  calibration doubled that FPR cost.
+
+Limits: synthetic behaviour (real agents add destinations and datasets legitimately, so the
+"any new destination" rule will flag them; expect reviews when agents are reconfigured). Subtle
+denial storms (21%), tool abuse (8%) and retry loops (7%) are mostly missed by design: they're
+within ~2× of normal. The model cannot see slow drift spread across many windows, or an adversary
+who stays under the thresholds. The 7-day baseline includes anything an attacker did earlier, so
+slow poisoning is possible.

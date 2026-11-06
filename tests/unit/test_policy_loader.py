@@ -36,6 +36,10 @@ def test_repository_policies_load():
         "quarantine_indirect_injection",
         "alert_suspicious_intent",
         "alert_suspicious_documents",
+        "block_unapproved_agent_model",
+        "block_unapproved_agent_tool",
+        "review_anomalous_agent",
+        "quarantine_severe_agent_anomaly",
     }
     assert len(ps.version) == 16
 

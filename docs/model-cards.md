@@ -78,3 +78,19 @@ injection and agent-anomaly signals.
 * **When:** only for verdicts in the uncertain band. It cannot override strong rule hits.
 * **Safety:** delimited untrusted input, temperature 0, enum-validated JSON verdict, 3 s timeout; any
   failure falls back to `suspicious`. Adds latency only to uncertain requests.
+
+## Agent anomaly detector: `agent-iforest-1.0.0+agent-stats-1.1.0`
+
+* **What:** 11 scale-free behavioural features (last 10 minutes vs the agent's own 7-day baseline),
+  scored by statistical rules (z-score / percentile, named reasons) and a 100-tree Isolation Forest
+  (JSON artifact, max_samples 256, exact parity with scikit-learn `score_samples` is tested).
+* **Output:** `{agent_id, anomaly_score, is_anomalous, reasons, method, model_version, features}`.
+  The score is `max(forest, rules)`. Anomalous means ≥ 0.70 *and* at least one named reason.
+* **Training:** forest trained unsupervised on 4,800 normal windows from 120 simulated agents;
+  calibrated so the 99.5th normal percentile maps to 0.70.
+* **Held-out results:** see `EVALUATION.md` (combined: 0.7% FPR, 97% strong / 63% subtle detection).
+* **Cold start:** fewer than 30 baseline events or 3 active windows means absolute rules only.
+* **Known limits:** the forest can't score out-of-range points above the training extremes (the rules
+  cover that case); slow drift and baseline poisoning; legitimate reconfiguration looks anomalous.
+* **Retraining:** `python -m ml.training.train_anomaly_detector` (synthetic). Retrain on real agent events
+  once at least a few weeks of reviewed history exist.

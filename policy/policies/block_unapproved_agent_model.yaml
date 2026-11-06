@@ -1,0 +1,14 @@
+policy_id: block_unapproved_agent_model
+version: 1.0.0
+name: Block unapproved agent models
+description: Agents may only call the models on their allow-list
+severity: critical
+match:
+  agent_model_allowed:
+    - false
+actions:
+  - deny
+  - alert
+audit:
+  retain_days: 365
+  store_reason: true

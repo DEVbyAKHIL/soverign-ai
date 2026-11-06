@@ -16,7 +16,7 @@ migrate (one-shot): alembic upgrade head && python -m policy.sync
 | `migrations/` | Alembic. `audit_events` is append-only via a Postgres trigger. |
 | `detection/` | Sensitive-data detection (`pii/`), prompt-injection / intent detection (`injection/`), transforms (`transforms.py`), entity catalogue (`types.py`), shared JSON linear-model runtime (`linear_model.py`). `output/` is reserved for Phase 6. |
 | `ml/` | Synthetic data generator, classifier training, evaluation scripts. |
-| `agents/` | Phase 5 (empty for now). |
+| `agents/` | Agent registry and allow-lists (`profile.py`), rolling behavioural features (`features.py`), Isolation Forest + statistical anomaly detection (`anomaly_detector.py`), long-running risk score (`risk_score.py`). |
 
 ## Request lifecycle (`POST /v1/ai/infer`)
 
@@ -29,7 +29,11 @@ migrate (one-shot): alembic upgrade head && python -m policy.sync
    Intent analysis runs per part in the same worker: the prompt or query is **direct** input;
    attachments, retrieved RAG documents and embedding inputs are **indirect**. The worst direct
    verdict becomes `intent_label`, the worst indirect one `indirect_intent_label`, and the risk score
-   combines sensitive-data and injection risk (noisy-OR). *(Phase 5 adds the anomaly score.)*
+   combines sensitive-data and injection risk (noisy-OR).
+   For requests that involve an agent, the agent must be registered to the tenant. An agent caller
+   must be that agent. A per-agent rate limit applies, the model and tools are checked against
+   the agent's allow-lists, and the agent's recent behaviour (including this request) is scored for
+   anomalies before policy evaluation.
 5. **Policy evaluation**: pure and deterministic (see below).
 6. **Persist**: in one DB transaction, insert the `decisions` row and append a `decision.created` audit event to the tenant's hash chain. Neither is stored without the other.
 7. **Side effects**: `alert` emits a structured warning log and increments `gateway_policy_alerts_total`. `create_review_case` / `require_human_review` set `review_status = pending`.
@@ -95,6 +99,46 @@ jurisdictions or `high_risk` data.
 its own verdict (`content_verdicts[].doc_id`), so callers can see which document was poisoned. The
 query and documents also go through PII detection and transforms like any other request.
 
+## Agent behaviour anomaly detection
+
+**Registry and least privilege.** `POST /v1/agents` registers an agent with `allowed_models`
+(at least one), `allowed_tools` (empty means *no* tools) and `max_requests_per_minute`. Requests
+naming an unregistered agent, or another tenant's agent, get `403 unknown_agent`. An agent token can
+act only as itself. Users acting *through* an agent get that agent's allow-lists.
+
+**Events.** Every agent request writes an `agent_events` row in the decision transaction: tokens
+(≈ characters / 4), sensitive-field count, destination host, datasets (RAG document sources),
+tool-call count, content hash, final decision and latency. Raw content is never stored.
+
+**Features.** The last 10 minutes are compared with the agent's own previous 7 days (at most 5,000 rows):
+
+| Feature | Spec behaviour |
+|---|---|
+| `request_rate_log_ratio` (+ requests per minute) | requests per minute |
+| `volume_log_ratio` | tokens / bytes processed |
+| `sensitive_per_request`, `sensitive_access_delta` | sensitive fields detected / access frequency |
+| `denied_ratio` | denied requests, error rate |
+| `new_datasets` | distinct datasets accessed |
+| `new_destinations`, `destination_count_log` | distinct destinations, change in destination pattern |
+| `tool_calls_delta` | tool-call frequency |
+| `retry_rate` (repeated content hashes) | retry rate |
+| `off_hours_ratio` (hours with < 2% of baseline activity) | time-of-day pattern |
+
+The features are log-ratios, deltas and fractions, so one model works for agents whose normal
+volumes differ by orders of magnitude.
+
+**Detection.** `StatisticalDetector` applies z-score and percentile rules against the agent's
+baseline. Every rule weight is ≥ 0.70, so a single clear reason can flag on its own. The
+`IsolationForestScorer` (scikit-learn model exported to JSON) adds a multivariate score. The result
+is `max(forest, rules)` with named reasons. With fewer than 30 baseline events or 3 active windows,
+only absolute rules apply (`insufficient_baseline`): rate limit, denials, retries and sensitive
+volume.
+
+**Policies.** `review_anomalous_agent` (score ≥ 0.70 → human review),
+`quarantine_severe_agent_anomaly` (≥ 0.90 → quarantine), and `block_unapproved_agent_model` /
+`block_unapproved_agent_tool` (→ deny). `agents.risk_score` is an exponentially weighted moving average (α 0.2) of
+anomaly scores, used for the riskiest-first `GET /v1/agents` listing.
+
 ## Audit trail
 
 * `event_hash = SHA-256(previous_hash + canonical_json(event))`, where canonical JSON has sorted keys and no whitespace. The first event's `previous_hash` is 64 zeros.
@@ -108,3 +152,5 @@ query and documents also go through PII detection and transforms like any other 
 * `decisions.policy_set_version`, `decisions.review_status`, unique `(tenant_id, request_id)` for idempotency.
 * Migration 0003: `detections.part`, `detections.risk_level`.
 * Migration 0004: `decisions.intent_label`, `decisions.indirect_intent_label` (indexed by tenant).
+* Migration 0005: `agent_events.tenant_id`, `decision_id`, `datasets`, `tool_calls`, `content_hash`;
+  index on `(agent_id, created_at)`.

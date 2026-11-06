@@ -12,8 +12,9 @@ A policy-enforcement and audit gateway for AI workloads. It sits between users, 
 | 2 | Policy-as-code engine, decision service, hash-chained audit trail, decision/audit/policy/review APIs | **Done** |
 | 3 | Layered PII / sensitive-data detection (regex+validators, Presidio NER, sensitivity classifier), redaction, masking, pseudonymisation, keyed hashing, evaluation | **Done** |
 | 4 | Prompt-injection and intent-risk detection (rules, char-n-gram classifier, optional local LLM reviewer), direct vs indirect injection, `/v1/rag/query` | **Done** |
-| 5 | Agent behaviour anomaly detection | Next |
-| 6–8 | Response guardrails, dashboard, hardening | Planned |
+| 5 | Agent registry and allow-lists, behaviour events, rolling features, Isolation Forest + statistical anomaly detection, `/v1/agents` and risk API | **Done** |
+| 6 | Response guardrails | Next |
+| 7–8 | Dashboard, hardening | Planned |
 
 ## Quick start (Docker)
 
@@ -53,7 +54,7 @@ are skipped (`NER_MODE=optional` in tests). The Docker test runner always runs t
 
 ```bash
 make test-docker      # full suite on Linux against the gateway_test database
-make evaluate         # PII + injection detection metrics (see EVALUATION.md)
+make evaluate         # PII, injection and agent-anomaly metrics (see EVALUATION.md)
 ```
 
 ## Policies
@@ -76,6 +77,7 @@ Roles → scopes are defined in `gateway/core/security.py`.
 
 ## Layout
 
-See `ARCHITECTURE.md`. Implemented: `gateway/`, `policy/`, `audit/`, `detection/` (PII), `ml/`
-(synthetic data, training, evaluation). Placeholders for later phases:
-`detection/output`, `agents/`. Further reading: `EVALUATION.md`, `docs/model-cards.md`, `docs/privacy.md`.
+See `ARCHITECTURE.md`. Implemented: `gateway/` (API), `policy/` (policy engine), `audit/` (hash-chained audit),
+`detection/` (PII and prompt-injection detection), `agents/` (agent registry and behaviour anomalies) and
+`ml/` (synthetic data, training, evaluation). Reserved for Phase 6: `detection/output`.
+Further reading: `EVALUATION.md`, `docs/model-cards.md`, `docs/privacy.md`.

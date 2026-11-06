@@ -3,6 +3,7 @@
 import hashlib
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from prometheus_client import Counter, Histogram
@@ -11,6 +12,17 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
+from agents.anomaly_detector import AnomalyDetector, AnomalyResult
+from agents.features import EventRow, compute_features
+from agents.profile import (
+    dataset_of,
+    destination_of,
+    load_events,
+    model_allowed,
+    require_agent,
+    tools_allowed,
+)
+from agents.risk_score import updated_risk
 from audit.service import append_event
 from detection.injection.detector import InjectionDetector, IntentResult, worst
 from detection.pipeline import DetectionPipeline, DetectionResult
@@ -18,9 +30,11 @@ from detection.transforms import TransformPlan, apply_plan, entity_hash
 from detection.types import max_classification
 from gateway.config import get_settings
 from gateway.core.errors import GatewayError, TenantIsolationError
+from gateway.core.rate_limit import RateLimiter
 from gateway.core.security import Principal
 from gateway.logging_config import get_logger
-from gateway.models import Decision, Detection
+from gateway.models import Agent, AgentEvent, Decision, Detection
+from gateway.redis_client import get_redis
 from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest, RagQueryRequest
 from policy.engine import EvaluationContext, PolicyDecision, evaluate
 from policy.loader import PolicySet
@@ -33,14 +47,12 @@ DECISIONS = Counter(
 POLICY_ALERTS = Counter("gateway_policy_alerts_total", "Policy alerts raised", ["policy"])
 DETECTIONS = Counter("gateway_detections_total", "Sensitive entities detected", ["entity_type"])
 INTENTS = Counter("gateway_intent_total", "Intent verdicts per content part", ["label", "source"])
+AGENT_ANOMALIES = Counter("gateway_agent_anomalies_total", "Anomalous agent requests", ["reason"])
 DETECTION_LATENCY = Histogram(
     "gateway_detection_seconds",
     "Sensitive-data detection latency",
     buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.15, 0.25, 0.5, 1.0),
 )
-
-# Filled in by later phases.
-FUTURE_MODELS = {"anomaly_detector": None}
 
 
 class IdentityMismatch(GatewayError):
@@ -72,6 +84,7 @@ class DecisionOutcome:
     # Content after redaction/masking/pseudonymisation; None if nothing was transformed.
     transformed_parts: list[str] | None
     intents: tuple[IntentResult, ...]  # one per content part
+    agent_anomaly: AnomalyResult | None = None
 
     @property
     def direct_intent(self) -> IntentResult:
@@ -86,6 +99,8 @@ def check_identity(principal: Principal, req: AIRequest) -> None:
         or req.caller_type != principal.caller_type
     ):
         raise IdentityMismatch("Request identity does not match the authenticated caller")
+    if req.caller_type == "agent" and req.agent_id != principal.subject:
+        raise IdentityMismatch("An agent can only act as itself")
 
 
 def payload(req: AIRequest) -> tuple[list[str], list[str]]:
@@ -116,7 +131,11 @@ def combined_risk(det: DetectionResult, intents: list[IntentResult]) -> float:
 
 
 def build_context(
-    req: AIRequest, det: DetectionResult, intents: list[IntentResult]
+    req: AIRequest,
+    det: DetectionResult,
+    intents: list[IntentResult],
+    agent: Agent | None = None,
+    anomaly: AnomalyResult | None = None,
 ) -> EvaluationContext:
     direct = worst([i for i in intents if i.source == "direct"])
     indirect = worst([i for i in intents if i.source == "indirect"])
@@ -131,7 +150,30 @@ def build_context(
         intent_label=direct.label if direct else "benign",
         indirect_intent_label=indirect.label if indirect else "benign",
         risk_score=combined_risk(det, intents),
+        agent_anomaly_score=anomaly.anomaly_score if anomaly else 0.0,
+        agent_model_allowed=model_allowed(agent, req.requested_model) if agent else True,
+        agent_tool_allowed=tools_allowed(agent, [t.name for t in req.tool_calls])
+        if agent
+        else True,
     )
+
+
+def datasets_of(req: AIRequest) -> tuple[str, ...]:
+    if isinstance(req, RagQueryRequest):
+        return tuple(sorted({d.dataset or dataset_of(d.source) for d in req.documents}))
+    return ()
+
+
+async def agent_behaviour(
+    session: AsyncSession,
+    anomaly_detector: AnomalyDetector,
+    agent: Agent,
+    current: EventRow,
+) -> AnomalyResult:
+    """Score the agent's behaviour including the request being decided."""
+    window, baseline = await load_events(session, agent.id, current.created_at)
+    features = compute_features([*window, current], baseline)
+    return anomaly_detector.evaluate(str(agent.id), features, agent.max_requests_per_minute)
 
 
 def _analyze(
@@ -167,10 +209,18 @@ async def decide(
     policy_set: PolicySet,
     detector: DetectionPipeline,
     injection: InjectionDetector,
+    anomaly_detector: AnomalyDetector,
     endpoint: str,
 ) -> DecisionOutcome:
     check_identity(principal, req)
     settings = get_settings()
+    started = datetime.now(UTC)
+    agent = (
+        await require_agent(session, principal.tenant_id, req.agent_id) if req.agent_id else None
+    )
+    if agent is not None:
+        # Per-agent limit on top of the per-caller limit applied by the router.
+        await RateLimiter(get_redis(), agent.max_requests_per_minute).hit("agent", str(agent.id))
     parts, sources = payload(req)
 
     # CPU-bound (regex, NER, classifiers, optional LLM review); keep it off the event loop.
@@ -178,7 +228,22 @@ async def decide(
         _analyze, detector, injection, parts, sources, declared_classification(req)
     )
     DETECTION_LATENCY.observe(det.latency_ms / 1000)
-    ctx = build_context(req, det, intents)
+    fingerprint = _fingerprint(parts)
+    current: EventRow | None = None
+    anomaly: AnomalyResult | None = None
+    if agent is not None:
+        current = EventRow(
+            created_at=started,
+            tokens=max(1, fingerprint["content_chars"] // 4),
+            sensitive=len(det.entities),
+            destination=destination_of(req.requested_endpoint),
+            status="pending",
+            datasets=datasets_of(req),
+            tool_calls=len(req.tool_calls),
+            content_hash=fingerprint["content_sha256"],
+        )
+        anomaly = await agent_behaviour(session, anomaly_detector, agent, current)
+    ctx = build_context(req, det, intents, agent, anomaly)
     result = evaluate(ctx, policy_set)
     review_status = "pending" if result.requires_review else "not_required"
 
@@ -198,7 +263,7 @@ async def decide(
     model_versions = {
         **det.model_versions,
         **injection.model_versions,
-        **FUTURE_MODELS,
+        "anomaly_detector": anomaly_detector.version,
         "policy_set": policy_set.version,
     }
     decision = Decision(
@@ -264,7 +329,17 @@ async def decide(
             "declared_purpose": req.declared_purpose,
             "declared_classification": req.data_classification,
             "effective_classification": det.classification,
-            "payload": _fingerprint(parts),
+            "payload": fingerprint,
+            "tool_calls": [t.name for t in req.tool_calls],
+            "agent": (
+                {
+                    **anomaly.as_dict(),
+                    "model_allowed": ctx.agent_model_allowed,
+                    "tool_allowed": ctx.agent_tool_allowed,
+                }
+                if anomaly
+                else None
+            ),
             "detections": [
                 {
                     "entity_type": e.entity_type,
@@ -312,9 +387,35 @@ async def decide(
             "explanation": result.explanation,
         },
     )
+    if agent is not None and current is not None and anomaly is not None:
+        session.add(
+            AgentEvent(
+                agent_id=agent.id,
+                tenant_id=principal.tenant_id,
+                decision_id=decision.id,
+                request_id=req.request_id,
+                event_type=endpoint,
+                tokens_processed=current.tokens,
+                sensitive_fields_detected=current.sensitive,
+                destination=current.destination,
+                latency_ms=int((datetime.now(UTC) - started).total_seconds() * 1000),
+                status=result.final_decision,
+                datasets=list(current.datasets),
+                tool_calls=current.tool_calls,
+                content_hash=current.content_hash,
+                created_at=started,
+            )
+        )
+        agent.risk_score = Decimal(
+            str(updated_risk(float(agent.risk_score), anomaly.anomaly_score))
+        )
+        agent.updated_at = datetime.now(UTC)
     await session.commit()
 
     DECISIONS.labels(endpoint, result.final_decision, result.action_taken).inc()
+    if anomaly and anomaly.is_anomalous:
+        for reason in anomaly.reasons:
+            AGENT_ANOMALIES.labels(reason).inc()
     for e in det.entities:
         DETECTIONS.labels(e.entity_type).inc()
     for i in intents:
@@ -331,8 +432,9 @@ async def decide(
             entity_types=sorted(det.entity_types),
             intent=ctx.intent_label,
             indirect_intent=ctx.indirect_intent_label,
+            agent_anomaly=list(anomaly.reasons) if anomaly and anomaly.is_anomalous else None,
         )
-    return DecisionOutcome(decision, result, det, event.id, transformed, tuple(intents))
+    return DecisionOutcome(decision, result, det, event.id, transformed, tuple(intents), anomaly)
 
 
 async def get_decision(

@@ -15,7 +15,10 @@ All endpoints except `/healthz`, `/readyz`, `/metrics` and the development token
 | GET | `/v1/decisions/{decision_id}` | `audit:read` | 2 |
 | GET | `/v1/audit/events` | `audit:read` | 2 |
 | GET | `/v1/audit/verify` | `audit:read` | 2 |
-| GET | `/v1/agents/{agent_id}/risk` | `agent:manage` | 5 (not yet) |
+| POST | `/v1/agents` | `agent:manage` | 5 |
+| GET | `/v1/agents` | `audit:read` | 5 |
+| GET | `/v1/agents/{agent_id}` | `audit:read` | 5 |
+| GET | `/v1/agents/{agent_id}/risk` | `audit:read` | 5 |
 | GET | `/v1/policies` | `policy:read` | 2 |
 | POST | `/v1/policies/validate` | `policy:write` | 2 |
 | POST | `/v1/reviews/{decision_id}/decision` | `review:decide` | 2 |
@@ -39,6 +42,7 @@ All endpoints except `/healthz`, `/readyz`, `/metrics` and the development token
   "data_classification": "public | internal | confidential | restricted | high_risk",  // default: confidential
   "prompt": "…",                   // ≤ 32,000 chars
   "attached_content": [],          // ≤ 20 items
+  "tool_calls": [{"name": "search_kb", "arguments": {}}],   // ≤ 20; checked against the agent's allow-list
   "metadata": {}
 }
 ```
@@ -97,7 +101,8 @@ Same envelope as `/v1/ai/infer`, with a query and the retrieved documents in pla
   "...": "request_id, tenant_id, caller_*, requested_*, destination_jurisdiction, declared_purpose",
   "query": "What is the refund policy?",
   "documents": [
-    {"doc_id": "kb-1", "source": "kb/refunds.md", "content": "…", "classification": "internal"}
+    {"doc_id": "kb-1", "source": "kb/refunds.md", "content": "…", "classification": "internal",
+     "dataset": "kb"}   // optional; defaults to the URL host or the path without the file name
   ]
 }
 ```
@@ -108,6 +113,33 @@ Same envelope as `/v1/ai/infer`, with a query and the retrieved documents in pla
   `review_status: "pending"`). `content_verdicts` shows which `doc_id` was responsible.
 * When transformed, `transformed_content` is `{"query": "...", "documents": [{"doc_id", "content"}]}`.
 * Limits: query ≤ 32,000 characters, ≤ 50 documents, each ≤ 20,000 characters.
+
+## Agents
+
+`POST /v1/agents` (scope `agent:manage`):
+
+```json
+{"name": "support-bot", "agent_type": "support", "allowed_models": ["gpt-4o"],
+ "allowed_tools": ["search_kb"], "max_requests_per_minute": 60}
+```
+
+The agent authenticates with a token whose subject is its `id` and whose caller type is `agent`. Its
+requests must set `caller_type: "agent"`, `caller_id` and `agent_id` to that id. Every response then
+includes the behaviour verdict:
+
+```json
+"agent": {"agent_id": "…", "anomaly_score": 0.87, "is_anomalous": true,
+          "reasons": ["new_external_destination", "high_sensitive_field_access"],
+          "method": "isolation_forest+stats", "model_version": "agent-iforest-1.0.0+agent-stats-1.1.0",
+          "features": {"request_rate_log_ratio": 0.1, "…": 0}, "baseline_events": 812,
+          "requests_per_minute": 0.6}
+```
+
+`GET /v1/agents/{id}/risk` returns the agent, its long-running `risk_score`, a fresh verdict over
+the last 10 minutes (`current`), and 7-day totals (`events_7d`, `denied_7d`,
+`sensitive_fields_7d`, `last_seen`). `GET /v1/agents?min_risk=0.5` lists agents riskiest first.
+Errors: `403 unknown_agent` (not registered for this tenant), `403 identity_mismatch` (an agent
+acting as another agent), `429` (the agent's own rate limit).
 
 ## POST /v1/reviews/{decision_id}/decision
 

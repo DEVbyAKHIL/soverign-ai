@@ -3,13 +3,26 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from agents.anomaly_detector import AnomalyDetector
 from detection.injection.detector import InjectionDetector
 from detection.pipeline import DetectionPipeline
 from gateway.core.security import Principal, Scope, require_scopes
 from gateway.db import get_session
-from gateway.dependencies import get_detector, get_injection_detector, get_policy_set, rate_limited
+from gateway.dependencies import (
+    get_anomaly_detector,
+    get_detector,
+    get_injection_detector,
+    get_policy_set,
+    rate_limited,
+)
 from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest, RagQueryRequest
-from gateway.schemas.responses import ContentVerdict, DecisionResponse, DetectionOut, IntentOut
+from gateway.schemas.responses import (
+    AgentAnomalyOut,
+    ContentVerdict,
+    DecisionResponse,
+    DetectionOut,
+    IntentOut,
+)
 from gateway.services.decisions import DecisionOutcome, decide
 from policy.loader import PolicySet
 
@@ -80,6 +93,7 @@ def _response(endpoint: str, body: AIRequest, out: DecisionOutcome) -> DecisionR
             )
             for e in det.entities
         ],
+        agent=AgentAnomalyOut(**out.agent_anomaly.as_dict()) if out.agent_anomaly else None,
         transformed_content=_transformed(endpoint, body, out.transformed_parts),
         audit_event_id=out.audit_event_id,
     )
@@ -93,6 +107,7 @@ async def _run(
     policy_set: PolicySet,
     detector: DetectionPipeline,
     injection: InjectionDetector,
+    anomaly: AnomalyDetector,
 ) -> DecisionResponse:
     out = await decide(
         session,
@@ -101,6 +116,7 @@ async def _run(
         policy_set=policy_set,
         detector=detector,
         injection=injection,
+        anomaly_detector=anomaly,
         endpoint=endpoint,
     )
     return _response(endpoint, body, out)
@@ -115,8 +131,9 @@ async def infer(
     policy_set: PolicySet = Depends(get_policy_set),
     detector: DetectionPipeline = Depends(get_detector),
     injection: InjectionDetector = Depends(get_injection_detector),
+    anomaly: AnomalyDetector = Depends(get_anomaly_detector),
 ) -> DecisionResponse:
-    return await _run("infer", body, principal, session, policy_set, detector, injection)
+    return await _run("infer", body, principal, session, policy_set, detector, injection, anomaly)
 
 
 @router.post("/v1/ai/embed", response_model=DecisionResponse)
@@ -128,8 +145,9 @@ async def embed(
     policy_set: PolicySet = Depends(get_policy_set),
     detector: DetectionPipeline = Depends(get_detector),
     injection: InjectionDetector = Depends(get_injection_detector),
+    anomaly: AnomalyDetector = Depends(get_anomaly_detector),
 ) -> DecisionResponse:
-    return await _run("embed", body, principal, session, policy_set, detector, injection)
+    return await _run("embed", body, principal, session, policy_set, detector, injection, anomaly)
 
 
 @router.post("/v1/rag/query", response_model=DecisionResponse)
@@ -141,10 +159,11 @@ async def rag_query(
     policy_set: PolicySet = Depends(get_policy_set),
     detector: DetectionPipeline = Depends(get_detector),
     injection: InjectionDetector = Depends(get_injection_detector),
+    anomaly: AnomalyDetector = Depends(get_anomaly_detector),
 ) -> DecisionResponse:
     """Inspect a RAG query and its retrieved documents before they reach a model.
 
     Each document gets its own verdict in `content_verdicts` (with `doc_id`), so a caller whose
     request is quarantined can see which documents were poisoned.
     """
-    return await _run("rag", body, principal, session, policy_set, detector, injection)
+    return await _run("rag", body, principal, session, policy_set, detector, injection, anomaly)

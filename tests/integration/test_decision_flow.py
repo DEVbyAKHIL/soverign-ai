@@ -208,12 +208,25 @@ async def test_cannot_act_as_someone_else(client, make_token, field, value):
     assert r.json()["error"]["code"] == "identity_mismatch"
 
 
-async def test_agent_requires_agent_id(client, make_token):
-    t = _token(make_token, role="agent", caller_type="agent")
-    r = await _infer(client, t, caller_type="agent")
-    assert r.status_code == 422
-    r = await _infer(client, t, caller_type="agent", agent_id=str(uuid.uuid4()))
-    assert r.status_code == 200
+async def test_agent_requires_registered_agent_id(client, make_token):
+    admin = _token(make_token, role="admin")
+    agent_id = (
+        await client.post(
+            "/v1/agents",
+            json={"name": "bot", "agent_type": "support", "allowed_models": ["gpt-4o"]},
+            headers=_h(admin),
+        )
+    ).json()["id"]
+    t = _token(make_token, role="agent", caller_type="agent", subject=uuid.UUID(agent_id))
+    assert (await _infer(client, t, caller_type="agent")).status_code == 422  # missing agent_id
+    # Unregistered agent ids are refused (least privilege).
+    other = _token(make_token, role="agent", caller_type="agent")
+    unknown = await _infer(client, other, caller_type="agent", agent_id=str(_identity(other)[0]))
+    assert unknown.status_code == 403 and unknown.json()["error"]["code"] == "unknown_agent"
+    # An agent cannot claim to be another agent.
+    spoof = await _infer(client, other, caller_type="agent", agent_id=agent_id)
+    assert spoof.json()["error"]["code"] == "identity_mismatch"
+    assert (await _infer(client, t, caller_type="agent", agent_id=agent_id)).status_code == 200
 
 
 async def test_tenant_isolation_on_reads(client, make_token):

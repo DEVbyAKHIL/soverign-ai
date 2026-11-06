@@ -1,0 +1,96 @@
+{
+  "model_version": "agent-iforest-1.0.0+agent-stats-1.1.0",
+  "windows": 3960,
+  "methods": {
+    "forest": {
+      "false_positive_rate": 0.0056,
+      "detection_rate_strong": 0.0667,
+      "detection_rate_subtle": 0.038,
+      "roc_auc": 0.7991,
+      "by_type": {
+        "burst/strong": 0.0,
+        "burst/subtle": 0.0083,
+        "data_volume/strong": 0.0083,
+        "data_volume/subtle": 0.0167,
+        "dataset_sweep/strong": 0.0,
+        "dataset_sweep/subtle": 0.0,
+        "denial_storm/strong": 0.2833,
+        "denial_storm/subtle": 0.1417,
+        "exfiltration/strong": 0.25,
+        "exfiltration/subtle": 0.125,
+        "new_destination/strong": 0.0,
+        "new_destination/subtle": 0.0,
+        "off_hours/strong": 0.0167,
+        "off_hours/subtle": 0.0083,
+        "retry_loop/strong": 0.0167,
+        "retry_loop/subtle": 0.0,
+        "tool_abuse/strong": 0.025,
+        "tool_abuse/subtle": 0.0417
+      }
+    },
+    "stats": {
+      "false_positive_rate": 0.005,
+      "detection_rate_strong": 0.9648,
+      "detection_rate_subtle": 0.6213,
+      "roc_auc": 0.9543,
+      "by_type": {
+        "burst/strong": 1.0,
+        "burst/subtle": 0.9583,
+        "data_volume/strong": 0.9833,
+        "data_volume/subtle": 0.9333,
+        "dataset_sweep/strong": 1.0,
+        "dataset_sweep/subtle": 0.6333,
+        "denial_storm/strong": 0.95,
+        "denial_storm/subtle": 0.1333,
+        "exfiltration/strong": 1.0,
+        "exfiltration/subtle": 1.0,
+        "new_destination/strong": 1.0,
+        "new_destination/subtle": 1.0,
+        "off_hours/strong": 0.9333,
+        "off_hours/subtle": 0.8,
+        "retry_loop/strong": 0.85,
+        "retry_loop/subtle": 0.075,
+        "tool_abuse/strong": 0.9667,
+        "tool_abuse/subtle": 0.0583
+      }
+    },
+    "combined": {
+      "false_positive_rate": 0.0072,
+      "detection_rate_strong": 0.9657,
+      "detection_rate_subtle": 0.6324,
+      "roc_auc": 0.9672,
+      "by_type": {
+        "burst/strong": 1.0,
+        "burst/subtle": 0.9583,
+        "data_volume/strong": 0.9833,
+        "data_volume/subtle": 0.9333,
+        "dataset_sweep/strong": 1.0,
+        "dataset_sweep/subtle": 0.6333,
+        "denial_storm/strong": 0.9583,
+        "denial_storm/subtle": 0.2083,
+        "exfiltration/strong": 1.0,
+        "exfiltration/subtle": 1.0,
+        "new_destination/strong": 1.0,
+        "new_destination/subtle": 1.0,
+        "off_hours/strong": 0.9333,
+        "off_hours/subtle": 0.8,
+        "retry_loop/strong": 0.85,
+        "retry_loop/subtle": 0.075,
+        "tool_abuse/strong": 0.9667,
+        "tool_abuse/subtle": 0.0833
+      }
+    }
+  },
+  "explanations": {
+    "flagged_strong_with_expected_reason": 0.9712
+  },
+  "cold_start_flag_rate": {
+    "normal": 0.0,
+    "denial_storm": 0.925,
+    "retry_loop": 0.575
+  },
+  "latency_ms": {
+    "p50": 0.097,
+    "p95": 0.143
+  }
+}

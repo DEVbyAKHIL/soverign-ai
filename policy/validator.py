@@ -46,6 +46,7 @@ def _enum_list(values: tuple[str, ...]) -> dict:
 
 
 _score = {"type": "number", "minimum": 0, "maximum": 1}
+_bool_list = {"type": "array", "items": {"type": "boolean"}, "minItems": 1, "uniqueItems": True}
 
 POLICY_SCHEMA: dict[str, Any] = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -76,6 +77,8 @@ POLICY_SCHEMA: dict[str, Any] = {
                 "indirect_intent_label": _enum_list(INTENT_LABELS),
                 "min_risk_score": _score,
                 "min_agent_anomaly_score": _score,
+                "agent_model_allowed": _bool_list,
+                "agent_tool_allowed": _bool_list,
             },
         },
         "actions": {

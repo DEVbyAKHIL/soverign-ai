@@ -24,5 +24,13 @@ Report vulnerabilities privately to the project maintainers; do not open public 
   Bandit B613 and `tests/security/test_source_hygiene.py`.
 - The production image contains no `pip`.
 
+## Agent controls (Phase 5)
+- Agents must be registered per tenant; unknown or foreign agents are refused (`403`, no existence oracle).
+- An agent token can only act as its own agent. Allow-lists for models and tools; an empty tool list means no tools.
+- Per-agent rate limit (fails closed if Redis is down) on top of the per-caller limit.
+- Behavioural anomalies hold requests for review (≥ 0.70) or quarantine them (≥ 0.90), with named reasons.
+- `tests/unit/test_docker_image.py` fails if the production image would miss a first-party package
+  or if runtime code imports training code.
+
 ## Production
 Terminate TLS upstream; use managed Postgres/Redis; load secrets from Vault / AWS Secrets Manager / Azure Key Vault / Kubernetes Secrets; rotate DB, Redis and JWT keys; prefer an external OIDC provider with asymmetric keys.

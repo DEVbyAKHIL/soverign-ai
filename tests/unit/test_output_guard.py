@@ -61,6 +61,39 @@ def test_system_prompt_leak_is_blocked(guard):
     assert "system_prompt_leak" in v.reasons
 
 
+def test_low_risk_entities_are_not_redacted(guard):
+    # Live-test regression: "DPIA" was redacted as an organisation name.
+    text = "A data protection impact assessment (DPIA) is required under Article 35 GDPR."
+    v = guard.check(text, "internal")
+    assert v.action == "pass"
+    assert v.text == text
+
+
+def test_uncorroborated_classifier_hit_alerts_but_does_not_block():
+    # Live-test regression: an ordinary email reply scored 0.65 by the classifier alone.
+    from dataclasses import replace
+
+    from detection.injection.detector import IntentResult
+    from detection.output.guardrails import corroborated
+
+    base = IntentResult(
+        "prompt_injection", 0.65, 0.93, ("classifier:prompt_injection",), "indirect", 0
+    )
+    assert not corroborated(replace(base, signals=(*base.signals, "indirect_injection")))
+    assert corroborated(replace(base, signals=("instruction_override", "indirect_injection")))
+    assert corroborated(replace(base, signals=("llm_review:prompt_injection",)))
+
+    class StubInjection:
+        def analyze(self, text, source, part):
+            return replace(base, signals=("classifier:prompt_injection", "indirect_injection"))
+
+    v = OutputGuard(get_pipeline("optional"), StubInjection()).check(
+        "Dear customer, your refund has been confirmed.", "internal"
+    )
+    assert v.action == "pass"
+    assert v.reasons == ("alert:prompt_injection",)
+
+
 def test_chat_messages_delimit_documents():
     msgs = chat_messages(["What changed?", "doc one", "doc two"])
     assert msgs[0]["role"] == "system"

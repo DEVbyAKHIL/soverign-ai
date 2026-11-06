@@ -7,8 +7,9 @@ normalised text (same normalisation as the rule layer). Character n-grams are ro
 spacing/casing tricks and work across languages.
 
 `--extra-csv` adds rows from a local CSV with columns `text,label` (e.g. a public prompt-injection
-dataset you have downloaded and reviewed the licence of). Labels must be one of the model classes;
-a binary dataset can map attacks to `prompt_injection`.
+dataset you have downloaded and reviewed the licence of). Labels must be one of the model classes,
+or 0/1 for a binary dataset (1 is mapped to `prompt_injection`, 0 to `benign`). The shipped model
+adds the deepset/prompt-injections train split (ml/data/external, Apache-2.0).
 """
 
 import argparse
@@ -32,7 +33,8 @@ from sklearn.metrics import (
 from detection.injection.rules import normalise
 from ml.data.injection import injection_corpus
 
-VERSION = "injection-charlr-1.0.0"
+VERSION = "injection-charlr-1.1.0"
+BINARY = {"0": "benign", "1": "prompt_injection"}
 CLASSES = sorted(
     [
         "benign",
@@ -55,9 +57,10 @@ def _load_extra(path: Path) -> list[tuple[str, str, str]]:
     rows = []
     with path.open(encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            if r["label"] not in CLASSES:
+            label = BINARY.get(r["label"], r["label"])
+            if label not in CLASSES:
                 raise ValueError(f"unknown label {r['label']!r}")
-            rows.append((r["text"], r["label"], "direct"))
+            rows.append((r["text"], label, "direct"))
     return rows
 
 
@@ -125,6 +128,7 @@ def train(out: Path, extra_csv: Path | None = None) -> dict:
         "train_size": len(train_rows),
         "test_size": len(test_rows),
         "dataset": "synthetic templates (ml/data/injection.py); test = held-out templates",
+        "extra_dataset": extra_csv.name if extra_csv else None,
     }
 
     model = {

@@ -87,8 +87,9 @@ class DecisionResponse(BaseModel):
     # The content as it may be forwarded after redaction/masking/pseudonymisation.
     transformed_content: dict[str, Any] | None = None
     audit_event_id: uuid.UUID
-    # Model forwarding is added in a later phase; the gateway currently returns the decision only.
-    model_response: Any = None
+    # Forwarding outcome: status ok | blocked | error | not_forwarded (+ reason). For chat: the
+    # guarded answer and the output-guard verdict; for embed: the vectors.
+    model_response: dict[str, Any] | None = None
 
 
 class AuditEventOut(BaseModel):

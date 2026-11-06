@@ -63,7 +63,7 @@ async def test_allow_flow(client, make_token):
     body = r.json()
     assert body["final_decision"] == "allow"
     assert body["review_status"] == "not_required"
-    assert body["model_response"] is None
+    assert body["model_response"] == {"status": "not_forwarded", "reason": "backend_disabled"}
 
     detail = (await client.get(f"/v1/decisions/{body['decision_id']}", headers=_h(t))).json()
     assert detail["final_decision"] == "allow"

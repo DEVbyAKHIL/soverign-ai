@@ -41,6 +41,15 @@ class Settings(BaseSettings):
     llm_reviewer_url: str = ""
     llm_reviewer_model: str = "llama3.1:8b"
     llm_reviewer_timeout_s: float = Field(default=3.0, gt=0, le=30)
+    # Model backend that approved requests are forwarded to (OpenAI-compatible, self-hosted, e.g.
+    # http://ollama:11434/v1). Empty = decision-only mode: model_response stays null.
+    # requested_model is the logical destination the policies judge; the gateway serves every
+    # approved request with these local models.
+    model_backend_url: str = ""
+    model_chat: str = "llama3.2:3b"
+    model_embed: str = "nomic-embed-text"
+    model_timeout_s: float = Field(default=120.0, gt=0, le=600)
+    model_max_tokens: int = Field(default=512, ge=16, le=4096)
 
     @field_validator("cors_origins", mode="before")
     @classmethod

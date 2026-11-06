@@ -78,7 +78,14 @@ Response:
   ],
   "transformed_content": null,             // {"prompt": "...", "attached_content": [...]} when transformed
   "audit_event_id": "uuid",
-  "model_response": null
+  "model_response": {                      // forwarding outcome (Phase 6)
+    "status": "ok",                        // ok | blocked | error | not_forwarded
+    "model": "llama3.2:3b", "latency_ms": 840.2,
+    "text": "...the guarded answer...",    // null when blocked
+    "usage": {"prompt_tokens": 41, "completion_tokens": 120},
+    "output_guard": {"action": "redacted", "reasons": ["redacted:1"], "entity_types": ["EMAIL"],
+                     "intent": {"label": "benign"}}
+  }
 }
 ```
 
@@ -87,8 +94,11 @@ than the token; `409 duplicate_request` if the tenant has already used the `requ
 invalid input. Submitted values are never echoed in error messages; `429` means the rate limit was
 hit.
 
-The gateway does not forward requests to a model yet. It returns only the decision, so `model_response`
-is always `null`. When policies redact, mask or pseudonymise, `transformed_content` holds the content
+Approved requests (`allow` / `allow_with_modification`, no pending review) are forwarded to the
+self-hosted model backend in their transformed form, and the answer passes the output guard.
+Otherwise `model_response` is `{"status": "not_forwarded", "reason": "not_approved" |
+"pending_review" | "backend_disabled"}`. `/v1/ai/embed` returns `"embeddings"` instead of `"text"`.
+When policies redact, mask or pseudonymise, `transformed_content` holds the content
 exactly as it may be forwarded. `part` is 0 for the prompt (or first embedding input) and 1.. for
 attachments (or further inputs).
 
@@ -172,3 +182,14 @@ Recomputes the caller's tenant hash chain:
 
 Returns `{valid, errors[], policy_id, version, version_bump_required}`. Validation does not deploy
 the policy. Policies are deployed by committing them to `policy/policies/` and redeploying.
+
+## GET /v1/dashboard/summary?days=7
+
+Requires `audit:read`. Tenant-scoped aggregates for the dashboard: `total`, `by_decision`,
+`pending_reviews`, `avg_risk`, `timeline` (per day: counts per final decision and average risk),
+`top_policies`, `entity_types`, `intents`, `model_responses`, `output_guard`, `agents` (riskiest 8).
+`days` is 1-90.
+
+## GET /v1/decisions?review_status=pending&final_decision=deny&limit=50
+
+Requires `audit:read`. The tenant's most recent decisions, newest first, without content.

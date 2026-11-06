@@ -14,7 +14,7 @@ migrate (one-shot): alembic upgrade head && python -m policy.sync
 | `policy/` | Policy schema and safety validation (`validator.py`), loading and versioning (`loader.py`), deterministic evaluation (`engine.py`), DB version sync (`sync.py`). |
 | `audit/` | Per-tenant SHA-256 hash chain (`hash_chain.py`), append and verify (`service.py`). |
 | `migrations/` | Alembic. `audit_events` is append-only via a Postgres trigger. |
-| `detection/` | Sensitive-data detection (`pii/`), prompt-injection / intent detection (`injection/`), transforms (`transforms.py`), entity catalogue (`types.py`), shared JSON linear-model runtime (`linear_model.py`). `output/` is reserved for Phase 6. |
+| `detection/` | Sensitive-data detection (`pii/`), prompt-injection / intent detection (`injection/`), transforms (`transforms.py`), entity catalogue (`types.py`), shared JSON linear-model runtime (`linear_model.py`). `output/` inspects model answers (output guardrails). |
 | `ml/` | Synthetic data generator, classifier training, evaluation scripts. |
 | `agents/` | Agent registry and allow-lists (`profile.py`), rolling behavioural features (`features.py`), Isolation Forest + statistical anomaly detection (`anomaly_detector.py`), long-running risk score (`risk_score.py`). |
 
@@ -154,3 +154,32 @@ anomaly scores, used for the riskiest-first `GET /v1/agents` listing.
 * Migration 0004: `decisions.intent_label`, `decisions.indirect_intent_label` (indexed by tenant).
 * Migration 0005: `agent_events.tenant_id`, `decision_id`, `datasets`, `tool_calls`, `content_hash`;
   index on `(agent_id, created_at)`.
+
+## Model forwarding and output guardrails (Phase 6)
+
+After the decision is committed, `gateway/services/forwarding.py` forwards it to the self-hosted,
+OpenAI-compatible backend (`MODEL_BACKEND_URL`, Ollama in Compose) only when the final decision is
+`allow` / `allow_with_modification` and no human review is pending. Only the **transformed** content
+is sent; attachments and RAG documents are wrapped as delimited data. `requested_model` is the
+logical destination the policies judge; the gateway serves it with the configured local models.
+
+The answer passes `detection/output/guardrails.py` before the caller sees it:
+
+| Finding in the answer | Action |
+|---|---|
+| PII / financial identifiers | `redacted` (`[REDACTED:TYPE]`) |
+| Secrets (API key, password) | `blocked` |
+| Attack payload aimed at the next consumer (answer scored as indirect content) | `blocked` |
+| Disclosure of the gateway's system prompt | `blocked` |
+
+A `model.response` event is appended to the tenant's hash chain with status, model, latency, token
+usage, the answer's SHA-256 and the guard verdict, never the answer itself. Backend failures are
+returned as `status: "error"` and audited; they never undo the recorded decision. With
+`MODEL_BACKEND_URL` empty the gateway runs decision-only (`status: "not_forwarded"`).
+
+## Dashboard (Phase 7)
+
+React + Recharts served by nginx, calling `/v1/dashboard/summary` and `/v1/decisions` (both
+tenant-scoped, `audit:read`), which return counts, labels and scores only. Pages: overview,
+playground, decisions and review queue, policies, agents, audit trail with chain verification.
+Tokens live in memory only.

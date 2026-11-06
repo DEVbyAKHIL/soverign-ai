@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram
 
+from agents.anomaly_detector import AnomalyDetector
 from detection.injection.detector import get_injection_detector
 from detection.pipeline import get_pipeline
 from gateway.config import get_settings
@@ -18,7 +19,7 @@ from gateway.core.errors import register_error_handlers
 from gateway.db import dispose_engine
 from gateway.logging_config import configure_logging, get_logger
 from gateway.redis_client import close_redis
-from gateway.routers import audit, auth, decisions, health, infer, policies
+from gateway.routers import agents, audit, auth, decisions, health, infer, policies
 from policy.loader import load_policy_dir
 
 REQUESTS = Counter("gateway_http_requests_total", "HTTP requests", ["method", "route", "status"])
@@ -128,12 +129,14 @@ def create_app() -> FastAPI:
     app.state.injection = get_injection_detector(
         settings.llm_reviewer_url, settings.llm_reviewer_model, settings.llm_reviewer_timeout_s
     )
+    app.state.anomaly = AnomalyDetector()
     log.info(
         "detector_loaded",
         **app.state.detector.model_versions,
         **app.state.injection.model_versions,
+        anomaly_detector=app.state.anomaly.version,
     )
-    for router in (health, auth, infer, decisions, audit, policies):
+    for router in (health, auth, infer, decisions, audit, policies, agents):
         app.include_router(router.router)
     return app
 

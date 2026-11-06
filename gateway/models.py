@@ -184,5 +184,10 @@ class AgentEvent(Base):
     sensitive_fields_detected: Mapped[int] = mapped_column(Integer, nullable=False)
     destination: Mapped[str] = mapped_column(Text, nullable=False)
     latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
-    status: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False)  # final decision
+    tenant_id: Mapped[uuid.UUID] = _uuid(index=True)
+    decision_id: Mapped[uuid.UUID | None] = _uuid(nullable=True)
+    datasets: Mapped[list[str]] = _text_array()
+    tool_calls: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    content_hash: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
     created_at: Mapped[datetime] = _ts()

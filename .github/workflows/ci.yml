@@ -38,7 +38,7 @@ jobs:
       - name: Pytest
         run: pytest --cov-fail-under=80
       - name: Bandit
-        run: bandit -c pyproject.toml -r gateway policy audit detection
+        run: bandit -c pyproject.toml -r gateway policy audit detection agents
       - name: pip-audit
         run: pip-audit -r requirements.txt
 

@@ -20,9 +20,9 @@ test:
 	pytest
 
 security:
-	bandit -c pyproject.toml -r gateway policy audit detection
+	bandit -c pyproject.toml -r gateway policy audit detection agents
 	pip-audit -r requirements.txt
-	semgrep --config p/python --config p/secrets --error gateway policy audit detection
+	semgrep --config p/python --config p/secrets --error gateway policy audit detection agents
 
 up:
 	docker compose up --build -d
@@ -52,3 +52,4 @@ test-docker:
 evaluate:
 	docker compose --profile test run --rm --build tests python -m ml.evaluation.evaluate_pii
 	docker compose --profile test run --rm tests python -m ml.evaluation.evaluate_injection
+	docker compose --profile test run --rm tests python -m ml.evaluation.evaluate_anomaly

@@ -1,0 +1,14 @@
+policy_id: quarantine_severe_agent_anomaly
+version: 1.0.0
+name: Quarantine severe agent anomalies
+description: Requests from an agent with a severe behavioural anomaly are quarantined
+severity: critical
+match:
+  min_agent_anomaly_score: 0.90
+actions:
+  - quarantine
+  - alert
+  - create_review_case
+audit:
+  retain_days: 365
+  store_reason: true

@@ -56,6 +56,8 @@ class EvaluationContext:
     entity_types: frozenset[str] = frozenset()
     intent_label: str = "benign"  # direct input (prompt / query)
     indirect_intent_label: str = "benign"  # attachments, retrieved documents, embed inputs
+    agent_model_allowed: bool = True  # requested model is on the agent's allow-list
+    agent_tool_allowed: bool = True  # every requested tool is on the agent's allow-list
     risk_score: float = 0.0
     agent_anomaly_score: float = 0.0
 
@@ -117,6 +119,12 @@ def _matches(policy: Policy, ctx: EvaluationContext) -> tuple[bool, list[str]]:
         if ctx.risk_score < m["min_risk_score"]:
             return False, []
         reasons.append(f"risk_score {ctx.risk_score:.2f} >= {m['min_risk_score']}")
+    for key in ("agent_model_allowed", "agent_tool_allowed"):
+        if key in m:
+            value = getattr(ctx, key)
+            if value not in m[key]:
+                return False, []
+            reasons.append(f"{key}={str(value).lower()}")
     if "min_agent_anomaly_score" in m:
         if ctx.agent_anomaly_score < m["min_agent_anomaly_score"]:
             return False, []

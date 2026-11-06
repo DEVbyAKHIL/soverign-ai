@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from agents.anomaly_detector import AnomalyDetector
 from detection.injection.detector import InjectionDetector
 from detection.pipeline import DetectionPipeline
 from gateway.config import get_settings
@@ -39,3 +40,7 @@ def get_detector(request: Request) -> DetectionPipeline:
 
 def get_injection_detector(request: Request) -> InjectionDetector:
     return request.app.state.injection
+
+
+def get_anomaly_detector(request: Request) -> AnomalyDetector:
+    return request.app.state.anomaly

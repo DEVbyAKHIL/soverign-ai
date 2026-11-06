@@ -1,0 +1,14 @@
+policy_id: review_anomalous_agent
+version: 1.0.0
+name: Review anomalous agent behaviour
+description: Requests from an agent whose recent behaviour deviates from its baseline are held for human review
+severity: high
+match:
+  min_agent_anomaly_score: 0.70
+actions:
+  - require_human_review
+  - alert
+  - create_review_case
+audit:
+  retain_days: 365
+  store_reason: true

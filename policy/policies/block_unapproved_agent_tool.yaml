@@ -1,0 +1,14 @@
+policy_id: block_unapproved_agent_tool
+version: 1.0.0
+name: Block unapproved agent tools
+description: Agents may only invoke the tools on their allow-list (none if the list is empty)
+severity: critical
+match:
+  agent_tool_allowed:
+    - false
+actions:
+  - deny
+  - alert
+audit:
+  retain_days: 365
+  store_reason: true

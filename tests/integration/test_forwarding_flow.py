@@ -57,6 +57,8 @@ async def _post(client, path, **over):
         "data_classification": "internal",
         "prompt": "Summarise the release notes.",
     }
+    if path != "/v1/ai/infer":
+        del body["prompt"]  # embed / rag requests carry input / query instead
     body.update(over)
     r = await client.post(path, json=body, headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200, r.text

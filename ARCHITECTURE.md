@@ -167,9 +167,9 @@ The answer passes `detection/output/guardrails.py` before the caller sees it:
 
 | Finding in the answer | Action |
 |---|---|
-| PII / financial identifiers | `redacted` (`[REDACTED:TYPE]`) |
+| PII / financial identifiers (medium risk and above; organisation names are left alone) | `redacted` (`[REDACTED:TYPE]`) |
 | Secrets (API key, password) | `blocked` |
-| Attack payload aimed at the next consumer (answer scored as indirect content) | `blocked` |
+| Attack payload aimed at the next consumer, corroborated by a rule or the LLM reviewer (classifier-only hits are recorded as `alert:<label>`) | `blocked` |
 | Disclosure of the gateway's system prompt | `blocked` |
 
 A `model.response` event is appended to the tenant's hash chain with status, model, latency, token

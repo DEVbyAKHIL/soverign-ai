@@ -22,3 +22,8 @@ class ProducerSettings(BaseSettings):
     producer_failure_rate: float = Field(default=0.0, ge=0, le=1)
     producer_duplicate_rate: float = Field(default=0.0, ge=0, le=1)
     producer_ops_port: int = 9100
+    # Comma-separated tenant UUIDs for continuous mode (empty = random tenants from the seed).
+    producer_tenant_ids: str = ""
+
+    def tenant_ids(self) -> list[str]:
+        return [t.strip() for t in self.producer_tenant_ids.split(",") if t.strip()]

@@ -20,7 +20,7 @@ test:
 	pytest
 
 security:
-	bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer
+	bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer streaming reporting
 	pip-audit -r requirements.txt
 	semgrep --config p/python --config p/secrets --error gateway policy audit detection agents
 

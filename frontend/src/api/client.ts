@@ -11,19 +11,25 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(base: string, path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
   if (init.body) headers.set("Content-Type", "application/json");
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
 
-  const res = await fetch(`/api${path}`, { ...init, headers, credentials: "omit" });
+  const res = await fetch(`${base}${path}`, { ...init, headers, credentials: "omit" });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new ApiError(res.status, body?.error?.code ?? "unknown", body?.error?.message ?? res.statusText);
   }
   return body as T;
 }
+
+/** Gateway API (decisions, policies, audit ...). */
+export const api = <T,>(path: string, init: RequestInit = {}) => request<T>("/api", path, init);
+/** Reporting API (streaming aggregates). GET only. */
+export const reporting = <T,>(path: string, signal?: AbortSignal) =>
+  request<T>("/reporting", path, { signal });
 
 export type Health = { status: string; version: string };
 export const getHealth = () => api<Health>("/healthz");

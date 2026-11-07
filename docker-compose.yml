@@ -43,6 +43,8 @@ services:
     environment:
       # Login password for the least-privilege stream_processor role (migration 0007).
       PROCESSOR_DB_PASSWORD: ${PROCESSOR_DB_PASSWORD:?set in .env}
+      # Login password for the read-only reporting_ro role (migration 0008).
+      REPORTING_DB_PASSWORD: ${REPORTING_DB_PASSWORD:?set in .env}
     depends_on:
       postgres: { condition: service_healthy }
     <<: *hardening
@@ -81,7 +83,7 @@ services:
   frontend:
     build: { context: ., dockerfile: infra/docker/frontend.Dockerfile }
     ports: ["127.0.0.1:5173:8080"]
-    depends_on: [gateway]
+    depends_on: [gateway, reporting-api]
     <<: *hardening
     read_only: true
     tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
@@ -172,6 +174,8 @@ services:
       PRODUCER_DUPLICATE_RATE: ${PRODUCER_DUPLICATE_RATE:-0}
       PRODUCER_SPAN_HOURS: ${PRODUCER_SPAN_HOURS:-24}
       PRODUCER_DISORDER_S: ${PRODUCER_DISORDER_S:-30}
+      # Continuous traffic for the dashboard's development demo tenant (frontend DEMO_TENANT).
+      PRODUCER_TENANT_IDS: ${PRODUCER_TENANT_IDS:-aaaaaaaa-0000-4000-8000-000000000001}
     depends_on:
       kafka-init: { condition: service_completed_successfully }
     <<: *hardening
@@ -203,6 +207,28 @@ services:
     mem_limit: 3g
     restart: unless-stopped
     stop_grace_period: 60s
+
+  # Read-only metrics API over the aggregate tables (phase S3). Least privilege: it gets the JWT
+  # verification settings and the reporting_ro database login, nothing else from .env.
+  reporting-api:
+    build: { context: ., dockerfile: infra/docker/reporting.Dockerfile }
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      REPORTING_DATABASE_URL: postgresql+asyncpg://reporting_ro:${REPORTING_DB_PASSWORD:?set in .env}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET:?set in .env}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ISSUER: ${JWT_ISSUER:-sovereign-ai-gateway}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-sovereign-ai-gateway-api}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+    ports: ["127.0.0.1:8001:8001"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    <<: *hardening
+    read_only: true
+    tmpfs: ["/tmp"]
+    restart: unless-stopped
+    stop_grace_period: 20s
 
   # ------------------------------------------------------------- optional profiles -------------
   # docker compose --profile tools up -d kafka-ui      -> http://127.0.0.1:8080 (read-only UI)

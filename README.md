@@ -25,7 +25,7 @@ The gateway sits between users, AI agents, applications and model endpoints, and
 |---|---|---|
 | S1 | Kafka (KRaft), versioned event schema, transactional outbox + separate `event-publisher`, `event-producer` (continuous + backfill, failure injection), 1M-event ingestion verification | **Implemented** (see [Streaming quick start](#streaming-quick-start)) |
 | S2 | Spark Structured Streaming: validation, dead-letter routing, 11 windowed aggregations (8 queries), idempotent PostgreSQL upserts, checkpoints, restart recovery | **Implemented** (`docs/spark-streaming.md`, `docs/aggregations.md`, `DATA_FLOW.md`) |
-| S3 | Reporting API and live dashboard pages | Planned |
+| S3 | Read-only `reporting-api` (12 endpoints, tenant from JWT, keyset pagination, small-cell suppression) and 7 live dashboard pages polling every 5 s | **Implemented** (`docs/api.md`) |
 | S4 | Model-registry trust fix (model, jurisdiction, purposes from `ai_assets`) | Planned |
 
 Plan and design: `docs/refactor-plan.md`, `docs/architecture-after-refactor.md`, `docs/implementation-order.md`.
@@ -58,6 +58,7 @@ Dashboard: http://localhost:5173 (sign in with a development role, e.g. `admin`,
 | `kafka-init` | One-shot: creates `governance.events.raw` (6 partitions), `.valid` (6), `.dead-letter` (1) |
 | `event-publisher` | Relays the gateway's transactional outbox to Kafka; marks rows published only after Kafka acknowledges |
 | `event-producer` | Synthetic governance telemetry, continuous mode at `PRODUCER_RATE` events/s (default 10) |
+| `reporting-api` | Read-only metrics API over the aggregate tables (`reporting_ro` login), http://127.0.0.1:8001; dashboard pages under **Real-time (streaming)** |
 | `spark-stream-processor` | Spark Structured Streaming: validates `raw` → `valid` / `dead-letter`, 8 windowed aggregation queries → `aggregated_*` tables (upserts), checkpoints on a volume |
 
 Generate and verify one million timestamped events:
@@ -78,7 +79,7 @@ make verify-pipeline      # or: python scripts/verify_pipeline.py --total 100000
 
 It prints events produced / consumed / aggregated / dead-lettered and `Processor restart recovery: PASSED|FAILED`.
 
-`.env` must define `PROCESSOR_DB_PASSWORD` (see `.env.example`); `migrate` creates the least-privilege `stream_processor` login with it.
+`.env` must define `PROCESSOR_DB_PASSWORD` and `REPORTING_DB_PASSWORD` (see `.env.example`); `migrate` creates the least-privilege `stream_processor` (writes aggregates) and `reporting_ro` (reads aggregates) logins with them.
 
 Optional tools (not started by `up`): `make kafka-ui` → http://127.0.0.1:8080 (read-only), `make monitoring` → Prometheus on http://127.0.0.1:9090.
 

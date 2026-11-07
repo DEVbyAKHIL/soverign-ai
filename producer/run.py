@@ -131,7 +131,12 @@ async def continuous(
 ) -> ProduceStats:
     """Events at `producer_rate` per second, timestamped now (minus up to 2 s of disorder)."""
     stats = ProduceStats()
-    gen = EventGenerator(cfg.producer_seed, cfg.producer_tenants, cfg.producer_agents)
+    gen = EventGenerator(
+        cfg.producer_seed,
+        cfg.producer_tenants,
+        cfg.producer_agents,
+        tenant_ids=cfg.tenant_ids(),
+    )
     enc = Encoder(cfg, None, stats)
     started = time.perf_counter()
     while not stop.is_set():

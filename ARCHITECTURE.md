@@ -184,7 +184,7 @@ tenant-scoped, `audit:read`), which return counts, labels and scores only. Pages
 playground, decisions and review queue, policies, agents, audit trail with chain verification.
 Tokens live in memory only.
 
-## Streaming data backend (Task 2, phases S1-S2)
+## Streaming data backend (Task 2, phases S1-S3)
 
 The gateway is the control plane (synchronous security decisions). Streaming adds a data plane
 that carries a governance event for every decision. Phase S1 implements ingestion; stream
@@ -202,6 +202,8 @@ flowchart LR
   SPARK --> DLQ[[governance.events.dead-letter]]
   VALID --> AGG[8 aggregation queries<br/>watermark, dedup, windows]
   AGG -->|upsert| AGGDB[(aggregated_* tables)]
+  AGGDB -->|SELECT, reporting_ro| REP[reporting-api]
+  REP -->|/reporting, poll 5 s| UI[dashboard: Real-time pages]
 ```
 
 | Piece | Where | Behaviour |
@@ -216,3 +218,4 @@ flowchart LR
 | Ops | `events/runtime.py` | Each streaming service serves `/healthz` (heartbeat-based) and `/metrics` on internal port 9100 and stops gracefully on SIGTERM |
 | Stream processing (S2) | `streaming/`, service `spark-stream-processor` | Spark 3.5 Structured Streaming, local mode. `validate` query: JSON-Schema UDF, raw -> valid / dead-letter. 8 aggregation queries on valid: watermark 5 min, `dropDuplicatesWithinWatermark(event_id)`, tumbling/sliding event-time windows, `update` mode, `foreachBatch` upserts into `aggregated_*` (migration 0007). Checkpoints (offsets + RocksDB state) on volume `sparkcheckpoints`. See `docs/spark-streaming.md`, `docs/aggregations.md`, `DATA_FLOW.md` |
 | Aggregate store | `aggregated_*`, `pipeline_progress`, `pipeline_run_counts` | Long format, primary key = window + dimensions + metric, so replays are idempotent. Written by the least-privilege `stream_processor` role (no access to decisions, audit or outbox; no DELETE) |
+| Delivery (S3) | `reporting/`, service `reporting-api`; `frontend/src/pages/live/` | Read-only FastAPI service: JWT (`audit:read`), tenant from token, SQLAlchemy Core with bound parameters only, keyset pagination, range limits, small-cell suppression, same security headers as the gateway. Dashboard polls via nginx `/reporting/` (GET only). See `docs/api.md` |

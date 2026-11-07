@@ -1,0 +1,919 @@
+{
+  "audit_date": "2026-11-07",
+  "overall_status": "PARTIAL",
+  "overall_score": 72,
+  "scoring": "PASS=1, PARTIAL=0.5, FAIL=0 over all requirements except UNVERIFIABLE/NOT APPLICABLE",
+  "section_scores": {
+    "portfolio_guidelines": 33,
+    "task2_core": 71,
+    "streaming": 100,
+    "ai_governance": 70,
+    "code_repository": 75
+  },
+  "status_counts": {
+    "PASS": 30,
+    "PARTIAL": 21,
+    "FAIL": 5,
+    "UNVERIFIABLE": 3,
+    "NOT APPLICABLE": 0
+  },
+  "requirements": [
+    {
+      "requirement_id": "G-01",
+      "title": "Three-phase portfolio structure",
+      "status": "FAIL",
+      "evidence": [
+        "No phase documents in the repository: docs/ holds technical docs only (ls docs)",
+        "README.md status tables use engineering phases 1-8 and S1-S3, not portfolio phases"
+      ],
+      "gap": "Nothing marks the conception, development/reflection or finalisation deliverables.",
+      "risk": "Formal criteria (10%) and the examiner's ability to map work to phases.",
+      "remediation": "Create docs/portfolio/phase-1-conception.md, phase-2-development.md, phase-3-finalisation.md and link them from the README.",
+      "priority": "critical",
+      "acceptance_test": "AT-G01: the three files exist, are linked from the README and each holds the sections listed in G-02/G-04/G-06."
+    },
+    {
+      "requirement_id": "G-02",
+      "title": "Conception content (aim, concept, sustainability +/-, procedure, methodology and tools with reasons)",
+      "status": "PARTIAL",
+      "evidence": [
+        "README.md:1-5 (aim and positioning)",
+        "docs/task2-gap-analysis.md, docs/refactor-plan.md (procedure, tools)",
+        "docs/architecture-after-refactor.md §5-6 (Kafka/aggregation rationale)",
+        "docs/implementation-order.md (planned procedure, open decisions)"
+      ],
+      "gap": "Content exists but is spread over planning docs. Sustainability (positives/negatives of the idea) and why these tools rather than alternatives are not stated in one place.",
+      "risk": "Conception text may be judged incomplete (methodology criterion, 20%).",
+      "remediation": "Write phase-1-conception.md (~200-word PebblePad text plus a longer repo version) covering aim, concept, sustainability pros/cons, procedure, and tools with the alternatives considered (e.g. Kafka vs Redis Streams, Spark vs Flink).",
+      "priority": "high",
+      "acceptance_test": "AT-G02: the document holds headed sections for all six items; the PebblePad text is within 200 words +/-10%."
+    },
+    {
+      "requirement_id": "G-03",
+      "title": "Architecture draft as PNG with remarks",
+      "status": "FAIL",
+      "evidence": [
+        "No *.png in repository root or docs/ (ls *.png docs/*.png: none)",
+        "Mermaid diagrams only: ARCHITECTURE.md (streaming section), DATA_FLOW.md, docs/architecture-after-refactor.md §1-3"
+      ],
+      "gap": "The required PNG artefact does not exist.",
+      "risk": "Missing mandatory Phase 1 deliverable.",
+      "remediation": "Export the architecture (from DATA_FLOW.md / ARCHITECTURE.md Mermaid) to docs/portfolio/architecture.png; add a remarks section under the image in phase-1-conception.md.",
+      "priority": "critical",
+      "acceptance_test": "AT-G03: docs/portfolio/architecture.png exists, opens, shows all services (gateway, outbox, publisher, producer, Kafka x3 topics, Spark, Postgres, reporting-api, dashboard) and is referenced with remarks."
+    },
+    {
+      "requirement_id": "G-04",
+      "title": "Development/reflection content",
+      "status": "PARTIAL",
+      "evidence": [
+        "EVALUATION.md (streaming section): failed run 1, diagnosis, fix, run 2",
+        "README.md status tables (implemented vs planned)",
+        "docs/risks-and-mitigations.md (difficulties anticipated)"
+      ],
+      "gap": "No reflection document: lessons learned, difficulties (e.g. noexec /tmp for RocksDB, async-generator bug, watermark skew) and future improvements are not written up as reflection.",
+      "risk": "Reflection criterion and the Phase 2 text.",
+      "remediation": "Write phase-2-development.md: what is implemented and what remains, challenges and how each was solved (with commit/file references), lessons, future work. The personal reflection must be written by the student.",
+      "priority": "high",
+      "acceptance_test": "AT-G04: the document contains each listed heading and at least 3 concrete challenge -> resolution entries with file or commit references."
+    },
+    {
+      "requirement_id": "G-05",
+      "title": "Development phase .txt with GitHub link",
+      "status": "FAIL",
+      "evidence": [
+        "No *.txt in repository (ls *.txt docs/*.txt: none)",
+        "git remote: https://github.com/DEVbyAKHIL/soverign-ai.git; remote main is at 530252d (no streaming code)"
+      ],
+      "gap": "No link file, and the linked repository does not yet contain the streaming work.",
+      "risk": "Mandatory deliverable missing; the examiner would see a pre-streaming repository.",
+      "remediation": "Push feat/stream-phase1 and merge it to main (see T2-11), then create the .txt (outside or inside the repo) with the URL. Consider fixing the 'soverign' typo before submission.",
+      "priority": "critical",
+      "acceptance_test": "AT-G05: the .txt contains one URL; opening it shows main with streaming/, producer/, reporting/ present."
+    },
+    {
+      "requirement_id": "G-06",
+      "title": "Finalisation: 50-word abstract, 2-page PDF, final .txt",
+      "status": "FAIL",
+      "evidence": [
+        "No PDF or abstract in the repository",
+        "PebblePad content is outside the repository"
+      ],
+      "gap": "The final abstract and PDF do not exist yet.",
+      "risk": "Mandatory Phase 3 deliverables missing.",
+      "remediation": "Write the 2-page abstract (student-authored) and a 50-word PebblePad summary; produce the PDF to G-07 rules; create the final link .txt.",
+      "priority": "critical",
+      "acceptance_test": "AT-G06: the PDF exists, is at most 2 pages, and passes AT-G07; the 50-word text counts 45-55 words."
+    },
+    {
+      "requirement_id": "G-07",
+      "title": "Abstract formatting (A4, 2 cm, Arial 11/12/10, 1.5 spacing, justified, hyphenation, max 2 pages)",
+      "status": "UNVERIFIABLE",
+      "evidence": [
+        "No PDF exists to inspect"
+      ],
+      "gap": "Cannot be checked until the PDF exists.",
+      "risk": "Formal criteria (10%).",
+      "remediation": "Produce the PDF from a template set to these rules; check it with a PDF inspector.",
+      "priority": "high",
+      "acceptance_test": "AT-G07: pdffonts shows Arial embedded; page size 595x842 pt; 2 pages or fewer; visual check of margins, spacing, justification and hyphenation."
+    },
+    {
+      "requirement_id": "G-08",
+      "title": "All three parts uploaded again at finalisation",
+      "status": "UNVERIFIABLE",
+      "evidence": [
+        "Upload happens in PebblePad/myCampus, outside the repository"
+      ],
+      "gap": "Not observable from the repository.",
+      "risk": "Formal.",
+      "remediation": "Student checklist item: re-upload phases 1-3 with the final submission.",
+      "priority": "medium",
+      "acceptance_test": "AT-G08: the student confirms the upload (screenshot kept privately)."
+    },
+    {
+      "requirement_id": "G-09",
+      "title": "Phase ordering",
+      "status": "UNVERIFIABLE",
+      "evidence": [
+        "Git history shows an engineering order, not portfolio submission dates"
+      ],
+      "gap": "Submission dates are not in the repository.",
+      "risk": "Formal.",
+      "remediation": "Keep phase submission dates in the phase documents.",
+      "priority": "low",
+      "acceptance_test": "AT-G09: each phase document states its submission date."
+    },
+    {
+      "requirement_id": "G-10",
+      "title": "Tool and software documentation (selection, parameterisation, use)",
+      "status": "PARTIAL",
+      "evidence": [
+        "docs/kafka.md (settings table)",
+        "docs/spark-streaming.md (versions, settings)",
+        "docs/docker-compose.md (services, images, hardening)",
+        "docs/api.md (FastAPI services)",
+        ".github/workflows/ci.yml (ruff, pytest, bandit, pip-audit, semgrep, trivy)",
+        "infra/monitoring/prometheus.yml, alerts.yml"
+      ],
+      "gap": "No single 'tools and why' section; React, GitHub Actions, testing/security/monitoring tools lack selection rationale.",
+      "risk": "Methodology criterion.",
+      "remediation": "Add docs/portfolio/tools.md: one row per tool with purpose, version, key parameters, alternative considered, and reason.",
+      "priority": "medium",
+      "acceptance_test": "AT-G10: tools.md lists Docker, Kafka, Spark, PostgreSQL, FastAPI, React, GitHub Actions, pytest, ruff, bandit, pip-audit, semgrep, Trivy and Prometheus, each with a reason."
+    },
+    {
+      "requirement_id": "G-11",
+      "title": "Clear portfolio product",
+      "status": "PASS",
+      "evidence": [
+        "Running stack verified 2026-11-07: docker compose ps shows all services healthy",
+        "EVALUATION.md: 1M end-to-end run PASSED",
+        "frontend/src/pages/live/* (7 dashboard pages)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "G-12",
+      "title": "Reflection quality (decisions, alternatives, problems, solutions, learning)",
+      "status": "PARTIAL",
+      "evidence": [
+        "EVALUATION.md run-1 diagnosis (problem, cause, fix)",
+        "docs/task2-gap-analysis.md §6 (architectural conflicts and resolutions)",
+        "docs/aggregations.md (why each window)"
+      ],
+      "gap": "Good technical reasoning, but no explicit 'alternatives considered' or 'what I learned'.",
+      "risk": "Reflection is part of the assessment.",
+      "remediation": "Covered by phase-2-development.md (G-04) plus an 'alternatives considered' table in tools.md (G-10).",
+      "priority": "high",
+      "acceptance_test": "AT-G12: the reflection names at least 3 alternatives with reasons for rejecting them, and at least 3 lessons."
+    },
+    {
+      "requirement_id": "T2-01",
+      "title": "Real-time data backend (not only a synchronous API)",
+      "status": "PASS",
+      "evidence": [
+        "streaming/jobs.py:100-122 (validate query), :125-153 (8 aggregation queries)",
+        "producer/run.py continuous mode; docker-compose.yml:165 event-producer, :189 spark-stream-processor",
+        "EVALUATION.md: 1,000,000 produced, consumed and aggregated with a mid-run restart"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "T2-02",
+      "title": "Data-intensive, large-scale design",
+      "status": "PARTIAL",
+      "evidence": [
+        "infra/kafka/topics.sh: 6 partitions for raw/valid",
+        "Spark local[4] (docker-compose.yml:189-211)",
+        "EVALUATION.md: about 4,500 events/s produce rate, 516 s end-to-end for 1M"
+      ],
+      "gap": "Single-node Kafka (replication factor 1) and Spark local mode; no throughput test beyond 1M events and no scaling test.",
+      "risk": "'Large-scale' claims would be unsupported.",
+      "remediation": "Document the scale-out path (Kafka RF3 + more partitions, Spark cluster mode) and run one throughput measurement with documented resources; keep wording to 'designed for', not 'proven at'.",
+      "priority": "medium",
+      "acceptance_test": "AT-T2-02: EVALUATION.md has a throughput table with machine resources; docs state single-node limits explicitly."
+    },
+    {
+      "requirement_id": "T2-03",
+      "title": "Infrastructure as Code",
+      "status": "PASS",
+      "evidence": [
+        "docker-compose.yml (all services declarative)",
+        "infra/kafka/topics.sh (topics as code)",
+        "migrations/versions/0001-0008 (schema as code)",
+        ".env.example (environment config)",
+        "infra/monitoring/*.yml",
+        "docs/runbook.md"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "T2-04",
+      "title": "Isolated microservices",
+      "status": "PASS",
+      "evidence": [
+        "docker-compose.yml services: gateway:54, event-publisher:145, event-producer:165, kafka:100, spark-stream-processor:189, postgres:8, reporting-api:213, frontend:83",
+        "Separate Dockerfiles: infra/docker/{gateway,streaming,spark,reporting,frontend}.Dockerfile"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "T2-05",
+      "title": "Reliability",
+      "status": "PASS",
+      "evidence": [
+        "Health checks on every long-running service (docker-compose.yml; image HEALTHCHECKs)",
+        "Retry/backoff: publisher/service.py:33,108,160; streaming/sink.py PostgresSink._run",
+        "Dead letter: streaming/jobs.py validation_query",
+        "Checkpoints: streaming/jobs.py:120,150 + sparkcheckpoints volume",
+        "Restart recovery verified: EVALUATION.md run 2",
+        "Graceful shutdown: events/runtime.py stop_event; streaming/main.py"
+      ],
+      "gap": "Monitoring exists, but there are no alert rules for stream lag or late drops (infra/monitoring/alerts.yml covers phase S1 only).",
+      "risk": "Minor.",
+      "remediation": "Add Spark/processor alert rules (see R-07).",
+      "priority": "low",
+      "acceptance_test": "AT-T2-05: alerts.yml contains rules on stream_query_active and stream_rows_dropped_by_watermark; promtool check rules passes."
+    },
+    {
+      "requirement_id": "T2-06",
+      "title": "Scalability",
+      "status": "PARTIAL",
+      "evidence": [
+        "Kafka partitioning by tenant_id (publisher/service.py to_message; producer/run.py Encoder)",
+        "SKIP LOCKED allows several publishers (publisher/service.py:80)",
+        "Indexes ix_*_tenant_window (migrations/versions/0007), ix_event_outbox_due (0006)",
+        "docker-compose.prod.yml:14-16 (replicas, limits); mem_limit on Spark (docker-compose.yml:207)"
+      ],
+      "gap": "Horizontal scaling is designed but not demonstrated; 5 tenants on 6 partitions gave uneven partitions (one partition held 3 tenants, EVALUATION.md); no load test; no limits on most dev services.",
+      "risk": "Scalability is an explicit criterion.",
+      "remediation": "Document limits and scale-out steps; optionally add key salting or an agent-level key for hot tenants; add resource limits to all services; record one scaling experiment (2 publishers, measure throughput).",
+      "priority": "medium",
+      "acceptance_test": "AT-T2-06: docs/scalability.md exists; docker compose config shows limits for every service; a 2-replica publisher run is recorded."
+    },
+    {
+      "requirement_id": "T2-07",
+      "title": "Maintainability",
+      "status": "PASS",
+      "evidence": [
+        "Packages per service: gateway/, publisher/, producer/, streaming/, reporting/, events/",
+        "723 tests passing in Docker (2026-11-07 run)",
+        ".github/workflows/ci.yml (ruff, pytest, bandit, pip-audit, semgrep, trivy)",
+        "Pinned requirements-*.txt per image"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "T2-08",
+      "title": "Data security",
+      "status": "PARTIAL",
+      "evidence": [
+        "JWT + RBAC: gateway/core/security.py:17-33, 73-109; reporting/main.py principal()",
+        "Tenant isolation: gateway/core/tenant.py; reporting/queries.py:144 (tenant bound in every query)",
+        "Least privilege: migrations 0007 (stream_processor), 0008 (reporting_ro); tests/integration/test_aggregate_sink.py::test_processor_role_is_least_privilege",
+        "Headers/CORS/size limits: gateway/main.py:31-113; reporting/main.py middleware; config wildcard rejection",
+        "Scanning: ci.yml trivy (image-ref gateway:ci only, line 87), pip-audit requirements.txt only"
+      ],
+      "gap": "No encryption in transit inside the stack (Kafka PLAINTEXT docker-compose.yml:99; Postgres without TLS); no encryption at rest; Trivy image scan and pip-audit cover only the gateway; the event-publisher still uses the app DB login.",
+      "risk": "Security is an explicit criterion; reviewers may flag plaintext Kafka.",
+      "remediation": "Scan every image (streaming, spark, reporting) and every requirements file; add a least-privilege outbox role for the publisher; document the TLS/SASL configuration and at-rest encryption as deployment requirements (or enable TLS for Postgres locally).",
+      "priority": "high",
+      "acceptance_test": "AT-T2-08: CI scans 4 images and 4 requirements files; the publisher connects as outbox_publisher (SELECT/UPDATE on event_outbox only); SECURITY.md has a transport/at-rest section."
+    },
+    {
+      "requirement_id": "T2-09",
+      "title": "Data governance",
+      "status": "PARTIAL",
+      "evidence": [
+        "Schema validation: schemas/governance_event/1.0.0.json; streaming/validation.py",
+        "Lineage: DATA_FLOW.md (field lineage table)",
+        "Audit trail: audit/hash_chain.py, audit/service.py",
+        "Classification: detection/types.py CLASSIFICATION_ORDER",
+        "Kafka retention: infra/kafka/topics.sh"
+      ],
+      "gap": "Retention not enforced: AUDIT_RETENTION_DAYS is defined (gateway/config.py:29) but unused; event_outbox is never purged; aggregates have no retention; data ownership is not documented.",
+      "risk": "Governance is an explicit criterion; unenforced retention is a visible gap.",
+      "remediation": "Add a retention job (outbox published rows older than N days, aggregates older than N days) and a data-ownership/retention table in docs/privacy.md.",
+      "priority": "high",
+      "acceptance_test": "AT-T2-09: a retention command deletes only eligible rows (test proves it); docs/privacy.md lists the owner and retention for every store."
+    },
+    {
+      "requirement_id": "T2-10",
+      "title": "Data protection",
+      "status": "PARTIAL",
+      "evidence": [
+        "No prompts or entity values in events: schemas/governance_event/1.0.0.json (additionalProperties false); tests/integration/test_event_outbox.py::test_outbox_payload_carries_no_sensitive_values",
+        "caller_id HMAC: events/builder.py pseudonymous_id",
+        "DLQ without payload: streaming/jobs.py validation_query",
+        "Small-cell suppression: reporting/queries.py (suppress=True)",
+        "Redaction map holds keyed hashes and pseudonyms only: detection/transforms.py:146-156"
+      ],
+      "gap": "Plain SHA-256 of prompt content and model output in audit/agent data (gateway/services/decisions.py:198; gateway/services/forwarding.py:43); no retention or deletion (see T2-09).",
+      "risk": "The 'keyed HMAC, never plain SHA-256' rule is violated for predictable content.",
+      "remediation": "Replace the content/output fingerprints with keyed HMAC (purpose-derived subkey); implement retention.",
+      "priority": "high",
+      "acceptance_test": "AT-T2-10: grep finds no hashlib.sha256 on content in gateway/services; a test shows the fingerprint changes with the key."
+    },
+    {
+      "requirement_id": "T2-11",
+      "title": "Git usage",
+      "status": "PARTIAL",
+      "evidence": [
+        "Commits 69e1066 (phase S1), 1de6acd (phase S2) on feat/stream-phase1",
+        ".gitignore line 1: .env",
+        "git ls-files: no .env, keys or files over 1 MB",
+        "Phase S3 work (reporting/, frontend live pages, migration 0008) uncommitted (git status)",
+        "Remote main = 530252d (no streaming)"
+      ],
+      "gap": "Phase S3 is uncommitted; nothing streaming-related is on GitHub.",
+      "risk": "Critical: the examiner grades the GitHub repository.",
+      "remediation": "Commit phase S3, push the branch, open a PR, merge to main.",
+      "priority": "critical",
+      "acceptance_test": "AT-T2-11: git status clean; git ls-remote shows main containing reporting/ and streaming/; CI green on main."
+    },
+    {
+      "requirement_id": "T2-12",
+      "title": "Docker usage",
+      "status": "PARTIAL",
+      "evidence": [
+        "Dockerfiles: infra/docker/*.Dockerfile (multi-stage, pip removed, non-root users 10001/10002/10003/185/101)",
+        "HEALTHCHECK in gateway/streaming/spark/reporting images",
+        "Slim bases: python:3.12-slim, alpine",
+        "Images tag-pinned; Spark connector jars sha256-pinned (infra/docker/spark.Dockerfile)"
+      ],
+      "gap": "Base images are pinned by tag, not digest; Trivy scans only the gateway image; the Spark image is large (Ubuntu + JVM).",
+      "risk": "Supply-chain and scanning questions.",
+      "remediation": "Pin base images by digest; scan every image in CI.",
+      "priority": "medium",
+      "acceptance_test": "AT-T2-12: every FROM line has @sha256; the CI trivy job loops over 4 images."
+    },
+    {
+      "requirement_id": "T2-13",
+      "title": "Local deployment (one command, instructions, env, migrations, health, shutdown)",
+      "status": "PARTIAL",
+      "evidence": [
+        "README.md Quick start + Streaming quick start; docs/runbook.md; docs/docker-compose.md",
+        "migrate service runs Alembic + policy sync automatically (docker-compose.yml:39-52)",
+        "Verified on this machine 2026-11-07 (all services healthy)"
+      ],
+      "gap": "Not verified from a clean clone on another machine; .env needs manual secret generation (5 secrets, 2 role passwords); 'make' targets don't run on Windows without make; Ollama models need a manual pull.",
+      "risk": "Reproducibility is assessed ('runs on another machine').",
+      "remediation": "Add scripts/init_env.py to generate .env from .env.example; run a clean-clone test and record it; document Windows commands without make.",
+      "priority": "high",
+      "acceptance_test": "AT-T2-13: in an empty directory: git clone, python scripts/init_env.py, docker compose up -d --build -> all services healthy within 5 min; verify_pipeline --total 100000 passes."
+    },
+    {
+      "requirement_id": "T2-14",
+      "title": "No cloud deployment during development",
+      "status": "PASS",
+      "evidence": [
+        "All services in docker-compose.yml; host ports bound to 127.0.0.1; Ollama local; no cloud SDKs in requirements-*.txt"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-01",
+      "title": "Continuous ingestion",
+      "status": "PASS",
+      "evidence": [
+        "producer/run.py continuous() and backfill(live=...)",
+        "producer/config.py PRODUCER_RATE",
+        "events/builder.py (event_id, timestamp)",
+        "Gateway path: gateway/services/decisions.py:471-487 (outbox in the decision transaction) -> publisher"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-02",
+      "title": "At least 1,000,000 timestamped events end to end",
+      "status": "PASS",
+      "evidence": [
+        "scripts/verify_pipeline.py (runnable, reconciles produced/consumed/aggregated)",
+        "producer/__main__.py verify-1m",
+        "EVALUATION.md: run 2 PASSED, 1,000,000 produced = consumed = aggregated, restart at 430,000"
+      ],
+      "gap": "Verified once on one machine; not part of CI (too heavy).",
+      "risk": "Low.",
+      "remediation": "Keep the logs of the run; re-run before submission.",
+      "priority": "low",
+      "acceptance_test": "AT-S02 (see acceptance-tests.md)."
+    },
+    {
+      "requirement_id": "S-03",
+      "title": "Kafka ingestion and buffering",
+      "status": "PASS",
+      "evidence": [
+        "docker-compose.yml:100-143 (KRaft broker, kafka-init)",
+        "infra/kafka/topics.sh (raw 6, valid 6, dead-letter 1)",
+        "Producers: publisher/sender.py:25-33 (acks=all, idempotent), producer/run.py",
+        "Consumer: Spark Kafka source streaming/jobs.py _source",
+        "Key = tenant_id; JSON (de)serialisation against schema 1.0.0"
+      ],
+      "gap": "No explicit Kafka consumer group: Spark tracks offsets in its checkpoint (by design, documented in docs/kafka.md).",
+      "risk": "A reviewer expecting group.id may ask.",
+      "remediation": "Explain in docs/kafka.md why checkpoint offsets replace committed group offsets.",
+      "priority": "low",
+      "acceptance_test": "AT-S03: docs/kafka.md has a 'consumer groups' paragraph."
+    },
+    {
+      "requirement_id": "S-04",
+      "title": "Spark Structured Streaming",
+      "status": "PASS",
+      "evidence": [
+        "infra/docker/spark.Dockerfile (Spark 3.5.8)",
+        "streaming/jobs.py readStream kafka, checkpointLocation :120/:150, trigger :121/:151, foreachBatch sinks",
+        "streaming/aggregations.py:66-67 withWatermark + dropDuplicatesWithinWatermark",
+        "tests/spark/test_aggregations.py (11 passing)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-05",
+      "title": "Preprocessing",
+      "status": "PASS",
+      "evidence": [
+        "Schema/null/malformed handling: streaming/validation.py invalid_reason",
+        "Dead-letter routing: streaming/jobs.py validation_query",
+        "Timestamp parsing + enrichment: streaming/aggregations.py enrich()",
+        "tests/streaming/test_processor_units.py"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-06",
+      "title": "Aggregation (at least 6 meaningful)",
+      "status": "PASS",
+      "evidence": [
+        "streaming/aggregations.py SPECS: 8 queries covering 11 metrics",
+        "docs/aggregations.md (purpose of each)",
+        "Sink tables: migrations/versions/0007_stream_aggregates.py"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-07",
+      "title": "Windowing justified",
+      "status": "PASS",
+      "evidence": [
+        "streaming/aggregations.py:73-75 (tumbling and sliding windows)",
+        "docs/aggregations.md 'Why these windows', watermark and late data",
+        "Late-drop metric: streaming/main.py stream_rows_dropped_by_watermark"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-08",
+      "title": "Aggregation storage",
+      "status": "PASS",
+      "evidence": [
+        "migrations/versions/0007: primary keys (window, dimensions, metric), tenant/window indexes, check constraints",
+        "Upserts: streaming/sink.py upsert_sql (ON CONFLICT ON CONSTRAINT)",
+        "tests/integration/test_aggregate_sink.py (idempotency)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-09",
+      "title": "Real-time delivery API",
+      "status": "PASS",
+      "evidence": [
+        "reporting/main.py:152-245 (12 endpoints)",
+        "reporting/queries.py (time range, tenant, agent filters, keyset pagination)",
+        "docs/api.md Reporting API section",
+        "tests/reporting/test_reporting_api.py (11 passing)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-10",
+      "title": "Real-time dashboard",
+      "status": "PASS",
+      "evidence": [
+        "frontend/src/pages/live/*.tsx (7 pages)",
+        "frontend/src/hooks/usePolling.ts (5 s polling)",
+        "infra/docker/nginx.conf /reporting/ (GET only)",
+        "Browser check 2026-11-07: overview, policies and agent risk render live data"
+      ],
+      "gap": "No automated frontend test.",
+      "risk": "Low.",
+      "remediation": "Optional: add a smoke test (Playwright) or keep screenshots as evidence.",
+      "priority": "low",
+      "acceptance_test": "AT-S10: screenshots of the 7 pages with timestamps kept in docs/portfolio/evidence/."
+    },
+    {
+      "requirement_id": "S-11",
+      "title": "End-to-end data flow implemented and documented",
+      "status": "PASS",
+      "evidence": [
+        "DATA_FLOW.md (all stages; delivery implemented)",
+        "scripts/verify_pipeline.py + reporting smoke test"
+      ],
+      "gap": "The 1M run checks up to storage; delivery was checked by a separate smoke test, not in one script.",
+      "risk": "Low.",
+      "remediation": "Extend verify_pipeline.py to query /v1/metrics/requests for the run's tenants and compare with storage.",
+      "priority": "medium",
+      "acceptance_test": "AT-S11: verify_pipeline prints 'API total == stored total' and passes."
+    },
+    {
+      "requirement_id": "S-12",
+      "title": "Event-loss prevention/detection",
+      "status": "PASS",
+      "evidence": [
+        "Outbox in the decision transaction: gateway/services/decisions.py:471-487; tests/integration/test_event_outbox.py::test_outbox_failure_rolls_back_the_decision",
+        "Ack-gated marking + retry: publisher/service.py:60-115; tests/integration/test_outbox_publisher.py",
+        "DLQ, checkpoints, dedup, restart test (EVALUATION.md)",
+        "Late drops exported: streaming/main.py"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "S-13",
+      "title": "Effectively-once processing",
+      "status": "PASS",
+      "evidence": [
+        "Dedup by event_id within the watermark (streaming/aggregations.py:67)",
+        "Idempotent upserts (streaming/sink.py)",
+        "Batch-keyed progress counts (migrations/versions/0007 pipeline_run_counts)",
+        "docs/spark-streaming.md fault-tolerance table"
+      ],
+      "gap": "Kafka sinks (valid, dead-letter) are at-least-once; effectively-once holds for aggregates, not for the topics.",
+      "risk": "Low (documented).",
+      "remediation": "-",
+      "priority": "low",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "A-01",
+      "title": "Gateway policy enforcement",
+      "status": "PASS",
+      "evidence": [
+        "policy/engine.py:19-41 (precedence, final decisions), policy/loader.py (versioned set, fail closed), policy/validator.py",
+        "tests/unit/test_policy_engine.py, test_policy_loader.py, test_policy_validator.py",
+        "Alert is a side effect (policy/engine.py SIDE_EFFECTS), not a final action"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "A-02",
+      "title": "Trusted model registry (no client-supplied endpoint/jurisdiction trust)",
+      "status": "FAIL",
+      "evidence": [
+        "gateway/services/decisions.py:146,148,234-235 use req.destination_jurisdiction and req.requested_model",
+        "AIAsset model exists (gateway/models.py:71) but is not used by decide()"
+      ],
+      "gap": "A client can declare 'eu' for a non-EU model and bypass the sovereignty policy.",
+      "risk": "Security/governance credibility; explicitly required in the project brief.",
+      "remediation": "Phase 4: resolve model, endpoint, jurisdiction and allowed purposes from ai_assets; reject unknown, inactive or unapproved assets; seed the registry; update tests.",
+      "priority": "high",
+      "acceptance_test": "AT-A02: a request claiming destination_jurisdiction=eu for a registry non-EU model is evaluated as non_eu; an unknown model is denied (403/deny) and audited."
+    },
+    {
+      "requirement_id": "A-03",
+      "title": "PII and sensitive-data detection",
+      "status": "PASS",
+      "evidence": [
+        "detection/pii/regex_detector.py, NER via Presidio (detection/pipeline.py)",
+        "detection/transforms.py (redact, mask, pseudonymise, keyed entity hash)",
+        "Detection rows store keyed hashes and offsets (gateway/services/decisions.py Detection insert)",
+        "EVALUATION.md PII section; tests/unit/test_regex_detector.py"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "A-04",
+      "title": "Prompt-injection and intent detection",
+      "status": "PASS",
+      "evidence": [
+        "detection/injection/detector.py (rules + classifier, direct/indirect)",
+        "ml/evaluation/results (deepset real-data evaluation)",
+        "EVALUATION.md Phase 4 section; tests/unit/test_injection.py"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "A-05",
+      "title": "Agent behaviour anomaly detection",
+      "status": "PASS",
+      "evidence": [
+        "agents/features.py:12-14 (10-min window, 7-day baseline, MIN_BASELINE_EVENTS=30)",
+        "agents/anomaly_detector.py:170-219 (Isolation Forest + statistics, insufficient_baseline fallback, reasons)",
+        "Stream-level score is a documented heuristic (docs/aggregations.md)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "A-06",
+      "title": "Response guardrails",
+      "status": "PARTIAL",
+      "evidence": [
+        "detection/output/guardrails.py:53-75 (PII redaction, secret leak, system-prompt leak, attack payload)",
+        "tests/unit/test_output_guard.py"
+      ],
+      "gap": "No canary-token detection; no cross-tenant leakage detection; actions are block/redact only (no quarantine).",
+      "risk": "Listed in the brief; not core to Task 2.",
+      "remediation": "Add a per-tenant canary marker check and a cross-tenant identifier check to OutputGuard; map severe hits to quarantine.",
+      "priority": "medium",
+      "acceptance_test": "AT-A06: tests prove a planted canary blocks the answer and another tenant's pseudonym in an answer is blocked."
+    },
+    {
+      "requirement_id": "A-07",
+      "title": "Explainable, tamper-evident audit trail",
+      "status": "PARTIAL",
+      "evidence": [
+        "audit/hash_chain.py, audit/service.py (per-tenant chain, advisory lock)",
+        "decision.created event data: gateway/services/decisions.py (policies, versions, risk, detections, explanation)",
+        "GET /v1/audit/verify"
+      ],
+      "gap": "Retention policy is configured (gateway/config.py:29) but not enforced or documented as a procedure.",
+      "risk": "Governance.",
+      "remediation": "Document audit retention (and archive-before-delete to keep chains verifiable); implement it with T2-09.",
+      "priority": "medium",
+      "acceptance_test": "AT-A07: docs/privacy.md describes audit retention; the retention job archives and keeps verify passing."
+    },
+    {
+      "requirement_id": "A-08",
+      "title": "Data minimisation",
+      "status": "PARTIAL",
+      "evidence": [
+        "No raw prompt or output storage (tests/integration/test_forwarding_flow.py asserts the answer is not audited)",
+        "Value-free events and DLQ",
+        "Keyed entity hashes (detection/transforms.py:36-39)"
+      ],
+      "gap": "Plain SHA-256 of content (gateway/services/decisions.py:198) and output (gateway/services/forwarding.py:43); no retention limits enforced.",
+      "risk": "Predictable prompts or outputs can be confirmed by hash.",
+      "remediation": "Same as T2-10.",
+      "priority": "high",
+      "acceptance_test": "AT-T2-10."
+    },
+    {
+      "requirement_id": "A-09",
+      "title": "AI governance documentation",
+      "status": "PARTIAL",
+      "evidence": [
+        "docs/model-cards.md, docs/privacy.md, EVALUATION.md, SECURITY.md, docs/risks-and-mitigations.md",
+        "Human oversight: review workflow (gateway/routers/decisions.py review endpoints)"
+      ],
+      "gap": "SECURITY.md and docs/privacy.md do not cover the streaming components (one Kafka mention in SECURITY.md); THREAT_MODEL.md planned but missing.",
+      "risk": "Docs lag the implementation.",
+      "remediation": "Update SECURITY.md and docs/privacy.md for streaming; add THREAT_MODEL.md (STRIDE per trust boundary).",
+      "priority": "medium",
+      "acceptance_test": "AT-A09: SECURITY.md has a streaming section; THREAT_MODEL.md covers 5 trust boundaries."
+    },
+    {
+      "requirement_id": "A-10",
+      "title": "Honest compliance claims",
+      "status": "PASS",
+      "evidence": [
+        "README.md:5 disclaimer (technical controls support governance; no legal advice or certification)",
+        "grep over *.md finds no 'ensures GDPR', 'guarantees security' or 'production-ready' claims",
+        "EVALUATION.md states single-run, single-machine scope"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "R-01",
+      "title": "Repository structure",
+      "status": "PASS",
+      "evidence": [
+        "Top-level packages per component; infra/{docker,kafka,monitoring}; migrations/; tests/{unit,integration,streaming,spark,reporting,ml,security}; docs/"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "R-02",
+      "title": "Configuration management",
+      "status": "PASS",
+      "evidence": [
+        "pydantic settings validated at start: gateway/config.py, reporting/config.py, publisher/config.py, producer/config.py",
+        "Placeholder secrets rejected (gateway/config.py _reject_placeholder; migrations 0007/0008)",
+        ".env.example documents every variable"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "R-03",
+      "title": "Database migrations",
+      "status": "PASS",
+      "evidence": [
+        "migrations/versions/0001-0008",
+        "tests/conftest.py migrated_db: drops the schema and runs alembic upgrade head before the DB tests"
+      ],
+      "gap": "Downgrade paths are not tested.",
+      "risk": "Low.",
+      "remediation": "Add an upgrade -> downgrade -> upgrade round-trip test.",
+      "priority": "low",
+      "acceptance_test": "AT-R03: the round-trip test passes."
+    },
+    {
+      "requirement_id": "R-04",
+      "title": "API documentation",
+      "status": "PASS",
+      "evidence": [
+        "FastAPI OpenAPI (dev) for gateway and reporting; tests/reporting/...::test_openapi_contract_lists_every_endpoint",
+        "docs/api.md (auth, parameters, error format, response example)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "R-05",
+      "title": "Testing",
+      "status": "PASS",
+      "evidence": [
+        "723 passed, 2 skipped (Docker run 2026-11-07); 11 Spark tests in the Spark image",
+        "Kafka round-trip tests (tests/integration/test_kafka_roundtrip.py), DB tests, reporting API tests, security tests (tests/security)",
+        "End to end: scripts/verify_pipeline.py (manual)"
+      ],
+      "gap": "-",
+      "risk": "-",
+      "remediation": "-",
+      "priority": "none",
+      "acceptance_test": "-"
+    },
+    {
+      "requirement_id": "R-06",
+      "title": "CI/CD",
+      "status": "PARTIAL",
+      "evidence": [
+        ".github/workflows/ci.yml: ruff, pytest with Postgres service, bandit, pip-audit, semgrep, frontend build (tsc), trivy fs + gateway image, Spark image tests"
+      ],
+      "gap": "CI has no Kafka service, so the Kafka round-trip tests skip in CI; no Python type checking; pip-audit only on requirements.txt; Trivy image scan only on the gateway; CI not yet run on the streaming branch (not pushed).",
+      "risk": "Claims of 'CI-verified' streaming would be unsupported.",
+      "remediation": "Add a Kafka service container to the python job; pip-audit all requirements files; Trivy all images; optionally mypy; push and get a green run.",
+      "priority": "high",
+      "acceptance_test": "AT-R06: a CI run on main is green, with the Kafka tests executed (not skipped) and 4 images scanned."
+    },
+    {
+      "requirement_id": "R-07",
+      "title": "Observability",
+      "status": "PARTIAL",
+      "evidence": [
+        "Structured JSON logs (gateway/logging_config.py; streaming/log.py)",
+        "Prometheus /metrics on gateway, publisher, producer, processor, reporting",
+        "Health/readiness endpoints",
+        "X-Request-ID correlation (gateway/main.py, reporting/main.py)",
+        "infra/monitoring/prometheus.yml (opt-in profile)"
+      ],
+      "gap": "No distributed trace IDs across services; no error tracking; Prometheus does not scrape reporting-api or the processor; no alert rules for streaming.",
+      "risk": "Medium.",
+      "remediation": "Add reporting-api and spark-stream-processor scrape jobs plus streaming alerts; carry event_id/request_id in processor logs.",
+      "priority": "medium",
+      "acceptance_test": "AT-R07: Prometheus targets page shows 5 targets up; promtool validates the new rules."
+    },
+    {
+      "requirement_id": "R-08",
+      "title": "Reproducibility for a new developer",
+      "status": "PARTIAL",
+      "evidence": [
+        "README quick starts; docs/runbook.md; docs/docker-compose.md"
+      ],
+      "gap": "Same as T2-13 (clean clone unverified, manual .env).",
+      "risk": "High.",
+      "remediation": "Same as T2-13.",
+      "priority": "high",
+      "acceptance_test": "AT-T2-13."
+    },
+    {
+      "requirement_id": "R-09",
+      "title": "Documentation accuracy",
+      "status": "PARTIAL",
+      "evidence": [
+        "docs/architecture-after-refactor.md:3 'Nothing in this document is implemented yet' (now wrong)",
+        "docs/refactor-plan.md:9 'No code has been written' (now wrong)",
+        "docs/refactor-plan.md and architecture-after-refactor.md mention a 2-minute watermark and a 200k offset cap (changed to 5 min / none)",
+        "SECURITY.md lacks streaming (see A-09); THREAT_MODEL.md referenced in the plans but absent"
+      ],
+      "gap": "Planning docs contradict the implementation.",
+      "risk": "An examiner could read stale statements as false claims.",
+      "remediation": "Mark the planning docs as historical (with the date) or update their status lines; reconcile the watermark/cap values; add THREAT_MODEL.md.",
+      "priority": "high",
+      "acceptance_test": "AT-R09: grep for 'Nothing in this document is implemented' and '2 minutes' in docs/ returns nothing outside clearly marked historical notes."
+    },
+    {
+      "requirement_id": "R-10",
+      "title": "Technical debt",
+      "status": "PARTIAL",
+      "evidence": [
+        "Publisher uses the app DB user",
+        "No outbox or aggregate retention",
+        "Plain SHA-256 fingerprints",
+        "Ollama always on (about 3 GB)",
+        "Dedup state x8 queries (each aggregation query deduplicates separately)",
+        "docs/project-explained.html untracked"
+      ],
+      "gap": "Listed items affect security, operations and cost.",
+      "risk": "Medium.",
+      "remediation": "Track them in remediation-plan.md (medium/low sections).",
+      "priority": "medium",
+      "acceptance_test": "AT-R10: each debt item has an issue/plan entry with an owner and status."
+    }
+  ]
+}

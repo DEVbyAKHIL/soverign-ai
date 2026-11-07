@@ -29,8 +29,15 @@ body { margin: 0; }
 
 /* Status palette (fixed, never themed); always paired with an icon + label. */
 :root { --status-good: #0ca30c; --status-warning: #fab219; --status-serious: #ec835a; --status-critical: #d03b3b;
-        --series-1: #2a78d6; --hover: color-mix(in srgb, var(--text) 6%, transparent); }
-@media (prefers-color-scheme: dark) { :root { --series-1: #3987e5; } }
+        --series-1: #2a78d6; --hover: color-mix(in srgb, var(--text) 6%, transparent);
+        /* Categorical series (models, jurisdictions, agents); always shown with a legend. */
+        --series-2: #e07b1a; --series-3: #2f9e6e; --series-4: #8a5cd1; --series-5: #c4467c; --series-6: #6b7785; }
+@media (prefers-color-scheme: dark) { :root { --series-1: #3987e5; --series-2: #f0913a; --series-3: #45b884;
+        --series-4: #a27ce6; --series-5: #dc6596; --series-6: #8d98a6; } }
+.live-note { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.nav-group { margin: 12px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
 h2 { margin: 0 0 12px; font-size: 20px; }
 h3 { margin: 0 0 12px; font-size: 14px; }
 .small { font-size: 12px; }
@@ -75,3 +82,4 @@ tbody tr:hover { background: var(--hover); }
 .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+tr.selected td { background: var(--hover); }

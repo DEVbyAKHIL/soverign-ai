@@ -16,6 +16,7 @@ All services run locally; nothing is deployed to a cloud provider. Host ports bi
 | `kafka-init` | `apache/kafka:3.9.0` | One-shot topic creation (`infra/kafka/topics.sh`) | — | exits 0 | no |
 | `event-publisher` | `infra/docker/streaming.Dockerfile` | Outbox → Kafka relay | — (9100 internal) | `/healthz` heartbeat | unless-stopped |
 | `event-producer` | `infra/docker/streaming.Dockerfile` | Synthetic telemetry, continuous | — (9100 internal) | `/healthz` heartbeat | unless-stopped |
+| `reporting-api` | `infra/docker/reporting.Dockerfile` | Read-only metrics API | 8001 | `/healthz` | unless-stopped |
 | `spark-stream-processor` | `infra/docker/spark.Dockerfile` (target `runtime`) | Spark Structured Streaming: validate, aggregate, upsert | — (9100 internal) | `/healthz` = all queries active | unless-stopped |
 
 **Start order** is enforced by `depends_on` conditions:
@@ -23,7 +24,7 @@ All services run locally; nothing is deployed to a cloud provider. Host ports bi
 ```text
 postgres (healthy) ─► migrate (completed) ─► gateway, event-publisher
 kafka (healthy) ─► kafka-init (completed) ─► event-publisher, event-producer, spark-stream-processor
-migrate (completed) ─► spark-stream-processor
+migrate (completed) ─► spark-stream-processor, reporting-api
 ```
 
 ## Optional profiles (never started by plain `up`)
@@ -40,9 +41,9 @@ migrate (completed) ─► spark-stream-processor
 | Measure | Where applied |
 |---|---|
 | `no-new-privileges` and `cap_drop: ALL` | Every application, streaming and Kafka container |
-| Read-only root filesystem | gateway, migrate, frontend, event-publisher, event-producer, prometheus |
-| Non-root users | gateway 10001, streaming 10002, frontend 101, Kafka `appuser` |
-| Least-privilege secrets | `event-publisher` receives only `DATABASE_URL`, not the whole `.env` file; `event-producer` receives no secrets |
+| Read-only root filesystem | gateway, migrate, frontend, event-publisher, event-producer, spark-stream-processor, reporting-api, prometheus |
+| Non-root users | gateway 10001, streaming 10002, reporting 10003, Spark 185, frontend 101, Kafka `appuser` |
+| Least-privilege secrets | `event-publisher` receives only `DATABASE_URL`, not the whole `.env` file; `event-producer` receives no secrets; `reporting-api` receives only the JWT verification settings and the `reporting_ro` login |
 | Graceful shutdown | `stop_grace_period`: SIGTERM, then the current batch finishes, the Kafka producer flushes, and the process exits |
 
 ## Volumes

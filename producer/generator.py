@@ -67,11 +67,18 @@ class AgentProfile:
 
 class EventGenerator:
     def __init__(
-        self, seed: int = 42, tenants: int = 5, agents: int = 40, run_id: str | None = None
+        self,
+        seed: int = 42,
+        tenants: int = 5,
+        agents: int = 40,
+        run_id: str | None = None,
+        tenant_ids: list[str] | None = None,
     ) -> None:
         self.rng = random.Random(seed)  # noqa: S311  # nosec B311 - synthetic data
         self.run_id = run_id
         self.tenants = [self._uuid() for _ in range(tenants)]
+        if tenant_ids:  # fixed tenants, e.g. the dashboard's demo tenant
+            self.tenants = [str(uuid.UUID(t)) for t in tenant_ids]
         self.callers = {t: [self._uuid() for _ in range(20)] for t in self.tenants}
         self.agents = [
             AgentProfile(

@@ -38,7 +38,7 @@ jobs:
       - name: Pytest
         run: pytest --cov-fail-under=80
       - name: Bandit
-        run: bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer
+        run: bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer streaming reporting
       - name: pip-audit
         run: pip-audit -r requirements.txt
 
@@ -67,6 +67,8 @@ jobs:
         run: docker build -f infra/docker/gateway.Dockerfile -t gateway:ci .
       - name: Build streaming image
         run: docker build -f infra/docker/streaming.Dockerfile -t streaming:ci .
+      - name: Build reporting image
+        run: docker build -f infra/docker/reporting.Dockerfile -t reporting:ci .
       - name: Build Spark processor image and run its aggregation tests
         run: |
           docker build -f infra/docker/spark.Dockerfile --target test -t spark-tests:ci .

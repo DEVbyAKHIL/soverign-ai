@@ -1,4 +1,4 @@
-# Runbook (streaming phases S1-S2)
+# Runbook (streaming phases S1-S3)
 
 ## Start / stop
 
@@ -86,3 +86,12 @@ docker compose --profile test run --rm spark-tests      # aggregation window mat
 | Full reprocess | `docker compose stop spark-stream-processor`, `docker volume rm sovereign-ai-gateway_sparkcheckpoints`, truncate `aggregated_*`, `pipeline_*`, start the processor |
 | Inspect dead letters | `docker compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic governance.events.dead-letter --from-beginning --max-messages 20` (reasons and coordinates only, no payloads) |
 | Events older than the watermark | Not aggregated by design (5 min, `STREAM_WATERMARK`); exported as `stream_rows_dropped_by_watermark` on /metrics. Do not re-enable `STREAM_MAX_OFFSETS_PER_TRIGGER` without raising the watermark |
+
+## Reporting API and live dashboard (phase S3)
+
+| Situation | What to do |
+|---|---|
+| Dashboard pages show "No data in this range yet" | Check that `event-producer` is running (it feeds the demo tenant `aaaaaaaa-0000-4000-8000-000000000001`) and that `spark-stream-processor` is healthy. Aggregates appear within one trigger (~5 s) after Spark processes the events |
+| 401 / 403 from `/reporting/...` | The token is missing or expired (gateway tokens last 15 min), or the role lacks `audit:read` (use `admin` or `security_analyst`) |
+| 503 on `/readyz` | The database is unreachable, or `REPORTING_DB_PASSWORD` changed after migration 0008. Re-run `docker compose run --rm migrate` to reset the role password |
+| "(stale)" next to the freshness time | The processor hasn't written this tenant's data for more than 2 minutes. Check `docker compose logs spark-stream-processor` |

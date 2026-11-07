@@ -7,7 +7,7 @@ The data moves through five stages: ingestion, preprocessing, aggregation, stora
 | Ingestion (S1) | Implemented and verified |
 | Preprocessing and aggregation (S2) | Implemented and verified |
 | Storage (S2) | Implemented and verified |
-| Delivery: reporting API and dashboard (S3) | Planned |
+| Delivery: reporting API and dashboard (S3) | Implemented and verified (tests + live smoke test) |
 
 ```mermaid
 flowchart LR
@@ -35,7 +35,7 @@ flowchart LR
     A1 & A2 & A3 & A4 & A5 -->|foreachBatch upsert| PG[(aggregated_* tables<br/>pipeline_progress)]
   end
   subgraph Delivery
-    PG -.->|phase S3| API[reporting-api] -.-> UI[dashboard]
+    PG -->|reporting_ro, SELECT only| API[reporting-api<br/>JWT, tenant from token] -->|/reporting, poll 5 s| UI[dashboard]
   end
 ```
 
@@ -74,11 +74,11 @@ Messages are keyed by `tenant_id`, which keeps per-tenant ordering within a part
 - The primary key is (window, dimensions, metric). Spark's update output mode re-emits the current window value, and `INSERT … ON CONFLICT DO UPDATE` overwrites it. Replays after a restart are therefore idempotent and committed results are never lost.
 - Writes use the least-privilege `stream_processor` role.
 
-## 5. Delivery (phase S3, planned)
+## 5. Delivery (phase S3)
 
-- A separate `reporting-api` (FastAPI) will read only the aggregate tables, through a read-only role. The tenant will always come from the JWT.
-- It will expose `/v1/metrics/*` with time-range, tenant and agent filters and pagination.
-- The React dashboard will poll it every 5 seconds.
+- `reporting-api` (FastAPI, separate container) reads only the aggregate tables as `reporting_ro`. Every query binds the tenant from the caller's JWT (`audit:read` scope required).
+- It exposes `/v1/metrics/*` and `/v1/agents/{id}/risk` with time-range, agent, decision, model and jurisdiction filters and keyset pagination. Small PII and sovereignty cells (fewer than 5 events) are suppressed. See `docs/api.md`.
+- The React dashboard (**Real-time (streaming)** section, 7 pages) polls through nginx `/reporting/` every 5 seconds, pauses while the tab is hidden, and shows data freshness. The transport sits in one hook (`usePolling`), so it can move to SSE or WebSockets without rewriting the pages. The browser receives aggregates only.
 
 ## Verification
 

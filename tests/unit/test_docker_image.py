@@ -89,3 +89,7 @@ def test_runtime_code_does_not_import_training_code():
             if re.search(r"^\s*(from|import) ml[\s.]", source, re.MULTILINE):
                 offenders.append(str(path.relative_to(ROOT)))
     assert not offenders, offenders
+
+
+def test_reporting_image_copies_every_imported_first_party_module():
+    assert not _missing("reporting.Dockerfile", {"reporting"})

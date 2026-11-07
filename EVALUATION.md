@@ -205,3 +205,56 @@ denial storms (21%), tool abuse (8%) and retry loops (7%) are mostly missed by d
 within ~2× of normal. The model cannot see slow drift spread across many windows, or an adversary
 who stays under the thresholds. The 7-day baseline includes anything an attacker did earlier, so
 slow poisoning is possible.
+
+## Streaming data backend (Task 2, phases S1-S2)
+
+All numbers below come from runs on one developer machine (Windows 11, Docker Desktop WSL2 VM
+with 8 CPUs and ~8 GB RAM) on 2026-11-07, with the rest of the stack running (gateway, Ollama,
+continuous producer at 10 events/s). They are single runs, not benchmarks.
+
+### Ingestion: producer -> Kafka (`make verify-1m`, phase S1)
+
+| Measure | Result |
+|---|---|
+| Events generated / acknowledged by Kafka | 1,000,000 / 1,000,000 |
+| Read back from `governance.events.raw` | 1,000,000 |
+| Valid against schema 1.0.0, valid UTC timestamps | 1,000,000 / 1,000,000 |
+| Distinct `event_id`s / duplicates | 1,000,000 / 0 |
+| Produce time | 124 s (about 8,000 messages/s, `acks=all`, idempotent producer) |
+| Read-back + validation time | 458 s (single Python consumer validating every event) |
+| Result | PASSED |
+
+### End to end: Kafka -> Spark -> PostgreSQL with a processor kill (`make verify-pipeline`, phase S2)
+
+Run 1 (2-minute watermark, `maxOffsetsPerTrigger=200000`): **FAILED**.
+
+| Measure | Result |
+|---|---|
+| Produced / consumed / dead-letter | 1,000,000 / 1,000,000 / 0 |
+| Aggregated | 916,437 |
+| Missing (dropped as late by the watermark) | 83,563 (8.4%) |
+
+Diagnosis: all missing events were the last ~33 s of the run on one Kafka partition (the three
+tenants it carries each lost ~15%; the two tenants on other partitions were complete). Spark splits
+`maxOffsetsPerTrigger` across partitions by offset count. Partitions that also carried the sparse
+continuous traffic advanced further in event time per batch than the partition carrying only the
+dense burst, the watermark followed the leading partitions, and the lagging partition's tail was
+older than the 2-minute watermark. Fix: no offset cap by default and a 5-minute watermark;
+late drops are now exported (`stream_rows_dropped_by_watermark`) and reported by the script.
+
+Run 2 (5-minute watermark, no offset cap): **PASSED**.
+
+| Measure | Result |
+|---|---|
+| Events produced (Kafka acks) | 1,000,000 |
+| Events consumed (`validate` query) | 1,000,000 |
+| Events aggregated (sum of 1-minute tumbling windows) | 1,000,000 |
+| Same total from decisions-by-type (1 min), PII-per-model (5 min), sovereignty (10 min) | 1,000,000 each |
+| Dead-letter events / late events | 0 / 0 |
+| Sliding-window rows written (latency, injections, agent risk) | 4,575 |
+| Processor killed (SIGKILL) and restarted at | 430,000 events consumed |
+| Produce time / end-to-end until aggregates stable | 224 s / 516 s |
+| Processor restart recovery | PASSED (no loss, no double counting) |
+
+Not measured yet: peak memory per container, processor throughput without other load, behaviour
+with dead-letter injection at 1M scale (covered at small scale by tests), multi-broker Kafka.

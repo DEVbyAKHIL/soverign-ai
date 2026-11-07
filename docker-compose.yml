@@ -14,6 +14,7 @@ services:
     volumes: ["pgdata:/var/lib/postgresql/data"]
     ports: ["127.0.0.1:5432:5432"]
     security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -26,6 +27,7 @@ services:
     volumes: ["redisdata:/data"]
     ports: ["127.0.0.1:6379:6379"]
     security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep PONG"]
       interval: 5s
@@ -38,6 +40,9 @@ services:
     build: { context: ., dockerfile: infra/docker/gateway.Dockerfile }
     command: ["sh", "-c", "alembic upgrade head && python -m policy.sync"]
     env_file: .env
+    environment:
+      # Login password for the least-privilege stream_processor role (migration 0007).
+      PROCESSOR_DB_PASSWORD: ${PROCESSOR_DB_PASSWORD:?set in .env}
     depends_on:
       postgres: { condition: service_healthy }
     <<: *hardening
@@ -56,6 +61,8 @@ services:
     <<: *hardening
     read_only: true
     tmpfs: ["/tmp"]
+    restart: unless-stopped
+    stop_grace_period: 25s
 
   # Local model backend. Approved requests are forwarded here; nothing leaves the host.
   # Pull models once: docker compose exec ollama ollama pull llama3.2:3b (and nomic-embed-text)
@@ -64,6 +71,12 @@ services:
     volumes: ["ollamadata:/root/.ollama"]
     ports: ["127.0.0.1:11434:11434"]
     security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build: { context: ., dockerfile: infra/docker/frontend.Dockerfile }
@@ -72,6 +85,151 @@ services:
     <<: *hardening
     read_only: true
     tmpfs: ["/tmp", "/var/cache/nginx", "/var/run"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+  # ---------------------------------------------------------------- streaming (Task 2) ---------
+  # Event backbone. KRaft mode (combined broker + controller): no ZooKeeper. Internal network
+  # only - no host port. PLAINTEXT is a local-development setting; see docs/kafka.md for TLS/SASL.
+  kafka:
+    image: apache/kafka:3.9.0
+    environment:
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-c5hENzkPRF2nRqRssDD7NQ}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: ${KAFKA_HEAP_OPTS:--Xms512m -Xmx512m}
+    volumes: ["kafkadata:/var/lib/kafka/data"]
+    <<: *hardening
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 15s
+      retries: 12
+      start_period: 20s
+
+  # One-shot: creates the governance.events.* topics (idempotent), then exits.
+  kafka-init:
+    image: apache/kafka:3.9.0
+    entrypoint: ["/bin/bash", "/topics.sh"]
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+    volumes: ["./infra/kafka/topics.sh:/topics.sh:ro"]
+    depends_on:
+      kafka: { condition: service_healthy }
+    <<: *hardening
+    restart: "no"
+
+  # Relays the transactional outbox (written by the gateway) to Kafka. Marks a row published only
+  # after Kafka acknowledges it (acks=all); retries with exponential backoff. Least privilege: it
+  # receives only the database URL, not the gateway's JWT or hashing secrets.
+  event-publisher:
+    build: { context: ., dockerfile: infra/docker/streaming.Dockerfile }
+    command: ["python", "-m", "publisher"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set in .env}
+      KAFKA_BOOTSTRAP: kafka:9092
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PUBLISHER_BATCH_SIZE: ${PUBLISHER_BATCH_SIZE:-500}
+      PUBLISHER_BACKOFF_BASE_S: ${PUBLISHER_BACKOFF_BASE_S:-1}
+      PUBLISHER_BACKOFF_MAX_S: ${PUBLISHER_BACKOFF_MAX_S:-300}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      kafka-init: { condition: service_completed_successfully }
+    <<: *hardening
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  # Synthetic governance telemetry. `up` runs continuous mode at PRODUCER_RATE events/s.
+  # Backfill / verification:  make verify-1m   (see docs/runbook.md)
+  event-producer:
+    build: { context: ., dockerfile: infra/docker/streaming.Dockerfile }
+    command: ["python", "-m", "producer", "continuous"]
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PRODUCER_RATE: ${PRODUCER_RATE:-10}
+      PRODUCER_SEED: ${PRODUCER_SEED:-42}
+      PRODUCER_FAILURE_RATE: ${PRODUCER_FAILURE_RATE:-0}
+      PRODUCER_DUPLICATE_RATE: ${PRODUCER_DUPLICATE_RATE:-0}
+      PRODUCER_SPAN_HOURS: ${PRODUCER_SPAN_HOURS:-24}
+      PRODUCER_DISORDER_S: ${PRODUCER_DISORDER_S:-30}
+    depends_on:
+      kafka-init: { condition: service_completed_successfully }
+    <<: *hardening
+    read_only: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+
+  # Spark Structured Streaming (local mode): raw -> validate -> valid / dead-letter; valid ->
+  # watermark + dedup(event_id) -> 8 windowed aggregations -> idempotent upserts into Postgres.
+  # Checkpoints (offsets + state) live on the sparkcheckpoints volume, so a restart resumes.
+  spark-stream-processor:
+    build: { context: ., dockerfile: infra/docker/spark.Dockerfile, target: runtime }
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+      PROCESSOR_DSN: postgresql://stream_processor:${PROCESSOR_DB_PASSWORD:?set in .env}@postgres:5432/${POSTGRES_DB}
+      SPARK_MASTER: ${SPARK_MASTER:-local[4]}
+      STREAM_TRIGGER: ${STREAM_TRIGGER:-5 seconds}
+      STREAM_WATERMARK: ${STREAM_WATERMARK:-5 minutes}
+      STREAM_MAX_OFFSETS_PER_TRIGGER: ${STREAM_MAX_OFFSETS_PER_TRIGGER:-0}
+    volumes:
+      - sparkcheckpoints:/checkpoints
+      - sparkwork:/tmp/spark
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      kafka-init: { condition: service_completed_successfully }
+    <<: *hardening
+    read_only: true
+    tmpfs: ["/tmp:size=256m"]
+    mem_limit: 3g
+    restart: unless-stopped
+    stop_grace_period: 60s
+
+  # ------------------------------------------------------------- optional profiles -------------
+  # docker compose --profile tools up -d kafka-ui      -> http://127.0.0.1:8080 (read-only UI)
+  kafka-ui:
+    profiles: ["tools"]
+    image: ghcr.io/kafbat/kafka-ui:v1.0.0
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_READONLY: "true"
+      DYNAMIC_CONFIG_ENABLED: "false"
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      kafka: { condition: service_healthy }
+    security_opt: ["no-new-privileges:true"]
+
+  # docker compose --profile monitoring up -d prometheus -> http://127.0.0.1:9090
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./infra/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - promdata:/prometheus
+    ports: ["127.0.0.1:9090:9090"]
+    <<: *hardening
+    read_only: true
 
   # Full test suite on Linux, including NER. Not started by `up`:
   #   docker compose --profile test run --rm tests
@@ -84,12 +242,27 @@ services:
       NER_MODE: required
       TEST_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/gateway_test
       PGPASSWORD: ${POSTGRES_PASSWORD}
+      # Kafka round-trip tests create and delete their own throwaway topics.
+      KAFKA_TEST_BOOTSTRAP: kafka:9092
     depends_on:
       postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
     <<: *hardening
     tmpfs: ["/tmp"]
+
+  # Spark aggregation tests in the Spark image:  docker compose --profile test run --rm spark-tests
+  spark-tests:
+    profiles: ["test"]
+    build: { context: ., dockerfile: infra/docker/spark.Dockerfile, target: test }
+    <<: *hardening
+    tmpfs: ["/tmp"]
+    mem_limit: 2g
 
 volumes:
   pgdata:
   redisdata:
   ollamadata:
+  kafkadata:
+  promdata:
+  sparkcheckpoints:
+  sparkwork:

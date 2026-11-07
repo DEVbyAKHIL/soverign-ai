@@ -1,0 +1,5 @@
+# Python dependencies of the spark-stream-processor image (infra/docker/spark.Dockerfile).
+# pyspark itself comes from the apache/spark base image (same version as the JVM side).
+jsonschema==4.26.0
+psycopg[binary]==3.3.8
+prometheus-client==0.26.0

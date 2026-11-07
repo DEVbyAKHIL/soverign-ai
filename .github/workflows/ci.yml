@@ -38,7 +38,7 @@ jobs:
       - name: Pytest
         run: pytest --cov-fail-under=80
       - name: Bandit
-        run: bandit -c pyproject.toml -r gateway policy audit detection agents
+        run: bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer
       - name: pip-audit
         run: pip-audit -r requirements.txt
 
@@ -65,6 +65,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build gateway image
         run: docker build -f infra/docker/gateway.Dockerfile -t gateway:ci .
+      - name: Build streaming image
+        run: docker build -f infra/docker/streaming.Dockerfile -t streaming:ci .
+      - name: Build Spark processor image and run its aggregation tests
+        run: |
+          docker build -f infra/docker/spark.Dockerfile --target test -t spark-tests:ci .
+          docker run --rm spark-tests:ci
       - name: Trivy filesystem scan (deps, secrets, IaC)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:

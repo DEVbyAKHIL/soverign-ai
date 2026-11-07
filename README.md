@@ -1,6 +1,8 @@
-# Sovereign AI Access Gateway
+# Sovereign AI Access Gateway: A Real-Time Streaming Data Backend for AI Governance, Security, and Operational Analytics
 
-A policy-enforcement and audit gateway for AI workloads. It sits between users, AI agents, applications and model endpoints, and decides — with explainable, tamper-evident evidence — whether a given caller may send given data to a given model.
+A policy-enforcement and audit gateway for AI workloads, extended into a streaming data backend: every policy decision becomes a governance event that flows through Kafka to stream processing, an aggregate store and a live reporting API (streaming phases below).
+
+The gateway sits between users, AI agents, applications and model endpoints, and decides — with explainable, tamper-evident evidence — whether a given caller may send given data to a given model.
 
 > The platform provides technical controls and audit evidence that support AI governance, traceability, data protection, and security requirements. It does not replace legal advice, DPO review, formal certification, enterprise risk management, or regulatory approval.
 
@@ -16,6 +18,17 @@ A policy-enforcement and audit gateway for AI workloads. It sits between users, 
 | 6 | Forwarding to a self-hosted model (Ollama), output guardrails (PII redaction; secret, system-prompt and attack-payload blocking), `model.response` audit events; injection model retrained with a real public dataset | **Done** |
 | 7 | Dashboard: overview KPIs and trends, playground, decisions & review queue, policies, agents, audit trail with chain verification | **Done** |
 | 8 | Hardening | Planned |
+
+### Streaming data backend (Task 2)
+
+| Phase | Scope | State |
+|---|---|---|
+| S1 | Kafka (KRaft), versioned event schema, transactional outbox + separate `event-publisher`, `event-producer` (continuous + backfill, failure injection), 1M-event ingestion verification | **Implemented** (see [Streaming quick start](#streaming-quick-start)) |
+| S2 | Spark Structured Streaming: validation, dead-letter routing, 11 windowed aggregations (8 queries), idempotent PostgreSQL upserts, checkpoints, restart recovery | **Implemented** (`docs/spark-streaming.md`, `docs/aggregations.md`, `DATA_FLOW.md`) |
+| S3 | Reporting API and live dashboard pages | Planned |
+| S4 | Model-registry trust fix (model, jurisdiction, purposes from `ai_assets`) | Planned |
+
+Plan and design: `docs/refactor-plan.md`, `docs/architecture-after-refactor.md`, `docs/implementation-order.md`.
 
 ## Quick start (Docker)
 
@@ -34,6 +47,42 @@ docker compose exec ollama ollama pull nomic-embed-text
 ```
 
 Dashboard: http://localhost:5173 (sign in with a development role, e.g. `admin`, and try the Playground) · API docs (development only): http://localhost:8000/docs
+
+## Streaming quick start
+
+`docker compose up --build -d` also starts the streaming services:
+
+| Service | What it does |
+|---|---|
+| `kafka` | Event backbone, KRaft mode (no ZooKeeper), internal network only |
+| `kafka-init` | One-shot: creates `governance.events.raw` (6 partitions), `.valid` (6), `.dead-letter` (1) |
+| `event-publisher` | Relays the gateway's transactional outbox to Kafka; marks rows published only after Kafka acknowledges |
+| `event-producer` | Synthetic governance telemetry, continuous mode at `PRODUCER_RATE` events/s (default 10) |
+| `spark-stream-processor` | Spark Structured Streaming: validates `raw` → `valid` / `dead-letter`, 8 windowed aggregation queries → `aggregated_*` tables (upserts), checkpoints on a volume |
+
+Generate and verify one million timestamped events:
+
+```bash
+make verify-1m            # or: docker compose run --rm --build event-producer python -m producer verify-1m --total 1000000
+```
+
+The command backfills the events under a fresh run id and reads every one back from Kafka. It
+checks each event against `schemas/governance_event/1.0.0.json`, checks its UTC timestamp, counts
+distinct `event_id`s and prints a PASS/FAIL summary (exit code 1 on any mismatch).
+
+End-to-end check through Spark, with the processor killed and restarted mid-run (needs the stack up):
+
+```bash
+make verify-pipeline      # or: python scripts/verify_pipeline.py --total 1000000
+```
+
+It prints events produced / consumed / aggregated / dead-lettered and `Processor restart recovery: PASSED|FAILED`.
+
+`.env` must define `PROCESSOR_DB_PASSWORD` (see `.env.example`); `migrate` creates the least-privilege `stream_processor` login with it.
+
+Optional tools (not started by `up`): `make kafka-ui` → http://127.0.0.1:8080 (read-only), `make monitoring` → Prometheus on http://127.0.0.1:9090.
+
+More: `docs/kafka.md`, `docs/docker-compose.md`, `docs/runbook.md`.
 
 ## Local development (no Docker for the app)
 
@@ -88,4 +137,7 @@ Roles → scopes are defined in `gateway/core/security.py`.
 See `ARCHITECTURE.md`. Implemented: `gateway/` (API), `policy/` (policy engine), `audit/` (hash-chained audit),
 `detection/` (PII and prompt-injection detection), `agents/` (agent registry and behaviour anomalies) and
 `ml/` (synthetic data, training, evaluation). `detection/output` holds the output guardrails.
+Streaming: `events/` (event contract helpers), `schemas/governance_event/` (versioned JSON Schema),
+`publisher/` (outbox relay), `producer/` (synthetic telemetry and verification), `streaming/` (Spark processor),
+`scripts/verify_pipeline.py` (end-to-end verification). Data flow: `DATA_FLOW.md`.
 Further reading: `EVALUATION.md`, `docs/model-cards.md`, `docs/privacy.md`.

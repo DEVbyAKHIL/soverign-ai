@@ -10,7 +10,7 @@ migrate (one-shot): alembic upgrade head && python -m policy.sync
 
 | Package | Responsibility |
 |---|---|
-| `gateway/` | Stateless FastAPI service: auth, tenancy, rate limits, routers, the decision service. Scales horizontally. |
+| `gateway/` | Stateless FastAPI service: auth, tenancy, rate limits, routers, the decision service. Designed to run as several replicas (no in-process state); not load-tested. |
 | `policy/` | Policy schema and safety validation (`validator.py`), loading and versioning (`loader.py`), deterministic evaluation (`engine.py`), DB version sync (`sync.py`). |
 | `audit/` | Per-tenant SHA-256 hash chain (`hash_chain.py`), append and verify (`service.py`). |
 | `migrations/` | Alembic. `audit_events` is append-only via a Postgres trigger. |
@@ -183,3 +183,36 @@ React + Recharts served by nginx, calling `/v1/dashboard/summary` and `/v1/decis
 tenant-scoped, `audit:read`), which return counts, labels and scores only. Pages: overview,
 playground, decisions and review queue, policies, agents, audit trail with chain verification.
 Tokens live in memory only.
+
+## Streaming data backend (Task 2, phases S1-S2)
+
+The gateway is the control plane (synchronous security decisions). Streaming adds a data plane
+that carries a governance event for every decision. Phase S1 implements ingestion; stream
+processing, aggregation and reporting follow (`docs/implementation-order.md`).
+
+```mermaid
+flowchart LR
+  C[AI client / agent] -->|HTTPS + JWT| GW[gateway]
+  GW -->|"one transaction: decision + audit + event_outbox row"| PG[(postgres)]
+  PUB[event-publisher] -->|"poll due rows, FOR UPDATE SKIP LOCKED"| PG
+  PUB -->|"acks=all, idempotent, key=tenant_id"| RAW[[governance.events.raw<br/>6 partitions]]
+  PRODUCER[event-producer<br/>continuous / backfill] --> RAW
+  RAW --> SPARK[spark-stream-processor<br/>validate query]
+  SPARK --> VALID[[governance.events.valid]]
+  SPARK --> DLQ[[governance.events.dead-letter]]
+  VALID --> AGG[8 aggregation queries<br/>watermark, dedup, windows]
+  AGG -->|upsert| AGGDB[(aggregated_* tables)]
+```
+
+| Piece | Where | Behaviour |
+|---|---|---|
+| Event contract | `schemas/governance_event/1.0.0.json`, `events/schema.py` | JSON Schema 2020-12, `additionalProperties: false`, UTC `...sssZ` timestamps, allow-listed `metadata`. Versioning rules in `schemas/governance_event/README.md` |
+| Event construction | `events/builder.py`, `gateway/services/decisions.py` (`outbox_row`) | Built from the decision; `event_id` = decision id; `caller_id` is a keyed HMAC pseudonym (subkey of `ENTITY_HASH_KEY`); no prompt, entity values or redaction map |
+| Transactional outbox | `event_outbox` (migration 0006) | Inserted in the same transaction as the decision, detections, audit event and agent event, so either all are stored or none are |
+| Relay | `publisher/` (service `event-publisher`) | Batches of due rows under row locks; sends with `acks=all` + idempotent producer; sets `published_at` only for acknowledged messages; failed rows get `attempts+1`, `last_error` (exception class only) and `next_attempt_at = now + min(base*2^(n-1), max)` minus up to 20% jitter |
+| Delivery semantics | | At-least-once. A crash after the ack but before the commit re-sends the batch; consumers deduplicate on `event_id` |
+| Synthetic source | `producer/` (service `event-producer`) | Continuous (rate-limited, "now" timestamps) or backfill (N events over a time span, bounded disorder). Failure injection (8 kinds of invalid event) and duplicate injection for dead-letter and dedup tests. Messages carry `source` and `run_id` headers; events are marked `metadata.synthetic=true` |
+| Verification | `producer/verify.py`, `make verify-1m` | Reads a run back from Kafka, validates every event, counts distinct ids, prints a summary |
+| Ops | `events/runtime.py` | Each streaming service serves `/healthz` (heartbeat-based) and `/metrics` on internal port 9100 and stops gracefully on SIGTERM |
+| Stream processing (S2) | `streaming/`, service `spark-stream-processor` | Spark 3.5 Structured Streaming, local mode. `validate` query: JSON-Schema UDF, raw -> valid / dead-letter. 8 aggregation queries on valid: watermark 5 min, `dropDuplicatesWithinWatermark(event_id)`, tumbling/sliding event-time windows, `update` mode, `foreachBatch` upserts into `aggregated_*` (migration 0007). Checkpoints (offsets + RocksDB state) on volume `sparkcheckpoints`. See `docs/spark-streaming.md`, `docs/aggregations.md`, `DATA_FLOW.md` |
+| Aggregate store | `aggregated_*`, `pipeline_progress`, `pipeline_run_counts` | Long format, primary key = window + dimensions + metric, so replays are idempotent. Written by the least-privilege `stream_processor` role (no access to decisions, audit or outbox; no DELETE) |

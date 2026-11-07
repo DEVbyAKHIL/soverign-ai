@@ -73,12 +73,29 @@ def tumbling_sum(table: str, metric: str, tenants: str, extra: str = "") -> int:
     )
 
 
+def tumbling_totals(tenants: str) -> dict[str, int]:
+    """Events counted by each tumbling aggregation (each event lands in exactly one window)."""
+    pii = (
+        "select coalesce(sum(event_count),0) from aggregated_pii_metrics where "  # nosec B608
+        f"metric = 'pii_entities' and tenant_id in ({tenants})"
+    )
+    return {
+        "requests per tenant (1m)": tumbling_sum(
+            "aggregated_request_metrics", "requests", tenants, f"and agent_id = '{NIL}'"
+        ),
+        "decisions by type (1m)": tumbling_sum("aggregated_policy_metrics", "count", tenants),
+        "PII per model (5m)": num(pii),
+        "sovereignty (10m)": tumbling_sum("aggregated_sovereignty_metrics", "events", tenants),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--total", type=int, default=1_000_000)
     ap.add_argument("--restart-at", type=float, default=0.4)
     ap.add_argument("--no-restart", action="store_true")
-    ap.add_argument("--timeout-s", type=int, default=1800)
+    ap.add_argument("--timeout-s", type=int, default=2700)
+    ap.add_argument("--drain-timeout-s", type=int, default=900)
     args = ap.parse_args()
 
     seed = random.SystemRandom().randrange(10**6, 10**7)
@@ -141,33 +158,25 @@ def main() -> int:
         return 1
     produced, valid_expected = done["acked"], done["valid"]
 
-    # Drain: consumed reaches produced, then aggregates stay unchanged for 3 polls.
-    last, stable = None, 0
+    # Drain: wait until every tumbling aggregation has counted every valid event. "Unchanged for
+    # a while" is NOT a completion signal: after a restart one query can spend minutes in a single
+    # catch-up batch. Only when --drain-timeout-s passes without completion is the gap reported.
+    drain_started = None
     while time.monotonic() - started < args.timeout_s:
         consumed, valid, invalid = run_counts(run_id)
-        aggregated = tumbling_sum(
-            "aggregated_request_metrics", "requests", tenants, f"and agent_id = '{NIL}'"
-        )
-        snapshot = (consumed, aggregated)
-        stable = stable + 1 if snapshot == last and consumed >= produced else 0
-        last = snapshot
-        if stable >= 6:  # a busy micro-batch can take longer than 30 s
-            break
+        if consumed >= produced:
+            drain_started = drain_started or time.monotonic()
+            totals = tumbling_totals(tenants)
+            if all(v >= valid for v in totals.values()):
+                break
+            if time.monotonic() - drain_started > args.drain_timeout_s:
+                print(f"drain timeout: {totals}", flush=True)
+                break
         time.sleep(10)
     total_s = time.monotonic() - started
 
     consumed, valid, invalid = run_counts(run_id)
-    agg = {
-        "requests per tenant (1m)": tumbling_sum(
-            "aggregated_request_metrics", "requests", tenants, f"and agent_id = '{NIL}'"
-        ),
-        "decisions by type (1m)": tumbling_sum("aggregated_policy_metrics", "count", tenants),
-        "PII per model (5m)": num(
-            "select coalesce(sum(event_count),0) from aggregated_pii_metrics where "  # nosec B608 - generated UUIDs and constants only
-            f"metric = 'pii_entities' and tenant_id in ({tenants})"
-        ),
-        "sovereignty (10m)": tumbling_sum("aggregated_sovereignty_metrics", "events", tenants),
-    }
+    agg = tumbling_totals(tenants)
     sliding_rows = num(
         "select count(*) from (select 1 from aggregated_latency_metrics where tenant_id in "  # nosec B608 - generated UUIDs and constants only
         f"({tenants}) union all select 1 from aggregated_agent_risk_metrics where tenant_id in "
@@ -194,13 +203,13 @@ def main() -> int:
     print(f"Events consumed:              {consumed:,}")
     print(f"Events aggregated:            {aggregated:,}")
     print(f"Dead-letter events:           {invalid:,}")
-    print(f"Late (dropped by watermark):  {valid - aggregated:,}")
+    print(f"Not aggregated (late/missing): {valid - min(agg.values()):,}")
     for name, value in agg.items():
         print(f"  tumbling sum, {name + ':':<27}{value:,}")
     print(f"  sliding-window rows (latency, injections, agent risk): {sliding_rows:,}")
     if restarted_at is not None:
         print(f"Processor killed/restarted at: {restarted_at:,} events consumed")
-    print(f"Produce time: {produce_s:,.0f} s   end-to-end until stable: {total_s:,.0f} s")
+    print(f"Produce time: {produce_s:,.0f} s   end-to-end until fully aggregated: {total_s:,.0f} s")
     print("-" * 66)
     for name, ok in checks.items():
         print(f"[{'PASS' if ok else 'FAIL'}] {name}")

@@ -1,3 +1,4 @@
+# ruff: noqa: E501 - layout tables (coordinates + labels) read better on one line
 """Render docs/portfolio/architecture.png (Phase 1 architecture diagram).
 
     pip install matplotlib==3.10.7

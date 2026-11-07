@@ -22,6 +22,8 @@ COPY --chown=root:root policy ./policy
 COPY --chown=root:root audit ./audit
 COPY --chown=root:root detection ./detection
 COPY --chown=root:root agents ./agents
+COPY --chown=root:root events ./events
+COPY --chown=root:root schemas ./schemas
 COPY --chown=root:root migrations ./migrations
 COPY --chown=root:root alembic.ini ./
 USER 10001:10001

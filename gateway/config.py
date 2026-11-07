@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     model_embed: str = "nomic-embed-text"
     model_timeout_s: float = Field(default=120.0, gt=0, le=600)
     model_max_tokens: int = Field(default=512, ge=16, le=4096)
+    # Transactional outbox: every decision also writes a governance event in the same transaction;
+    # the separate event-publisher service relays it to Kafka.
+    event_outbox_enabled: bool = True
 
     @field_validator("cors_origins", mode="before")
     @classmethod

@@ -191,3 +191,23 @@ class AgentEvent(Base):
     tool_calls: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     content_hash: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
     created_at: Mapped[datetime] = _ts()
+
+
+class EventOutbox(Base):
+    """Transactional outbox: written in the decision's transaction, published by event-publisher.
+
+    published_at is set only after Kafka acknowledges the message (acks=all). Delivery is
+    at-least-once; consumers deduplicate on event_id (the primary key here).
+    """
+
+    __tablename__ = "event_outbox"
+    event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    tenant_id: Mapped[uuid.UUID] = _uuid()
+    topic: Mapped[str] = mapped_column(Text, nullable=False)
+    partition_key: Mapped[str] = mapped_column(Text, nullable=False)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = _ts()
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    next_attempt_at: Mapped[datetime] = _ts()
+    published_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)

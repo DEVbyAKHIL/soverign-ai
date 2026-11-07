@@ -59,7 +59,9 @@ def migrated_db():
 @pytest.fixture
 def clean_db(migrated_db):
     # TRUNCATE bypasses the row-level append-only trigger; only used to reset tests.
-    asyncio.run(_exec("TRUNCATE audit_events, detections, decisions, policies CASCADE"))
+    asyncio.run(
+        _exec("TRUNCATE audit_events, detections, decisions, policies, event_outbox CASCADE")
+    )
     return migrated_db
 
 

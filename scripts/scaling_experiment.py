@@ -17,6 +17,7 @@ cluster scalability (single Kafka broker, Spark local mode, shared CPU).
 
 import argparse
 import json
+import random
 import subprocess  # nosec B404 - drives docker compose with fixed argument lists
 import time
 import uuid
@@ -105,7 +106,9 @@ def phase(producers: int, events: int, timeout_s: int) -> dict:
                 run,
                 "--live",
                 "--seed",
-                str(1000 + i),
+                # Fresh random seed per producer: event ids derive from the seed, and a reused
+                # seed would resend earlier ids that Spark (correctly) drops as duplicates.
+                str(random.SystemRandom().randrange(10**6, 10**9)),
                 "--tenant-ids",
                 ",".join(tenants[i]),
             ],

@@ -138,3 +138,15 @@ docker compose -p clean down -v                       # remove the test stack an
 ```
 
 Recorded result: `EVALUATION.md`, section "Fresh-clone reproducibility".
+
+## Docker Desktop will not start: `Wsl/Service/CreateInstance/MountDisk/HCS/E_ACCESSDENIED`
+
+This happens when Docker's disk image was moved to a folder your user can only read (e.g. a drive whose default ACL gives Users read & execute only).
+
+1. Quit Docker Desktop.
+2. In an **administrator** PowerShell, grant your user full control of that folder only:
+   ```powershell
+   icacls "<disk image folder>" /grant "${env:USERNAME}:(OI)(CI)F" /T
+   ```
+3. Run `wsl --shutdown`.
+4. Start Docker Desktop normally. If it still fails, reboot once.

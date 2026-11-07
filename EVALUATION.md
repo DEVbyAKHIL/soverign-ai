@@ -258,3 +258,82 @@ Run 2 (5-minute watermark, no offset cap): **PASSED**.
 
 Not measured yet: peak memory per container, processor throughput without other load, behaviour
 with dead-letter injection at 1M scale (covered at small scale by tests), multi-broker Kafka.
+
+### Fresh-clone reproducibility (2026-11-07, commit `fc37095` + `cc65bcd`)
+
+**Setup.**
+- Cloned `feat/stream-phase1` from GitHub into an empty directory with no `.env`, run as a separate Compose project with new, empty volumes (containers, data and Kafka log all fresh).
+- Only the README steps were followed, using the system Python with no virtualenv.
+- Images were built with `--no-cache --pull`.
+- Full log: `docs/evidence/fresh-clone-2026-11-07.log`.
+
+| Step (README) | Result |
+|---|---|
+| `python scripts/init_env.py` | `.env` created, 10 generated secrets (values not printed); check OK |
+| `docker compose build --no-cache --pull` | 2 min 27 s |
+| `docker compose up --build -d` | All 10 services healthy within 1 min; `/readyz` ready; 9 migrations applied automatically; per-service DB roles created |
+| `docker compose --profile test run --rm --build tests` | **749 passed**, 2 skipped (the Spark tests, which run in their own image) |
+| `docker compose --profile test run --rm --build spark-tests` | **11 passed** |
+| `python scripts/verify_pipeline.py --total 1000000` | First attempt: **FAILED**, a verifier bug (see below). After the fix (`cc65bcd`): **PASSED**. 1,000,000 produced = consumed = aggregated in all four tumbling aggregations, 0 dead-letter, 0 missing, processor killed at 550,867 and recovered; 541 s end to end (`docs/evidence/fresh-clone-verify-1m-2026-11-07.txt`) |
+| `docker compose --profile ops run --rm retention --dry-run` | Runs as `retention_job`; 14 targets, 0 rows due (fresh data) |
+
+**Verifier bug found by this test.** After the restart, one aggregation query (`requests_per_tenant_1m`) spent more than 60 s in a single catch-up batch. The old "unchanged for 60 s" rule ended the wait early and reported 312,810 events as late. Rechecked minute by minute, that query later reached the full count: **no event was lost**. The script now waits until every tumbling aggregation equals the valid count (15-minute drain timeout).
+
+**Manual steps that remain:**
+
+| Step | Why it can't be automated |
+|---|---|
+| Install Docker (with about 8 GB of RAM for its VM) and Python 3.10+ | Host prerequisites |
+| Pull the Ollama models | Optional: only needed to forward approved requests to the local LLM. Not needed for the streaming pipeline, the tests or the verification |
+| `COMPOSE_PROJECT_NAME=<other>` | Only when a second copy of the stack runs on the same machine (the Compose file pins the project name) |
+| Docker Desktop on Windows with a moved disk image | The user account needs write access to the disk-image folder (see `docs/runbook.md`) |
+
+**Removed manual steps:**
+- Secret generation (`init_env.py`).
+- Test-database creation (Postgres init script).
+- Migrations and role creation (the `migrate` service).
+- The `make` dependency on Windows (the README uses plain commands).
+- A host virtualenv for the verification scripts (they need only the standard library).
+
+### Local horizontal-scaling experiment (2026-11-07)
+
+`python scripts/scaling_experiment.py --events 300000` ran on the fresh-clone stack: one producer, then **two concurrent producers**, each with fresh tenants and live event time. Raw samples: `docs/evidence/scaling-2026-11-07.json`.
+
+**Host and setup.**
+- One Windows 11 machine, Docker Desktop WSL2 VM with 8 vCPUs and about 8 GB of RAM.
+- Single Kafka broker; Spark `local[4]`.
+- Background traffic: the continuous producer at 10 events/s plus gateway health traffic.
+
+| Metric | 1 producer | 2 producers | Change |
+|---|---:|---:|---|
+| Events | 300,000 | 600,000 | ×2 |
+| Produce rate (Kafka acks, all producers) | 4,545 ev/s | 7,843 ev/s | **×1.73** |
+| Pipeline throughput (events ÷ wall time to fully aggregated) | 1,669 ev/s | 2,308 ev/s | ×1.38 |
+| Peak Spark validate rate (sampled, ~8 s interval) | 17,413 ev/s | 12,025 ev/s | Bursty, micro-batch |
+| Peak Kafka lag (produced − consumed) | 245,845 | 575,788 | ×2.3 |
+| Peak PostgreSQL write rate (aggregate inserts + updates) | 609 rows/s | 680 rows/s | |
+| Aggregate rows written | 42,594 | 36,110 | Fewer windows, more events per window |
+| Median end-to-end latency (50% produced → 50% aggregated) | 79.8 s | 145.1 s | |
+| Completion latency (producers done → 100% aggregated) | 88.9 s | 160.7 s | |
+| Events aggregated / dead-lettered / missing | 300,000 / 0 / 0 | 600,000 / 0 / 0 | |
+| Peak CPU: Spark / Kafka / Postgres | 493% / 166% / 30% | 488% / 230% / 51% | % of one vCPU |
+| Peak memory: Spark / Kafka / Postgres | 3,062 / 1,883 / 89 MiB | 3,069 / 2,156 / 93 MiB | |
+
+**Interpretation.**
+- Ingestion scales out: a second producer raised the acknowledged produce rate 1.73× with no loss. Kafka (6 partitions, one broker) was not the bottleneck.
+- The single Spark process was. It stayed at about 5 vCPUs in both phases, so lag and latency grew with the input instead of the processing rate rising, and end-to-end throughput improved only 1.38×.
+- Spark's memory sat at its 3 GiB container limit in both phases. It did not fail, but there is no headroom.
+- PostgreSQL wrote at most about 700 rows/s at about 50% of one CPU, so the aggregate store is far from saturated.
+
+**What this does and does not show.** This demonstrates **local horizontal scaling of the ingestion tier on one Docker host**. It is **not** evidence of production-cluster scalability. Not covered:
+- multiple Kafka brokers or replication;
+- Spark cluster mode with executors on several machines;
+- isolated CPUs;
+- repeated runs with variance.
+
+Measurement caveats:
+- These are single runs, sampled every ~8 s (peaks are approximate).
+- `docker stats` memory includes page cache (Kafka's heap is 512 MB).
+- The `docker compose run` producers also restart the one-shot `kafka-init` container, which shows CPU at start.
+
+The next scaling steps would be Spark executors on more cores or hosts, more partitions with key salting for hot tenants, and a larger Spark memory limit.

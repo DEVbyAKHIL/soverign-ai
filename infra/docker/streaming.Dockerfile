@@ -13,7 +13,9 @@ RUN python -m venv /opt/venv \
 
 FROM python:3.12-slim
 ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app
-RUN python -m pip uninstall -y pip \
+# Security patches for the base OS packages at build time (Trivy gates on fixable HIGH/CRITICAL).
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/* \
+ && python -m pip uninstall -y pip \
  && groupadd --system --gid 10002 stream \
  && useradd --system --uid 10002 --gid stream --no-create-home stream
 WORKDIR /app

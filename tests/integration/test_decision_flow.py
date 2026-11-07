@@ -126,7 +126,7 @@ async def test_raw_prompt_never_stored(client, make_token):
     )
     assert rows and all(secret not in r["d"] for r in rows)
     [ev] = await raw_sql("select event_data->'payload' as p from audit_events")
-    assert '"content_sha256"' in ev["p"]
+    assert '"content_hmac"' in ev["p"] and '"content_sha256"' not in ev["p"]
 
 
 async def test_human_review_flow(client, make_token):

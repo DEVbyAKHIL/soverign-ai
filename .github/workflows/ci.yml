@@ -22,11 +22,32 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U ci -d gateway_test"
           --health-interval 5s --health-timeout 3s --health-retries 10
+      # Single-node KRaft broker so the Kafka round-trip tests run in CI (not skipped).
+      kafka:
+        image: apache/kafka:3.9.0
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+        ports: ["9092:9092"]
+        options: >-
+          --health-cmd "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"
+          --health-interval 10s --health-timeout 15s --health-retries 12
     env:
       ENVIRONMENT: test
       JWT_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
       TEST_DATABASE_URL: postgresql+asyncpg://ci:ci-only-password@127.0.0.1:5432/gateway_test
       ENTITY_HASH_KEY: ci-only-entity-hash-key-not-used-anywhere-else
+      FINGERPRINT_HMAC_KEY: ci-only-fingerprint-key-not-used-anywhere-else
+      KAFKA_TEST_BOOTSTRAP: localhost:9092
       NER_MODE: required
     steps:
       - uses: actions/checkout@v4
@@ -37,16 +58,20 @@ jobs:
         run: ruff check . && ruff format --check .
       - name: Pytest
         run: pytest --cov-fail-under=80
-      - name: Bandit
-        run: bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer streaming reporting
-      - name: pip-audit
-        run: pip-audit -r requirements.txt
+      - name: Bandit (every Python service)
+        run: bandit -c pyproject.toml -r gateway policy audit detection agents events publisher producer streaming reporting ops scripts
+      - name: pip-audit (every service's requirements)
+        run: |
+          for f in requirements.txt requirements-stream.txt requirements-reporting.txt requirements-spark.txt requirements-dev.txt; do
+            echo "== $f"; pip-audit -r "$f" --progress-spinner off
+          done
 
   semgrep:
     runs-on: ubuntu-latest
     container: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
+      # Whole repository: every Python service, Dockerfiles and secrets.
       - run: semgrep scan --config p/python --config p/secrets --config p/dockerfile --error
 
   frontend:
@@ -56,23 +81,57 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
-      - run: npm install
+      - run: npm ci
+      - name: npm audit (fail on high or critical)
+        run: npm audit --audit-level=high
       - run: npm run build
 
-  trivy:
+  images:
+    # Build every custom image and fail on fixable CRITICAL/HIGH vulnerabilities. Trivy runs as the
+    # pinned CLI image (same version and flags as the documented local scan).
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: gateway, dockerfile: infra/docker/gateway.Dockerfile, target: "", blocking: "os,library" }
+          - { name: streaming, dockerfile: infra/docker/streaming.Dockerfile, target: "", blocking: "os,library" }
+          - { name: reporting, dockerfile: infra/docker/reporting.Dockerfile, target: "", blocking: "os,library" }
+          - { name: frontend, dockerfile: infra/docker/frontend.Dockerfile, target: "", blocking: "os,library" }
+          # Spark: OS packages block; Java libraries bundled inside the Spark distribution are
+          # reported, not blocking - documented exception in SECURITY.md ("Scanning").
+          - { name: spark, dockerfile: infra/docker/spark.Dockerfile, target: runtime, blocking: "os" }
+    env:
+      TRIVY: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${{ github.workspace }}:/src -w /src aquasec/trivy:0.76.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.name }}
+        run: |
+          docker build -f ${{ matrix.dockerfile }} ${{ matrix.target && format('--target {0}', matrix.target) || '' }} -t ${{ matrix.name }}:ci .
+      - name: Trivy (blocking, ${{ matrix.blocking }})
+        run: |
+          $TRIVY image --scanners vuln --pkg-types ${{ matrix.blocking }} --severity CRITICAL,HIGH             --ignore-unfixed --ignorefile .trivyignore --exit-code 1 ${{ matrix.name }}:ci
+      - name: Trivy full report (non-blocking)
+        if: always()
+        run: |
+          $TRIVY image --scanners vuln --severity CRITICAL,HIGH --ignore-unfixed --format json             --output trivy-${{ matrix.name }}.json ${{ matrix.name }}:ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "trivy-${{ matrix.name }}", path: "trivy-${{ matrix.name }}.json" }
+
+  spark-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build gateway image
-        run: docker build -f infra/docker/gateway.Dockerfile -t gateway:ci .
-      - name: Build streaming image
-        run: docker build -f infra/docker/streaming.Dockerfile -t streaming:ci .
-      - name: Build reporting image
-        run: docker build -f infra/docker/reporting.Dockerfile -t reporting:ci .
-      - name: Build Spark processor image and run its aggregation tests
+      - name: Aggregation tests in the Spark image
         run: |
           docker build -f infra/docker/spark.Dockerfile --target test -t spark-tests:ci .
           docker run --rm spark-tests:ci
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Trivy filesystem scan (deps, secrets, IaC)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -81,13 +140,7 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: "1"
           ignore-unfixed: true
-      - name: Trivy image scan
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: gateway:ci
-          severity: CRITICAL,HIGH
-          exit-code: "1"
-          ignore-unfixed: true
+          trivyignores: .trivyignore
       - name: SBOM
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:

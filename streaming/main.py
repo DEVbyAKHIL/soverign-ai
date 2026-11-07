@@ -86,8 +86,8 @@ def ops_server(queries, port: int) -> ThreadingHTTPServer:
 
 def main() -> int:
     cfg = ProcessorConfig.from_env()
-    if not cfg.dsn:
-        log("missing_config", level="error", setting="PROCESSOR_DSN")
+    if problems := cfg.problems():
+        log("invalid_config", level="error", problems=problems)
         return 2
     stop = threading.Event()
     for sig in (signal.SIGTERM, signal.SIGINT):

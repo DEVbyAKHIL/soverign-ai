@@ -30,14 +30,40 @@ The gateway sits between users, AI agents, applications and model endpoints, and
 
 Plan and design: `docs/refactor-plan.md`, `docs/architecture-after-refactor.md`, `docs/implementation-order.md`.
 
-## Quick start (Docker)
+## Quick start from a fresh clone (Docker)
+
+Prerequisites:
+
+| Prerequisite | Requirement |
+|---|---|
+| Docker | Docker Engine or Desktop with Compose v2 |
+| Python | 3.10+ on the host, standard library only (no virtualenv needed for these steps) |
+| RAM for Docker | About 8 GB |
+| Disk | About 15 GB for images and volumes |
 
 ```bash
-cp .env.example .env          # then replace every CHANGE_ME value
-docker compose up --build -d
-curl http://localhost:8000/healthz
-curl http://localhost:8000/readyz
+git clone https://github.com/DEVbyAKHIL/soverign-ai.git && cd soverign-ai
+python scripts/init_env.py                 # writes .env with generated secrets (never printed)
+docker compose up --build -d               # build, migrate (automatic), start everything
+docker compose ps                          # wait until every service is "healthy" (2-5 min)
+curl http://127.0.0.1:8000/readyz          # {"status":"ready"}
 ```
+
+The steps above do the following automatically:
+- The `migrate` service runs all Alembic migrations, creates the per-service database logins and syncs the policies before any service starts.
+- Postgres creates the disposable `gateway_test` database on first start.
+
+Run the tests and the end-to-end verification:
+
+```bash
+docker compose --profile test run --rm --build tests          # gateway, outbox, Kafka, reporting
+docker compose --profile test run --rm --build spark-tests    # Spark window maths
+python scripts/verify_pipeline.py --total 1000000             # 1M events, processor kill + restart
+```
+
+Stop with `docker compose down` (keeps data); add `-v` to delete all volumes.
+
+After pulling a newer version, add new secrets to your existing `.env` with `python scripts/init_env.py --add-missing`. Check `.env` at any time with `python scripts/init_env.py --check`.
 
 Pull the local models once (about 2.3 GB; requests are never sent off the host):
 
@@ -79,7 +105,7 @@ make verify-pipeline      # or: python scripts/verify_pipeline.py --total 100000
 
 It prints events produced / consumed / aggregated / dead-lettered and `Processor restart recovery: PASSED|FAILED`.
 
-`.env` must define `PROCESSOR_DB_PASSWORD` and `REPORTING_DB_PASSWORD` (see `.env.example`); `migrate` creates the least-privilege `stream_processor` (writes aggregates) and `reporting_ro` (reads aggregates) logins with them.
+Every service connects to PostgreSQL with its own least-privilege login: `gateway_app`, `outbox_publisher`, `stream_processor`, `reporting_ro` and `retention_job`. The `migrate` service creates them from the `*_DB_PASSWORD` variables, which `init_env.py` generates. Data retention: `docker compose --profile ops run --rm retention --dry-run`. Scaling experiment: `python scripts/scaling_experiment.py`.
 
 Optional tools (not started by `up`): `make kafka-ui` → http://127.0.0.1:8080 (read-only), `make monitoring` → Prometheus on http://127.0.0.1:9090.
 

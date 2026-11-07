@@ -93,3 +93,32 @@ def test_unknown_role_in_token_rejected():
     token = jwt.encode(_claims(role="root"), get_settings().jwt_secret, algorithm="HS256")
     with pytest.raises(AuthenticationError):
         decode_access_token(token)
+
+
+def test_keyed_fingerprints_depend_on_key_and_purpose():
+    import hashlib
+
+    from gateway.core.fingerprint import fingerprint
+
+    a = fingerprint("k" * 40, "content", "hello")
+    assert a == fingerprint("k" * 40, "content", "hello")  # stable: repeats still correlate
+    assert a != fingerprint("j" * 40, "content", "hello")  # depends on the key
+    assert a != fingerprint("k" * 40, "output", "hello")  # purposes never collide
+    assert a != hashlib.sha256(b"hello").hexdigest()  # not confirmable by hashing a guess
+
+
+def test_settings_reject_reused_or_placeholder_keys(monkeypatch):
+    import pytest
+    from pydantic import ValidationError
+
+    from gateway.config import Settings
+
+    same = "s" * 40
+    with pytest.raises(ValidationError):
+        Settings(jwt_secret=same, entity_hash_key="e" * 40, fingerprint_hmac_key=same)
+    with pytest.raises(ValidationError):
+        Settings(
+            jwt_secret="j" * 40,
+            entity_hash_key="e" * 40,
+            fingerprint_hmac_key="CHANGE_ME" + "x" * 30,
+        )

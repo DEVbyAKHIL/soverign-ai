@@ -3,6 +3,8 @@
 FROM apache/spark:3.5.8-scala2.12-java17-python3-ubuntu AS runtime
 
 USER root
+# Security patches for the base OS packages at build time (Trivy gates on fixable HIGH/CRITICAL).
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
 # Kafka connector jars, pinned and checksum-verified at build time (no runtime --packages download).
 ADD --chmod=644 --checksum=sha256:d2b7068eabce2a1267103625e58efae32f7ee384db1cbc22424532ad2ed95fb4 \
     https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/

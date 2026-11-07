@@ -1,6 +1,5 @@
 """Decision pipeline: detect -> policy -> transform -> decision + audit, in one transaction."""
 
-import hashlib
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -32,6 +31,7 @@ from events.builder import caller_key, decision_event, pseudonymous_id
 from events.schema import TOPIC_RAW
 from gateway.config import get_settings
 from gateway.core.errors import GatewayError, TenantIsolationError
+from gateway.core.fingerprint import fingerprint as keyed_fingerprint
 from gateway.core.rate_limit import RateLimiter
 from gateway.core.security import Principal
 from gateway.logging_config import get_logger
@@ -193,11 +193,11 @@ def _analyze(
     return det, intents
 
 
-def _fingerprint(parts: list[str]) -> dict:
-    """Minimal, non-reversible description of the payload. Raw content is never stored."""
-    digest = hashlib.sha256("\x1e".join(parts).encode("utf-8")).hexdigest()
+def _fingerprint(parts: list[str], key: str) -> dict:
+    """Minimal, non-reversible description of the payload. Raw content is never stored; the
+    fingerprint is a keyed HMAC (FINGERPRINT_HMAC_KEY), so guessed text cannot be confirmed."""
     return {
-        "content_sha256": digest,
+        "content_hmac": keyed_fingerprint(key, "content", "\x1e".join(parts)),
         "content_chars": sum(len(p) for p in parts),
         "parts": len(parts),
     }
@@ -284,7 +284,7 @@ async def decide(
         _analyze, detector, injection, parts, sources, declared_classification(req)
     )
     DETECTION_LATENCY.observe(det.latency_ms / 1000)
-    fingerprint = _fingerprint(parts)
+    fingerprint = _fingerprint(parts, settings.fingerprint_hmac_key)
     current: EventRow | None = None
     anomaly: AnomalyResult | None = None
     if agent is not None:
@@ -296,7 +296,7 @@ async def decide(
             status="pending",
             datasets=datasets_of(req),
             tool_calls=len(req.tool_calls),
-            content_hash=fingerprint["content_sha256"],
+            content_hash=fingerprint["content_hmac"],
         )
         anomaly = await agent_behaviour(session, anomaly_detector, agent, current)
     ctx = build_context(req, det, intents, agent, anomaly)

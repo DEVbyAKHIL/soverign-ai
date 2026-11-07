@@ -14,7 +14,7 @@ from audit.hash_chain import (
     hashed_fields,
     verify_chain,
 )
-from gateway.models import AuditEvent
+from gateway.models import AuditChainAnchor, AuditEvent
 
 
 async def append_event(
@@ -95,6 +95,11 @@ async def list_events(
 
 
 async def verify_tenant_chain(session: AsyncSession, tenant_id: uuid.UUID) -> ChainVerification:
+    """Verify the retained part of the tenant's chain, starting from the retention anchor if the
+    oldest events were pruned (ops/retention.py), otherwise from the genesis hash."""
+    anchor = await session.scalar(
+        select(AuditChainAnchor.anchor_hash).where(AuditChainAnchor.tenant_id == tenant_id)
+    )
     stmt = select(AuditEvent).where(AuditEvent.tenant_id == tenant_id).order_by(AuditEvent.seq)
     events = (await session.execute(stmt)).scalars().all()
-    return verify_chain(events)
+    return verify_chain(events, anchor or GENESIS_HASH)

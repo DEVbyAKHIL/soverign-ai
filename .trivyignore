@@ -1,0 +1,3 @@
+# Reviewed exceptions for Trivy (one CVE ID per line, each with a reason and review date).
+# Empty by design: CI fails on any fixable CRITICAL/HIGH finding until it is fixed or
+# explicitly accepted here with a justification.

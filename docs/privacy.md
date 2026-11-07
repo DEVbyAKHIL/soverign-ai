@@ -44,3 +44,19 @@ Automated deletion is not implemented yet; it has to coexist with the append-onl
 
 All test and evaluation data is synthetic. Card numbers use test prefixes; IBANs, SSNs and NINOs are
 random but valid in format.
+
+## Retention and deletion (implemented)
+
+| Store | Owner | Holds | Retention | Mechanism |
+|---|---|---|---|---|
+| `decisions` | Tenant (data controller) | Decision metadata, no prompt | `RETENTION_DECISIONS_DAYS` (365) | Retention job; deleted only after its detections and audit events |
+| `detections` | Tenant | Entity type, offsets, keyed hash | `RETENTION_DETECTIONS_DAYS` (365) | Retention job |
+| `audit_events` | Tenant (evidence) | Hash-chained decision evidence, no raw values | `AUDIT_RETENTION_DAYS` (365) | Retention job, chain prefix + anchor; optional archive |
+| `agent_events` | Tenant | Behaviour features, keyed content fingerprint | `RETENTION_AGENT_EVENTS_DAYS` (30, min 8) | Retention job |
+| `event_outbox` | Platform operator | Value-free governance events | Published rows: `RETENTION_OUTBOX_DAYS` (7); unpublished are kept | Retention job |
+| Kafka topics | Platform operator | Value-free events; dead letters without payload | raw 7 d, valid 3 d, dead-letter 14 d (plus size caps) | Topic `retention.ms` and `retention.bytes` |
+| `aggregated_*` | Tenant | Counts and rates per window | `RETENTION_AGGREGATES_DAYS` (90) | Retention job |
+| `pipeline_*` | Platform operator | Batch counters | `RETENTION_PIPELINE_DAYS` (30) | Retention job |
+| Spark checkpoints | Platform operator | Offsets, window state, recent `event_id`s | Self-pruning (watermark) | Spark |
+
+Erasure requests for a specific data subject are limited by design: the platform stores no raw personal data, only keyed hashes and pseudonyms that cannot be reversed without the keys. Destroying or rotating `ENTITY_HASH_KEY` makes all existing entity hashes unlinkable (crypto-shredding). Destroying `FINGERPRINT_HMAC_KEY` does the same for content fingerprints.

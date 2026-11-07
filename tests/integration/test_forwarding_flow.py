@@ -80,7 +80,7 @@ async def test_allowed_request_is_forwarded_and_audited(client, backend):
     assert backend.requests[0]["messages"][1]["content"] == "Summarise the release notes."
     [ev] = await _model_events()
     data = json.loads(ev["d"])
-    assert data["status"] == "ok" and len(data["output_sha256"]) == 64
+    assert data["status"] == "ok" and len(data["output_hmac"]) == 64
     assert "Here is the summary" not in ev["d"]  # the answer itself is never audited
 
 

@@ -7,7 +7,6 @@ set -euo pipefail
 BOOTSTRAP="${KAFKA_BOOTSTRAP:-kafka:9092}"
 TOPICS=/opt/kafka/bin/kafka-topics.sh
 MIB256=268435456
-DAY=86400000
 
 create() {
   local name="$1" partitions="$2" retention_ms="$3"
@@ -25,9 +24,13 @@ create() {
     echo "topic $name has $actual partitions, expected >= $partitions" >&2
     exit 1
   fi
-  echo "topic $name ready ($actual partitions)"
+  # --if-not-exists keeps existing topics; apply the configured retention to them as well.
+  /opt/kafka/bin/kafka-configs.sh --bootstrap-server "$BOOTSTRAP" --alter --entity-type topics \
+    --entity-name "$name" --add-config "retention.ms=$retention_ms" > /dev/null
+  echo "topic $name ready ($actual partitions, retention ${retention_ms} ms)"
 }
 
-create governance.events.raw 6 $((7 * DAY))
-create governance.events.valid 6 $((3 * DAY))
-create governance.events.dead-letter 1 $((14 * DAY))
+HOUR=3600000
+create governance.events.raw 6 $(( ${KAFKA_RAW_RETENTION_HOURS:-168} * HOUR ))
+create governance.events.valid 6 $(( ${KAFKA_VALID_RETENTION_HOURS:-72} * HOUR ))
+create governance.events.dead-letter 1 $(( ${KAFKA_DLQ_RETENTION_HOURS:-336} * HOUR ))

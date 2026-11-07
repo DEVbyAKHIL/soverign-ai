@@ -17,6 +17,17 @@ class ProcessorConfig:
     shuffle_partitions: int
     ops_port: int
 
+    def problems(self) -> list[str]:
+        """Startup validation (names only - never the values)."""
+        out = []
+        if not self.dsn.startswith("postgresql://"):
+            out.append("PROCESSOR_DSN must be a postgresql:// URL")
+        if "CHANGE_ME" in self.dsn:
+            out.append("PROCESSOR_DSN contains a placeholder")
+        if not self.kafka_bootstrap:
+            out.append("KAFKA_BOOTSTRAP is empty")
+        return out
+
     @classmethod
     def from_env(cls) -> "ProcessorConfig":
         env = os.environ

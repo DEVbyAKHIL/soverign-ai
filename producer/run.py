@@ -98,7 +98,13 @@ async def backfill(
     that a streaming consumer with a watermark processes as on-time data (no late drops).
     """
     stats = ProduceStats()
-    gen = EventGenerator(cfg.producer_seed, cfg.producer_tenants, cfg.producer_agents, run_id)
+    gen = EventGenerator(
+        cfg.producer_seed,
+        cfg.producer_tenants,
+        cfg.producer_agents,
+        run_id,
+        tenant_ids=cfg.tenant_ids(),
+    )
     enc = Encoder(cfg, run_id, stats)
     span = timedelta(hours=cfg.producer_span_hours)
     start = datetime.now(UTC) - span

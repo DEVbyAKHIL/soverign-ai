@@ -12,7 +12,9 @@ RUN python -m venv /opt/venv \
 FROM python:3.12-slim
 ENV PATH=/opt/venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app
 # Remove the base image's pip as well: no package installer in the production image.
-RUN python -m pip uninstall -y pip \
+# Security patches for the base OS packages at build time (Trivy gates on fixable HIGH/CRITICAL).
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/* \
+ && python -m pip uninstall -y pip \
  && groupadd --system --gid 10001 app \
  && useradd --system --uid 10001 --gid app --no-create-home app
 WORKDIR /app
@@ -24,6 +26,7 @@ COPY --chown=root:root detection ./detection
 COPY --chown=root:root agents ./agents
 COPY --chown=root:root events ./events
 COPY --chown=root:root schemas ./schemas
+COPY --chown=root:root ops ./ops
 COPY --chown=root:root migrations ./migrations
 COPY --chown=root:root alembic.ini ./
 USER 10001:10001

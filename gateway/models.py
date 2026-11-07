@@ -211,3 +211,15 @@ class EventOutbox(Base):
     next_attempt_at: Mapped[datetime] = _ts()
     published_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class AuditChainAnchor(Base):
+    """Where a tenant's retained audit chain starts after the oldest events were pruned."""
+
+    __tablename__ = "audit_chain_anchors"
+    tenant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    anchor_seq: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    anchor_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    pruned_events: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    pruned_before: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = _ts()

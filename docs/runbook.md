@@ -1,4 +1,4 @@
-# Runbook (streaming phases S1-S3)
+# Runbook
 
 ## Start / stop
 
@@ -95,3 +95,46 @@ docker compose --profile test run --rm spark-tests      # aggregation window mat
 | 401 / 403 from `/reporting/...` | The token is missing or expired (gateway tokens last 15 min), or the role lacks `audit:read` (use `admin` or `security_analyst`) |
 | 503 on `/readyz` | The database is unreachable, or `REPORTING_DB_PASSWORD` changed after migration 0008. Re-run `docker compose run --rm migrate` to reset the role password |
 | "(stale)" next to the freshness time | The processor hasn't written this tenant's data for more than 2 minutes. Check `docker compose logs spark-stream-processor` |
+
+## Data retention
+
+```bash
+docker compose --profile ops run --rm retention --dry-run                  # what would be deleted
+docker compose --profile ops run --rm retention --archive-dir /archive     # delete (archive audit first)
+docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c   "select target, rows_deleted, dry_run, finished_at from retention_runs order by id desc limit 20"'
+```
+
+- **Schedule:** daily, at low traffic.
+  - Linux: a cron line such as `15 3 * * * cd /srv/gateway && docker compose --profile ops run --rm retention`.
+  - Windows: Task Scheduler with the same command.
+- **Periods:** `RETENTION_*_DAYS`, `AUDIT_RETENTION_DAYS` and `KAFKA_*_RETENTION_HOURS` in `.env`.
+- **Kafka retention changes** take effect on the next `docker compose up` (kafka-init re-applies them).
+- **After an audit prune:** `GET /v1/audit/verify` must still return `valid: true`, because verification starts from `audit_chain_anchors`.
+- **Archives** are written to the `retentionarchive` volume (gzip JSONL); move them to cold storage if your policy requires.
+
+## Secrets and database logins
+
+| Task | Procedure |
+|---|---|
+| New clone | `python scripts/init_env.py` |
+| After `git pull` | `python scripts/init_env.py --add-missing`, then `docker compose up -d` (`migrate` creates any new roles) |
+| Check | `python scripts/init_env.py --check` (values are never printed) |
+| Rotate a DB password | Change the `*_DB_PASSWORD` value in `.env` (or the secret manager), then `docker compose run --rm migrate` (alters the role), then `docker compose up -d --force-recreate <service>` |
+| Rotate `JWT_SECRET` | Change it and restart gateway + reporting-api. Existing tokens become invalid (max TTL 1 h) |
+| Rotate `FINGERPRINT_HMAC_KEY` | Change it and restart the gateway. Older fingerprints no longer match new ones; repeat detection resets for its 10-minute window |
+| Rotate `ENTITY_HASH_KEY` | As above. Old entity hashes and pseudonyms become unlinkable (crypto-shredding) |
+
+## Fresh-clone reproducibility check
+
+```bash
+docker compose down                                   # free the ports (data kept)
+git clone https://github.com/DEVbyAKHIL/soverign-ai.git /tmp/clean && cd /tmp/clean
+python scripts/init_env.py
+docker compose -p clean up --build -d && docker compose -p clean ps
+docker compose -p clean --profile test run --rm tests
+python scripts/verify_pipeline.py --total 1000000     # the script drives the default project:
+                                                      # run it from the clone directory with COMPOSE_PROJECT_NAME=clean
+docker compose -p clean down -v                       # remove the test stack and its volumes
+```
+
+Recorded result: `EVALUATION.md`, section "Fresh-clone reproducibility".

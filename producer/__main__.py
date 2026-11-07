@@ -156,6 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--run-id", default=None)
     b.add_argument("--seed", type=int, default=None, help="override PRODUCER_SEED (new tenants)")
     b.add_argument("--live", action="store_true", help="event time = production time")
+    b.add_argument("--tenant-ids", default=None, help="comma-separated tenant UUIDs to use")
     v = sub.add_parser("verify")
     v.add_argument("--run-id", required=True)
     v.add_argument("--expect", type=int, required=True)
@@ -169,6 +170,8 @@ def main(argv: list[str] | None = None) -> int:
         run_id = args.run_id or uuid.uuid4().hex[:12]
         if args.seed is not None:
             cfg = cfg.model_copy(update={"producer_seed": args.seed})
+        if args.tenant_ids:
+            cfg = cfg.model_copy(update={"producer_tenant_ids": args.tenant_ids})
         stats = asyncio.run(run_backfill(cfg, args.total, run_id, live=args.live))
         log.info(
             "backfill_done",

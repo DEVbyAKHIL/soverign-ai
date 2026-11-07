@@ -16,22 +16,19 @@ Numbers are read from Postgres; nothing is estimated.
 import argparse
 import json
 import random
-import subprocess
+import subprocess  # nosec B404 - drives docker compose with fixed argument lists
 import sys
 import time
 import uuid
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-
-from producer.generator import EventGenerator  # noqa: E402
+ROOT = Path(__file__).resolve().parents[1]  # standard library only: needs Python + Docker
 
 NIL = "00000000-0000-0000-0000-000000000000"
 
 
 def compose(*args: str, capture: bool = True, check: bool = True) -> str:
-    res = subprocess.run(  # noqa: S603 - fixed argv, no shell
+    res = subprocess.run(  # noqa: S603  # nosec B603 B607 - fixed argv, no shell
         ["docker", "compose", *args],  # noqa: S607
         cwd=ROOT,
         capture_output=capture,
@@ -44,7 +41,7 @@ def compose(*args: str, capture: bool = True, check: bool = True) -> str:
 def sql(query: str) -> str:
     """Run a read-only query through psql inside the postgres container (SQL on stdin)."""
     psql = 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAq'
-    res = subprocess.run(  # noqa: S603 - fixed argv, query text is built from internal values
+    res = subprocess.run(  # noqa: S603  # nosec B603 B607 - fixed argv
         ["docker", "compose", "exec", "-T", "postgres", "sh", "-c", psql],  # noqa: S607
         cwd=ROOT,
         input=query,
@@ -62,7 +59,7 @@ def num(query: str) -> int:
 
 def run_counts(run_id: str) -> tuple[int, int, int]:
     row = sql(
-        "select coalesce(sum(consumed),0), coalesce(sum(valid),0), coalesce(sum(invalid),0) "
+        "select coalesce(sum(consumed),0), coalesce(sum(valid),0), coalesce(sum(invalid),0) "  # nosec B608 - generated UUIDs and constants only
         f"from pipeline_run_counts where run_id = '{run_id}'"
     )
     a, b, c = (int(x) for x in row.split("|"))
@@ -71,7 +68,7 @@ def run_counts(run_id: str) -> tuple[int, int, int]:
 
 def tumbling_sum(table: str, metric: str, tenants: str, extra: str = "") -> int:
     return num(
-        f"select coalesce(sum(value),0) from {table} where metric = '{metric}' "
+        f"select coalesce(sum(value),0) from {table} where metric = '{metric}' "  # nosec B608 - generated UUIDs and constants only
         f"and window_type = 'tumbling' and tenant_id in ({tenants}) {extra}"
     )
 
@@ -86,11 +83,12 @@ def main() -> int:
 
     seed = random.SystemRandom().randrange(10**6, 10**7)
     run_id = f"p2-{uuid.uuid4().hex[:10]}"
-    tenants = ",".join(f"'{t}'" for t in EventGenerator(seed=seed).tenants)
+    tenant_ids = [str(uuid.uuid4()) for _ in range(5)]  # fresh tenants isolate this run
+    tenants = ",".join(f"'{t}'" for t in tenant_ids)
     print(f"run_id={run_id} seed={seed} total={args.total:,}", flush=True)
 
     started = time.monotonic()
-    backfill = subprocess.Popen(  # noqa: S603
+    backfill = subprocess.Popen(  # noqa: S603  # nosec B603 B607 - fixed argv
         [
             "docker",
             "compose",
@@ -109,6 +107,8 @@ def main() -> int:
             "--seed",
             str(seed),
             "--live",
+            "--tenant-ids",
+            ",".join(tenant_ids),
         ],
         cwd=ROOT,
         stdout=subprocess.PIPE,
@@ -163,13 +163,13 @@ def main() -> int:
         ),
         "decisions by type (1m)": tumbling_sum("aggregated_policy_metrics", "count", tenants),
         "PII per model (5m)": num(
-            "select coalesce(sum(event_count),0) from aggregated_pii_metrics where "
+            "select coalesce(sum(event_count),0) from aggregated_pii_metrics where "  # nosec B608 - generated UUIDs and constants only
             f"metric = 'pii_entities' and tenant_id in ({tenants})"
         ),
         "sovereignty (10m)": tumbling_sum("aggregated_sovereignty_metrics", "events", tenants),
     }
     sliding_rows = num(
-        "select count(*) from (select 1 from aggregated_latency_metrics where tenant_id in "
+        "select count(*) from (select 1 from aggregated_latency_metrics where tenant_id in "  # nosec B608 - generated UUIDs and constants only
         f"({tenants}) union all select 1 from aggregated_agent_risk_metrics where tenant_id in "
         f"({tenants}) union all select 1 from aggregated_injection_metrics where tenant_id in "
         f"({tenants})) s"

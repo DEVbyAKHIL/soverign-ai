@@ -269,3 +269,15 @@ ax.text(cx + 3.1, -6.8, "Dead-letter (invalid events)", fontsize=12, va="center"
 
 fig.savefig(OUT, dpi=150, facecolor="white")
 print(f"wrote {OUT}")
+
+# Compact copy for the portfolio upload ("keep the PNG as small as possible"): 2600 px wide,
+# 128-colour palette (octree keeps the red dead-letter accent), about 150 KB, still legible.
+from PIL import Image  # noqa: E402 - Pillow ships with matplotlib
+
+SUBMISSION = OUT.with_name("architecture-submission.png")
+full = Image.open(OUT).convert("RGB")
+small = full.resize((2600, round(full.height * 2600 / full.width)), Image.LANCZOS)
+small.quantize(colors=128, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(
+    SUBMISSION, optimize=True
+)
+print(f"wrote {SUBMISSION} ({SUBMISSION.stat().st_size // 1024} KB)")

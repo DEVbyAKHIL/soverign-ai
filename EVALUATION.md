@@ -265,7 +265,7 @@ with dead-letter injection at 1M scale (covered at small scale by tests), multi-
 - Cloned `feat/stream-phase1` from GitHub into an empty directory with no `.env`, run as a separate Compose project with new, empty volumes (containers, data and Kafka log all fresh).
 - Only the README steps were followed, using the system Python with no virtualenv.
 - Images were built with `--no-cache --pull`.
-- Full log: `docs/evidence/fresh-clone-2026-11-07.log`.
+- Full log: `docs/evidence/fresh-clone-2026-11-07.txt`.
 
 | Step (README) | Result |
 |---|---|

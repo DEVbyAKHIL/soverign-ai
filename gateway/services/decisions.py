@@ -1,6 +1,5 @@
 """Decision pipeline: detect -> policy -> transform -> decision + audit, in one transaction."""
 
-import hashlib
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -28,12 +27,15 @@ from detection.injection.detector import InjectionDetector, IntentResult, worst
 from detection.pipeline import DetectionPipeline, DetectionResult
 from detection.transforms import TransformPlan, apply_plan, entity_hash
 from detection.types import max_classification
+from events.builder import caller_key, decision_event, pseudonymous_id
+from events.schema import TOPIC_RAW
 from gateway.config import get_settings
 from gateway.core.errors import GatewayError, TenantIsolationError
+from gateway.core.fingerprint import fingerprint as keyed_fingerprint
 from gateway.core.rate_limit import RateLimiter
 from gateway.core.security import Principal
 from gateway.logging_config import get_logger
-from gateway.models import Agent, AgentEvent, Decision, Detection
+from gateway.models import Agent, AgentEvent, Decision, Detection, EventOutbox
 from gateway.redis_client import get_redis
 from gateway.schemas.requests import AIRequest, EmbedRequest, InferRequest, RagQueryRequest
 from policy.engine import EvaluationContext, PolicyDecision, evaluate
@@ -191,14 +193,68 @@ def _analyze(
     return det, intents
 
 
-def _fingerprint(parts: list[str]) -> dict:
-    """Minimal, non-reversible description of the payload. Raw content is never stored."""
-    digest = hashlib.sha256("\x1e".join(parts).encode("utf-8")).hexdigest()
+def _fingerprint(parts: list[str], key: str) -> dict:
+    """Minimal, non-reversible description of the payload. Raw content is never stored; the
+    fingerprint is a keyed HMAC (FINGERPRINT_HMAC_KEY), so guessed text cannot be confirmed."""
     return {
-        "content_sha256": digest,
+        "content_hmac": keyed_fingerprint(key, "content", "\x1e".join(parts)),
         "content_chars": sum(len(p) for p in parts),
         "parts": len(parts),
     }
+
+
+def outbox_row(
+    decision: Decision,
+    req: AIRequest,
+    det: DetectionResult,
+    intents: list[IntentResult],
+    ctx: EvaluationContext,
+    result: PolicyDecision,
+    endpoint: str,
+    review_status: str,
+    started: datetime,
+    *,
+    tokens: int,
+    policy_set_version: str,
+    hash_key: str,
+) -> EventOutbox:
+    """Governance event for a decision. Value-free: no prompt, entity values or redaction map."""
+    now = datetime.now(UTC)
+    event = decision_event(
+        event_id=decision.id,
+        timestamp=now,
+        tenant_id=decision.tenant_id,
+        agent_id=req.agent_id,
+        caller_type=req.caller_type,
+        caller_pseudonym=pseudonymous_id(
+            caller_key(hash_key), decision.tenant_id, decision.caller_id
+        ),
+        action_taken=result.action_taken,
+        endpoint=endpoint,
+        destination_model=req.requested_model,
+        destination_jurisdiction=req.destination_jurisdiction,
+        declared_purpose=req.declared_purpose,
+        sensitivity_level=max_classification(req.data_classification, det.classification),
+        pii_count=len(det.entities),
+        injection_risk_score=max((i.risk_score for i in intents), default=0.0),
+        policy_ids=list(decision.policy_ids),
+        latency_ms=int((now - started).total_seconds() * 1000),
+        tokens_processed=tokens,
+        metadata={
+            "final_decision": result.final_decision,
+            "intent_label": ctx.intent_label,
+            "agent_anomaly_score": round(min(1.0, max(0.0, ctx.agent_anomaly_score)), 4),
+            "policy_set_version": policy_set_version,
+            "review_status": review_status,
+        },
+    )
+    return EventOutbox(
+        event_id=decision.id,
+        tenant_id=decision.tenant_id,
+        topic=TOPIC_RAW,
+        partition_key=str(decision.tenant_id),
+        payload=event,
+    )
 
 
 async def decide(
@@ -228,7 +284,7 @@ async def decide(
         _analyze, detector, injection, parts, sources, declared_classification(req)
     )
     DETECTION_LATENCY.observe(det.latency_ms / 1000)
-    fingerprint = _fingerprint(parts)
+    fingerprint = _fingerprint(parts, settings.fingerprint_hmac_key)
     current: EventRow | None = None
     anomaly: AnomalyResult | None = None
     if agent is not None:
@@ -240,7 +296,7 @@ async def decide(
             status="pending",
             datasets=datasets_of(req),
             tool_calls=len(req.tool_calls),
-            content_hash=fingerprint["content_sha256"],
+            content_hash=fingerprint["content_hmac"],
         )
         anomaly = await agent_behaviour(session, anomaly_detector, agent, current)
     ctx = build_context(req, det, intents, agent, anomaly)
@@ -410,6 +466,24 @@ async def decide(
             str(updated_risk(float(agent.risk_score), anomaly.anomaly_score))
         )
         agent.updated_at = datetime.now(UTC)
+    if settings.event_outbox_enabled:
+        # Same transaction as the decision: either both are stored or neither is.
+        session.add(
+            outbox_row(
+                decision,
+                req,
+                det,
+                intents,
+                ctx,
+                result,
+                endpoint,
+                review_status,
+                started,
+                tokens=max(1, fingerprint["content_chars"] // 4),
+                policy_set_version=policy_set.version,
+                hash_key=settings.entity_hash_key,
+            )
+        )
     await session.commit()
 
     DECISIONS.labels(endpoint, result.final_decision, result.action_taken).inc()

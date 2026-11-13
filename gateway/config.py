@@ -4,7 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     # Master key for keyed entity hashes and pseudonyms. Separate from JWT_SECRET; rotating it
     # changes all future hashes/pseudonyms (old audit records remain verifiable).
     entity_hash_key: str = Field(min_length=32)
+    # Separate key for keyed fingerprints of prompt content and model output (HMAC, not SHA-256).
+    fingerprint_hmac_key: str = Field(min_length=32)
     # required: refuse to start without NER. optional: run regex+classifier only (dev hosts).
     ner_mode: Literal["required", "optional", "disabled"] = "required"
     # Optional local LLM reviewer for uncertain injection verdicts (OpenAI-compatible endpoint you
@@ -50,6 +52,9 @@ class Settings(BaseSettings):
     model_embed: str = "nomic-embed-text"
     model_timeout_s: float = Field(default=120.0, gt=0, le=600)
     model_max_tokens: int = Field(default=512, ge=16, le=4096)
+    # Transactional outbox: every decision also writes a governance event in the same transaction;
+    # the separate event-publisher service relays it to Kafka.
+    event_outbox_enabled: bool = True
 
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -65,12 +70,19 @@ class Settings(BaseSettings):
             raise ValueError("Wildcard CORS origin is not permitted")
         return v
 
-    @field_validator("jwt_secret", "entity_hash_key")
+    @field_validator("jwt_secret", "entity_hash_key", "fingerprint_hmac_key")
     @classmethod
     def _reject_placeholder(cls, v: str) -> str:
         if v.startswith("CHANGE_ME"):
             raise ValueError("secret still contains the placeholder value")
         return v
+
+    @model_validator(mode="after")
+    def _distinct_keys(self) -> "Settings":
+        keys = [self.jwt_secret, self.entity_hash_key, self.fingerprint_hmac_key]
+        if len(set(keys)) != len(keys):
+            raise ValueError("JWT_SECRET, ENTITY_HASH_KEY and FINGERPRINT_HMAC_KEY must differ")
+        return self
 
     @property
     def is_development(self) -> bool:

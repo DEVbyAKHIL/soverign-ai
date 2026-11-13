@@ -193,3 +193,53 @@ Requires `audit:read`. Tenant-scoped aggregates for the dashboard: `total`, `by_
 ## GET /v1/decisions?review_status=pending&final_decision=deny&limit=50
 
 Requires `audit:read`. The tenant's most recent decisions, newest first, without content.
+
+## Reporting API (`reporting-api`, phase S3)
+
+A separate read-only service on port 8001 serves the streaming aggregates. The dashboard calls it through nginx at `/reporting/...`, so it is same-origin and nginx allows only GET.
+
+| Property | Behaviour |
+|---|---|
+| Auth | A gateway-issued bearer JWT carrying the `audit:read` scope (roles `admin`, `security_analyst`). Missing or invalid token: 401; missing scope: 403 |
+| Tenant | **Always taken from the token.** There is no tenant parameter |
+| Database access | Login `reporting_ro`: `SELECT` on `aggregated_*` and `pipeline_progress` only |
+| OpenAPI | `/docs` and `/openapi.json` in development |
+
+**Common query parameters**
+
+| Parameter | Rule |
+|---|---|
+| `from`, `to` | ISO-8601. Defaults: the last 60 minutes. `from` must be before `to`; range at most 7 days |
+| `limit` | 1-1000 (default 500) |
+| `cursor` | The `next_cursor` from the previous page (keyset pagination) |
+| `metric` | Optional; restricts the response to one metric |
+
+Invalid values return 422 with the gateway's error format.
+
+| Endpoint | Data | Extra filters |
+|---|---|---|
+| `GET /v1/metrics/overview` | KPIs from each table's most recent windows: requests in the last 5 minutes and per minute, decisions by type, deny rate, average and P99 latency, failed evaluations, PII entities, injection attempts, the 5 riskiest agents, and processor freshness | - |
+| `GET /v1/metrics/requests` | 1-minute tumbling `requests`, `tokens` (tenant totals by default) | `agent_id` |
+| `GET /v1/metrics/policies` | `count` by decision (1-minute tumbling); `deny_rate`, `failed_evaluations` (5-minute sliding, decision `*`) | `decision` |
+| `GET /v1/metrics/latency` | `avg_ms`, `p99_ms`, `max_ms` (5-minute sliding) | - |
+| `GET /v1/metrics/pii` | `pii_entities`, `events_with_pii` per destination model (5-minute tumbling) | `destination_model` |
+| `GET /v1/metrics/injections` | `attempts`, `avg_score`, `max_score` per agent (5-minute sliding) | `agent_id` |
+| `GET /v1/metrics/agents` | Each agent's latest 10-minute risk window, riskiest first | - |
+| `GET /v1/metrics/sovereignty` | `events`, `tokens`, `pii_entities` by jurisdiction x sensitivity (10-minute tumbling) | `destination_jurisdiction`, `sensitivity_level` |
+| `GET /v1/agents/{agent_id}/risk` | One agent's risk history. 404 if the agent has no data in the caller's tenant | - |
+| `GET /healthz`, `/readyz`, `/metrics` | Liveness, database readiness, Prometheus metrics | - |
+
+**Series response**
+
+```json
+{
+  "tenant_id": "...", "from": "...", "to": "...", "as_of": "...", "next_cursor": null,
+  "items": [{
+    "window_start": "...", "window_end": "...", "window_type": "tumbling",
+    "dimensions": {"agent_id": "00000000-0000-0000-0000-000000000000"},
+    "metric": "requests", "value": 412.0, "event_count": 412, "suppressed": false
+  }]
+}
+```
+
+**Small-cell suppression.** In the PII and sovereignty series, a cell backed by fewer than 5 events (`SUPPRESS_BELOW`) is returned as `value: null, event_count: null, suppressed: true`. This reduces the chance of re-identifying individual requests.

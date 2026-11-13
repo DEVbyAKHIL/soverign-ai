@@ -1,4 +1,6 @@
 -r requirements.txt
+aiokafka==0.15.0
+psycopg[binary]==3.3.8
 pytest==9.2.0
 pytest-asyncio==1.4.1.post1
 pytest-cov==7.1.0

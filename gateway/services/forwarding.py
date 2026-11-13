@@ -6,14 +6,14 @@ the transformed content. The answer passes the output guard before the caller se
 `model.response` audit event records the outcome (hashes and verdicts, never raw text).
 """
 
-import hashlib
-
 from prometheus_client import Counter, Histogram
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
 from audit.service import append_event
 from detection.output.guardrails import OutputGuard
+from gateway.config import get_settings
+from gateway.core.fingerprint import fingerprint
 from gateway.core.security import Principal
 from gateway.schemas.requests import AIRequest
 from gateway.services.decisions import DecisionOutcome, payload
@@ -39,8 +39,9 @@ def skip_reason(out: DecisionOutcome, client: ModelClient | None) -> str | None:
     return None
 
 
-def _sha(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()
+def _fingerprint(text: str) -> str:
+    """Keyed HMAC of the model output: correlatable, but not confirmable by guessing the text."""
+    return fingerprint(get_settings().fingerprint_hmac_key, "output", text)
 
 
 async def forward(
@@ -81,7 +82,7 @@ async def forward(
         body.update(text=verdict.text, usage=call.usage, output_guard=verdict.as_dict())
         audit.update(
             usage=call.usage,
-            output_sha256=_sha(text),
+            output_hmac=_fingerprint(text),
             output_chars=len(text),
             output_guard=verdict.as_dict(),
         )

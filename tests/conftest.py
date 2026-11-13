@@ -12,6 +12,7 @@ os.environ["DATABASE_URL"] = (
 )
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
 os.environ.setdefault("ENTITY_HASH_KEY", "test-entity-key-" + "k" * 40)
+os.environ.setdefault("FINGERPRINT_HMAC_KEY", "test-fingerprint-key-" + "f" * 40)
 # Hosts that cannot load spaCy (e.g. Windows Smart App Control) run without NER; the Docker
 # test runner sets NER_MODE=required so NER is always exercised in CI.
 os.environ.setdefault("NER_MODE", "optional")
@@ -59,7 +60,9 @@ def migrated_db():
 @pytest.fixture
 def clean_db(migrated_db):
     # TRUNCATE bypasses the row-level append-only trigger; only used to reset tests.
-    asyncio.run(_exec("TRUNCATE audit_events, detections, decisions, policies CASCADE"))
+    asyncio.run(
+        _exec("TRUNCATE audit_events, detections, decisions, policies, event_outbox CASCADE")
+    )
     return migrated_db
 
 

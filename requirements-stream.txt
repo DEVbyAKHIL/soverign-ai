@@ -1,0 +1,10 @@
+# Runtime dependencies of the event-producer and event-publisher images (infra/docker/streaming.Dockerfile).
+# Versions match requirements.txt; aiokafka is the only addition.
+aiokafka==0.15.0
+SQLAlchemy[asyncio]==2.1.6
+asyncpg==0.32.0
+pydantic==2.14.2
+pydantic-settings==2.16.2
+structlog==26.1.0
+prometheus-client==0.26.0
+jsonschema==4.26.0

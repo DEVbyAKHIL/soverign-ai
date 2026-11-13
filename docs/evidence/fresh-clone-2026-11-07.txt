@@ -1,0 +1,2408 @@
+[22:02:03] stop main stack (data kept): docker compose -p sovereign-ai-gateway stop
+ Container sovereign-ai-gateway-event-producer-1 Stopping 
+ Container sovereign-ai-gateway-event-publisher-1 Stopping 
+ Container sovereign-ai-gateway-spark-stream-processor-1 Stopping 
+ Container sovereign-ai-gateway-frontend-1 Stopping 
+ Container sovereign-ai-gateway-ollama-1 Stopping 
+ Container sovereign-ai-gateway-ollama-1 Stopped 
+ Container sovereign-ai-gateway-frontend-1 Stopped 
+ Container sovereign-ai-gateway-gateway-1 Stopping 
+ Container sovereign-ai-gateway-reporting-api-1 Stopping 
+ Container sovereign-ai-gateway-event-publisher-1 Stopped 
+ Container sovereign-ai-gateway-event-producer-1 Stopped 
+ Container sovereign-ai-gateway-reporting-api-1 Stopped 
+ Container sovereign-ai-gateway-gateway-1 Stopped 
+ Container sovereign-ai-gateway-redis-1 Stopping 
+ Container sovereign-ai-gateway-redis-1 Stopped 
+ Container sovereign-ai-gateway-spark-stream-processor-1 Stopped 
+ Container sovereign-ai-gateway-migrate-1 Stopping 
+ Container sovereign-ai-gateway-kafka-init-1 Stopping 
+ Container sovereign-ai-gateway-migrate-1 Stopped 
+ Container sovereign-ai-gateway-kafka-init-1 Stopped 
+ Container sovereign-ai-gateway-postgres-1 Stopping 
+ Container sovereign-ai-gateway-kafka-1 Stopping 
+ Container sovereign-ai-gateway-postgres-1 Stopped 
+ Container sovereign-ai-gateway-kafka-1 Stopped 
+[22:02:07] git clone (branch feat/stream-phase1)
+[22:02:08] commit: fc37095; .env present: no
+[22:02:08] README: python scripts/init_env.py
+Created .env with 10 generated secrets (values not shown).
+OK: all 12 secrets set, no placeholders. 
+[22:02:08] build from scratch: docker compose build --no-cache --pull
+ Image clean-reporting-api Building 
+ Image clean-frontend Building 
+ Image clean-migrate Building 
+ Image clean-event-publisher Building 
+ Image clean-gateway Building 
+ Image clean-spark-stream-processor Building 
+ Image clean-event-producer Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 3.61kB done
+#1 DONE 0.0s
+
+#2 [event-publisher internal] load build definition from streaming.Dockerfile
+#2 DONE 0.0s
+
+#2 [event-producer internal] load build definition from streaming.Dockerfile
+#2 transferring dockerfile: 1.82kB 0.0s done
+#2 DONE 0.1s
+
+#3 [migrate internal] load build definition from gateway.Dockerfile
+#3 transferring dockerfile: 1.82kB done
+#3 DONE 0.1s
+
+#2 [event-publisher internal] load build definition from streaming.Dockerfile
+#2 DONE 0.1s
+
+#4 [reporting-api internal] load build definition from reporting.Dockerfile
+#4 transferring dockerfile: 1.70kB 0.0s done
+#4 DONE 0.1s
+
+#5 [frontend internal] load build definition from frontend.Dockerfile
+#5 transferring dockerfile: 551B 0.0s done
+#5 DONE 0.1s
+
+#6 [spark-stream-processor internal] load build definition from spark.Dockerfile
+#6 transferring dockerfile: 3.32kB done
+#6 DONE 0.1s
+
+#7 [auth] docker/dockerfile:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [frontend] resolve image config for docker-image://docker.io/docker/dockerfile:1
+#8 DONE 2.0s
+
+#9 [spark-stream-processor] resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#9 DONE 1.9s
+
+#10 [spark-stream-processor] docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#10 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#10 CACHED
+
+#11 [event-publisher] docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#11 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#11 CACHED
+
+#12 [migrate internal] load metadata for docker.io/library/python:3.12-slim
+#12 ...
+
+#13 [spark-stream-processor internal] load build definition from spark.Dockerfile
+#13 transferring dockerfile: 3.32kB done
+#13 DONE 0.0s
+
+#14 [auth] library/python:pull token for registry-1.docker.io
+#14 DONE 0.0s
+
+#15 [auth] nginxinc/nginx-unprivileged:pull token for registry-1.docker.io
+#15 DONE 0.0s
+
+#16 [auth] library/node:pull token for registry-1.docker.io
+#16 DONE 0.0s
+
+#17 [auth] apache/spark:pull token for registry-1.docker.io
+#17 DONE 0.0s
+
+#12 [reporting-api internal] load metadata for docker.io/library/python:3.12-slim
+#12 ...
+
+#18 [frontend internal] load metadata for docker.io/nginxinc/nginx-unprivileged:1.30-alpine
+#18 DONE 0.5s
+
+#19 [frontend internal] load metadata for docker.io/library/node:22-alpine
+#19 DONE 0.6s
+
+#12 [gateway internal] load metadata for docker.io/library/python:3.12-slim
+#12 DONE 0.6s
+
+#20 [spark-stream-processor internal] load metadata for docker.io/apache/spark:3.5.8-scala2.12-java17-python3-ubuntu
+#20 DONE 0.6s
+
+#21 [reporting-api internal] load .dockerignore
+#21 transferring context: 268B done
+#21 DONE 0.0s
+
+#22 [spark-stream-processor internal] load .dockerignore
+#22 transferring context: 268B done
+#22 DONE 0.1s
+
+#23 [frontend internal] load build context
+#23 DONE 0.0s
+
+#24 [event-producer builder 2/4] WORKDIR /build
+#24 CACHED
+
+#25 [event-producer builder 1/4] FROM docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54
+#25 resolve docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54 0.0s done
+#25 CACHED
+
+#26 [event-producer internal] load build context
+#26 transferring context: 70.36kB 0.0s done
+#26 DONE 0.2s
+
+#27 [spark-stream-processor runtime  5/12] ADD --chmod=644 --checksum=sha256:9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6     https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar /opt/spark/jars/
+#27 DONE 0.0s
+
+#28 [spark-stream-processor runtime  4/12] ADD --chmod=644 --checksum=sha256:85f44359b60943d262f37d1327ebb7931fe47e0392286fe3023299e25b84b0d8     https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#28 DONE 0.0s
+
+#29 [spark-stream-processor runtime  6/12] ADD --chmod=644 --checksum=sha256:ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83     https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar /opt/spark/jars/
+#29 DONE 0.0s
+
+#30 [spark-stream-processor runtime  3/12] ADD --chmod=644 --checksum=sha256:d2b7068eabce2a1267103625e58efae32f7ee384db1cbc22424532ad2ed95fb4     https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#30 DONE 0.0s
+
+#31 [frontend stage-1 1/4] FROM docker.io/nginxinc/nginx-unprivileged:1.30-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03
+#31 resolve docker.io/nginxinc/nginx-unprivileged:1.30-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03 0.1s done
+#31 DONE 0.1s
+
+#32 [frontend build 1/6] FROM docker.io/library/node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
+#32 resolve docker.io/library/node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 0.1s done
+#32 DONE 0.1s
+
+#33 [reporting-api internal] load build context
+#33 transferring context: 43.20kB 0.0s done
+#33 DONE 0.2s
+
+#34 [migrate internal] load build context
+#34 transferring context: 1.61MB 0.2s done
+#34 DONE 0.4s
+
+#31 [frontend stage-1 1/4] FROM docker.io/nginxinc/nginx-unprivileged:1.30-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03
+#31 CACHED
+
+#35 [spark-stream-processor runtime  1/12] FROM docker.io/apache/spark:3.5.8-scala2.12-java17-python3-ubuntu@sha256:dbe5f3b3926b01fa0b818ae8463c2994bfd2945d8db96d2337e23dc62d6fa73d
+#35 resolve docker.io/apache/spark:3.5.8-scala2.12-java17-python3-ubuntu@sha256:dbe5f3b3926b01fa0b818ae8463c2994bfd2945d8db96d2337e23dc62d6fa73d 0.1s done
+#35 CACHED
+
+#29 [spark-stream-processor runtime  6/12] ADD --chmod=644 --checksum=sha256:ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83     https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar /opt/spark/jars/
+#29 CACHED
+
+#27 [spark-stream-processor runtime  5/12] ADD --chmod=644 --checksum=sha256:9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6     https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar /opt/spark/jars/
+#27 CACHED
+
+#28 [spark-stream-processor runtime  4/12] ADD --chmod=644 --checksum=sha256:85f44359b60943d262f37d1327ebb7931fe47e0392286fe3023299e25b84b0d8     https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#28 CACHED
+
+#30 [spark-stream-processor runtime  3/12] ADD --chmod=644 --checksum=sha256:d2b7068eabce2a1267103625e58efae32f7ee384db1cbc22424532ad2ed95fb4     https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#30 CACHED
+
+#36 [frontend build 2/6] WORKDIR /app
+#36 CACHED
+
+#37 [spark-stream-processor internal] load build context
+#37 transferring context: 43.48kB 0.0s done
+#37 DONE 0.1s
+
+#23 [frontend internal] load build context
+#23 transferring context: 126.20kB 0.0s done
+#23 DONE 0.1s
+
+#34 [migrate internal] load build context
+#34 DONE 0.4s
+
+#38 [event-publisher builder 3/4] COPY requirements-stream.txt .
+#38 DONE 0.1s
+
+#39 [reporting-api builder 3/4] COPY requirements-reporting.txt .
+#39 DONE 0.1s
+
+#40 [gateway builder 3/4] COPY requirements.txt .
+#40 DONE 0.1s
+
+#41 [frontend build 3/6] COPY frontend/package.json frontend/package-lock.json* ./
+#41 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 0.794 Get:1 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
+#43 0.819 Get:2 http://archive.ubuntu.com/ubuntu jammy InRelease [270 kB]
+#43 1.577 Get:3 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [8,003 kB]
+#43 1.973 Get:4 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+#43 2.566 Get:5 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
+#43 2.919 Get:6 http://archive.ubuntu.com/ubuntu jammy/restricted amd64 Packages [164 kB]
+#43 3.275 Get:7 http://archive.ubuntu.com/ubuntu jammy/universe amd64 Packages [17.5 MB]
+#43 ...
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 8.624 Collecting pip==26.2.2
+#42 9.264   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+#42 9.450 Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+#42 ...
+
+#44 [reporting-api stage-1 2/7] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10003 reporting  && useradd --system --uid 10003 --gid reporting --no-create-home reporting
+#44 0.665 Hit:1 http://deb.debian.org/debian trixie InRelease
+#44 0.674 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#44 0.735 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#44 0.795 Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9678 kB]
+#44 ...
+
+#45 [event-producer stage-1 2/9] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10002 stream  && useradd --system --uid 10002 --gid stream --no-create-home stream
+#45 0.662 Hit:1 http://deb.debian.org/debian trixie InRelease
+#45 0.668 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#45 0.711 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#45 0.755 Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9678 kB]
+#45 9.908 Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [1108 B]
+#45 10.05 Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [300 kB]
+#45 ...
+
+#46 [gateway stage-1  2/14] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10001 app  && useradd --system --uid 10001 --gid app --no-create-home app
+#46 0.660 Hit:1 http://deb.debian.org/debian trixie InRelease
+#46 0.668 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#46 0.712 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#46 0.755 Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9678 kB]
+#46 ...
+
+#47 [frontend stage-1 2/4] RUN apk upgrade --no-cache
+#47 ...
+
+#48 [frontend build 4/6] RUN npm ci || npm install
+#48 ...
+
+#49 [reporting-api builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-reporting.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#49 8.741 Collecting pip==26.2.2
+#49 9.346   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+#49 9.535 Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+#49 ...
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 8.688 Collecting pip==26.2.2
+#50 9.315   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+#50 9.499 Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+#50 ...
+
+#45 [event-producer stage-1 2/9] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10002 stream  && useradd --system --uid 10002 --gid stream --no-create-home stream
+#45 10.98 Fetched 10.1 MB in 10s (967 kB/s)
+#45 10.98 Reading package lists...
+#45 11.97 Reading package lists...
+#45 12.76 Building dependency tree...
+#45 13.00 Reading state information...
+#45 13.08 Calculating upgrade...
+#45 13.42 The following packages will be upgraded:
+#45 13.42   zlib1g
+#45 14.52 1 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#45 14.52 Need to get 88.7 kB of archives.
+#45 14.52 After this operation, 1024 B disk space will be freed.
+#45 14.52 Get:1 http://deb.debian.org/debian-security trixie-security/main amd64 zlib1g amd64 1:1.3.dfsg+really1.3.1-1+deb13u1 [88.7 kB]
+#45 15.71 debconf: unable to initialize frontend: Dialog
+#45 15.71 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#45 15.71 debconf: falling back to frontend: Readline
+#45 15.71 debconf: unable to initialize frontend: Readline
+#45 15.71 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 1.)
+#45 15.71 debconf: falling back to frontend: Teletype
+#45 15.72 debconf: unable to initialize frontend: Teletype
+#45 15.72 debconf: (This frontend requires a controlling tty.)
+#45 15.72 debconf: falling back to frontend: Noninteractive
+#45 16.57 Fetched 88.7 kB in 2s (44.4 kB/s)
+#45 16.60 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5658 files and directories currently installed.)
+#45 16.63 Preparing to unpack .../zlib1g_1%3a1.3.dfsg+really1.3.1-1+deb13u1_amd64.deb ...
+#45 16.65 Unpacking zlib1g:amd64 (1:1.3.dfsg+really1.3.1-1+deb13u1) over (1:1.3.dfsg+really1.3.1-1+b1) ...
+#45 16.70 Setting up zlib1g:amd64 (1:1.3.dfsg+really1.3.1-1+deb13u1) ...
+#45 16.73 Processing triggers for libc-bin (2.41-12+deb13u4) ...
+#45 18.16 Found existing installation: pip 25.0.1
+#45 18.24 Uninstalling pip-25.0.1:
+#45 18.41   Successfully uninstalled pip-25.0.1
+#45 18.42 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#45 18.53 useradd warning: stream's uid 10002 is greater than SYS_UID_MAX 999
+#45 DONE 18.7s
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 13.49    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 465.8 kB/s eta 0:00:00
+#50 13.52 Installing collected packages: pip
+#50 13.52   Attempting uninstall: pip
+#50 13.52     Found existing installation: pip 25.0.1
+#50 13.56     Uninstalling pip-25.0.1:
+#50 13.57       Successfully uninstalled pip-25.0.1
+#50 14.97 Successfully installed pip-26.2.2
+#50 17.88 Collecting aiokafka==0.15.0 (from -r requirements-stream.txt (line 3))
+#50 ...
+
+#45 [event-publisher stage-1 2/9] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10002 stream  && useradd --system --uid 10002 --gid stream --no-create-home stream
+#45 DONE 18.7s
+
+#51 [event-publisher stage-1 3/9] WORKDIR /app
+#51 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 13.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 477.1 kB/s eta 0:00:00
+#42 13.37 Installing collected packages: pip
+#42 13.37   Attempting uninstall: pip
+#42 13.37     Found existing installation: pip 25.0.1
+#42 13.41     Uninstalling pip-25.0.1:
+#42 13.42       Successfully uninstalled pip-25.0.1
+#42 14.80 Successfully installed pip-26.2.2
+#42 15.45 Collecting en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85 (from -r requirements.txt (line 19))
+#42 18.70   Downloading en_core_web_sm-3.8.0-py3-none-any.whl (12.8 MB)
+#42 ...
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 19.30   Downloading aiokafka-0.15.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.0 kB)
+#50 21.28 Collecting SQLAlchemy==2.1.6 (from SQLAlchemy[asyncio]==2.1.6->-r requirements-stream.txt (line 4))
+#50 21.40   Downloading sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.7 kB)
+#50 21.70 Collecting asyncpg==0.32.0 (from -r requirements-stream.txt (line 5))
+#50 21.81   Downloading asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+#50 22.14 Collecting pydantic==2.14.2 (from -r requirements-stream.txt (line 6))
+#50 22.29   Downloading pydantic-2.14.2-py3-none-any.whl.metadata (137 kB)
+#50 ...
+
+#47 [frontend stage-1 2/4] RUN apk upgrade --no-cache
+#47 12.49 Preupgrading:
+#47 12.49 (1/2) Upgrading libapk (3.0.8-r0 -> 3.0.9-r0)
+#47 14.06 (2/2) Upgrading apk-tools (3.0.8-r0 -> 3.0.9-r0)
+#47 14.89 Executing busybox-1.37.0-r31.trigger
+#47 14.97 Continuing with the main upgrade transaction:
+#47 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 12.67 Get:8 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [96.7 kB]
+#43 12.77 Get:9 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [4,469 kB]
+#43 18.51 Get:10 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1,328 kB]
+#43 22.20 Get:11 http://archive.ubuntu.com/ubuntu jammy/multiverse amd64 Packages [266 kB]
+#43 ...
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 22.69 Collecting pydantic-settings==2.16.2 (from -r requirements-stream.txt (line 7))
+#50 22.82   Downloading pydantic_settings-2.16.2-py3-none-any.whl.metadata (4.0 kB)
+#50 22.95 Collecting structlog==26.1.0 (from -r requirements-stream.txt (line 8))
+#50 23.01   Downloading structlog-26.1.0-py3-none-any.whl.metadata (9.7 kB)
+#50 23.15 Collecting prometheus-client==0.26.0 (from -r requirements-stream.txt (line 9))
+#50 23.21   Downloading prometheus_client-0.26.0-py3-none-any.whl.metadata (2.1 kB)
+#50 23.27 Collecting jsonschema==4.26.0 (from -r requirements-stream.txt (line 10))
+#50 23.33   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+#50 23.44 Collecting typing-extensions>=4.6.0 (from SQLAlchemy==2.1.6->SQLAlchemy[asyncio]==2.1.6->-r requirements-stream.txt (line 4))
+#50 23.53   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#50 ...
+
+#49 [reporting-api builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-reporting.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#49 13.60    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 458.3 kB/s eta 0:00:00
+#49 13.63 Installing collected packages: pip
+#49 13.63   Attempting uninstall: pip
+#49 13.63     Found existing installation: pip 25.0.1
+#49 13.70     Uninstalling pip-25.0.1:
+#49 13.71       Successfully uninstalled pip-25.0.1
+#49 15.13 Successfully installed pip-26.2.2
+#49 18.38 Collecting fastapi==0.162.0 (from -r requirements-reporting.txt (line 3))
+#49 19.82   Downloading fastapi-0.162.0-py3-none-any.whl.metadata (26 kB)
+#49 20.63 Collecting uvicorn==0.54.0 (from uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 20.81   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+#49 21.37 Collecting pydantic==2.14.2 (from -r requirements-reporting.txt (line 5))
+#49 21.50   Downloading pydantic-2.14.2-py3-none-any.whl.metadata (137 kB)
+#49 21.90 Collecting pydantic-settings==2.16.2 (from -r requirements-reporting.txt (line 6))
+#49 22.01   Downloading pydantic_settings-2.16.2-py3-none-any.whl.metadata (4.0 kB)
+#49 22.79 Collecting SQLAlchemy==2.1.6 (from SQLAlchemy[asyncio]==2.1.6->-r requirements-reporting.txt (line 7))
+#49 22.93   Downloading sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.7 kB)
+#49 23.07 Collecting asyncpg==0.32.0 (from -r requirements-reporting.txt (line 8))
+#49 23.19   Downloading asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+#49 23.25 Collecting PyJWT==2.15.1 (from -r requirements-reporting.txt (line 9))
+#49 23.30   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+#49 23.38 Collecting structlog==26.1.0 (from -r requirements-reporting.txt (line 10))
+#49 23.48   Downloading structlog-26.1.0-py3-none-any.whl.metadata (9.7 kB)
+#49 23.62 Collecting prometheus-client==0.26.0 (from -r requirements-reporting.txt (line 11))
+#49 23.75   Downloading prometheus_client-0.26.0-py3-none-any.whl.metadata (2.1 kB)
+#49 ...
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 23.67 Collecting annotated-types>=0.6.0 (from pydantic==2.14.2->-r requirements-stream.txt (line 6))
+#50 23.79   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#50 25.43 Collecting pydantic-core==2.50.2 (from pydantic==2.14.2->-r requirements-stream.txt (line 6))
+#50 25.69   Downloading pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.5 kB)
+#50 25.90 Collecting typing-inspection>=0.4.4 (from pydantic==2.14.2->-r requirements-stream.txt (line 6))
+#50 25.96   Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+#50 26.10 Collecting python-dotenv>=1.2.2 (from pydantic-settings==2.16.2->-r requirements-stream.txt (line 7))
+#50 26.26   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+#50 ...
+
+#47 [frontend stage-1 2/4] RUN apk upgrade --no-cache
+#47 23.51 ( 1/12) Upgrading musl (1.2.6-r2 -> 1.2.6-r3)
+#47 23.81 ( 2/12) Upgrading alpine-release (3.24.2-r0 -> 3.24.4-r0)
+#47 23.93 ( 3/12) Upgrading zlib (1.3.2-r0 -> 1.4-r0)
+#47 24.02 ( 4/12) Upgrading ca-certificates-bundle (20260909-r0 -> 20261020-r0)
+#47 24.20 ( 5/12) Upgrading ca-certificates (20260909-r0 -> 20261020-r0)
+#47 24.44 ( 6/12) Upgrading brotli-libs (1.2.0-r1 -> 1.2.1-r0)
+#47 24.89 ( 7/12) Upgrading c-ares (1.34.8-r0 -> 1.34.9-r0)
+#47 25.09 ( 8/12) Upgrading libcurl (8.22.0-r0 -> 8.23.0-r0)
+#47 25.69 ( 9/12) Upgrading curl (8.22.0-r0 -> 8.23.0-r0)
+#47 26.05 (10/12) Upgrading musl-utils (1.2.6-r2 -> 1.2.6-r3)
+#47 26.11 (11/12) Upgrading libexpat (2.9.0-r0 -> 2.10.0-r0)
+#47 26.24 (12/12) Upgrading tzdata (2026e-r0 -> 2026f-r0)
+#47 26.53 Executing busybox-1.37.0-r31.trigger
+#47 26.53 Executing ca-certificates-20261020-r0.trigger
+#47 26.57 OK: 51.2 MiB in 70 packages
+#47 DONE 26.7s
+
+#52 [frontend stage-1 3/4] COPY infra/docker/nginx.conf /etc/nginx/conf.d/default.conf
+#52 DONE 0.1s
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 26.60 Collecting attrs>=22.2.0 (from jsonschema==4.26.0->-r requirements-stream.txt (line 10))
+#50 26.81   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+#50 27.17 Collecting jsonschema-specifications>=2023.03.6 (from jsonschema==4.26.0->-r requirements-stream.txt (line 10))
+#50 27.51   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+#50 27.80 Collecting referencing>=0.28.4 (from jsonschema==4.26.0->-r requirements-stream.txt (line 10))
+#50 28.05   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+#50 29.07 Collecting rpds-py>=0.25.0 (from jsonschema==4.26.0->-r requirements-stream.txt (line 10))
+#50 29.09   Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+#50 29.52 Collecting greenlet>=1 (from SQLAlchemy[asyncio]==2.1.6->-r requirements-stream.txt (line 4))
+#50 29.56   Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+#50 29.62 Downloading aiokafka-0.15.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.2 MB)
+#50 30.47    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 1.6 MB/s  0:00:00#50 ...
+
+#46 [gateway stage-1  2/14] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10001 app  && useradd --system --uid 10001 --gid app --no-create-home app
+#46 22.13 Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [1108 B]
+#46 22.19 Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [300 kB]
+#46 23.19 Fetched 10.1 MB in 23s (445 kB/s)
+#46 23.19 Reading package lists...
+#46 24.22 Reading package lists...
+#46 25.30 Building dependency tree...
+#46 25.60 Reading state information...
+#46 25.74 Calculating upgrade...
+#46 26.22 The following packages will be upgraded:
+#46 26.22   zlib1g
+#46 26.46 1 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#46 26.46 Need to get 88.7 kB of archives.
+#46 26.46 After this operation, 1024 B disk space will be freed.
+#46 26.46 Get:1 http://deb.debian.org/debian-security trixie-security/main amd64 zlib1g amd64 1:1.3.dfsg+really1.3.1-1+deb13u1 [88.7 kB]
+#46 27.07 debconf: unable to initialize frontend: Dialog
+#46 27.07 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#46 27.07 debconf: falling back to frontend: Readline
+#46 27.07 debconf: unable to initialize frontend: Readline
+#46 27.07 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 1.)
+#46 27.07 debconf: falling back to frontend: Teletype
+#46 27.08 debconf: unable to initialize frontend: Teletype
+#46 27.08 debconf: (This frontend requires a controlling tty.)
+#46 27.08 debconf: falling back to frontend: Noninteractive
+#46 28.09 Fetched 88.7 kB in 1s (153 kB/s)
+#46 28.13 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5658 files and directories currently installed.)
+#46 28.14 Preparing to unpack .../zlib1g_1%3a1.3.dfsg+really1.3.1-1+deb13u1_amd64.deb ...
+#46 28.17 Unpacking zlib1g:amd64 (1:1.3.dfsg+really1.3.1-1+deb13u1) over (1:1.3.dfsg+really1.3.1-1+b1) ...
+#46 28.23 Setting up zlib1g:amd64 (1:1.3.dfsg+really1.3.1-1+deb13u1) ...
+#46 28.27 Processing triggers for libc-bin (2.41-12+deb13u4) ...
+#46 30.32 Found existing installation: pip 25.0.1
+#46 30.38 Uninstalling pip-25.0.1:
+#46 30.60   Successfully uninstalled pip-25.0.1
+#46 30.62 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#46 30.80 useradd warning: app's uid 10001 is greater than SYS_UID_MAX 999
+#46 DONE 30.9s
+
+#53 [gateway stage-1  3/14] WORKDIR /app
+#53 DONE 0.1s
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 30.47    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 1.6 MB/s  0:00:00
+#50 30.51 Downloading sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.7 MB)
+#50 ...
+
+#53 [migrate stage-1  3/14] WORKDIR /app
+#53 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 28.61      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.8/12.8 MB 1.6 MB/s  0:00:09
+#42 28.92 Collecting fastapi==0.162.0 (from -r requirements.txt (line 1))
+#42 29.08   Downloading fastapi-0.162.0-py3-none-any.whl.metadata (26 kB)
+#42 29.25 Collecting uvicorn==0.54.0 (from uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 29.28   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+#42 29.60 Collecting pydantic==2.14.2 (from -r requirements.txt (line 3))
+#42 29.63   Downloading pydantic-2.14.2-py3-none-any.whl.metadata (137 kB)
+#42 29.77 Collecting pydantic-settings==2.16.2 (from -r requirements.txt (line 4))
+#42 29.81   Downloading pydantic_settings-2.16.2-py3-none-any.whl.metadata (4.0 kB)
+#42 29.86 Collecting email-validator==2.3.0 (from -r requirements.txt (line 5))
+#42 29.89   Downloading email_validator-2.3.0-py3-none-any.whl.metadata (26 kB)
+#42 31.01 Collecting SQLAlchemy==2.1.6 (from SQLAlchemy[asyncio]==2.1.6->-r requirements.txt (line 6))
+#42 31.08   Downloading sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.7 kB)
+#42 ...
+
+#44 [reporting-api stage-1 2/7] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10003 reporting  && useradd --system --uid 10003 --gid reporting --no-create-home reporting
+#44 22.32 Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [1108 B]
+#44 22.39 Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [300 kB]
+#44 23.39 Fetched 10.1 MB in 23s (441 kB/s)
+#44 23.39 Reading package lists...
+#44 24.40 Reading package lists...
+#44 25.48 Building dependency tree...
+#44 25.82 Reading state information...
+#44 25.96 Calculating upgrade...
+#44 26.48 The following packages will be upgraded:
+#44 26.48   zlib1g
+#44 26.94 1 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#44 26.94 Need to get 88.7 kB of archives.
+#44 26.94 After this operation, 1024 B disk space will be freed.
+#44 26.94 Get:1 http://deb.debian.org/debian-security trixie-security/main amd64 zlib1g amd64 1:1.3.dfsg+really1.3.1-1+deb13u1 [88.7 kB]
+#44 27.66 debconf: unable to initialize frontend: Dialog
+#44 27.66 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#44 27.66 debconf: falling back to frontend: Readline
+#44 27.66 debconf: unable to initialize frontend: Readline
+#44 27.66 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 1.)
+#44 27.66 debconf: falling back to frontend: Teletype
+#44 27.67 debconf: unable to initialize frontend: Teletype
+#44 27.67 debconf: (This frontend requires a controlling tty.)
+#44 27.67 debconf: falling back to frontend: Noninteractive
+#44 28.86 Fetched 88.7 kB in 1s (94.9 kB/s)
+#44 28.89 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5658 files and directories currently installed.)
+#44 28.90 Preparing to unpack .../zlib1g_1%3a1.3.dfsg+really1.3.1-1+deb13u1_amd64.deb ...
+#44 28.92 Unpacking zlib1g:amd64 (1:1.3.dfsg+really1.3.1-1+deb13u1) over (1:1.3.dfsg+really1.3.1-1+b1) ...
+#44 28.99 Setting up zlib1g:amd64 (1:1.3.dfsg+really1.3.1-1+deb13u1) ...
+#44 29.03 Processing triggers for libc-bin (2.41-12+deb13u4) ...
+#44 31.16 Found existing installation: pip 25.0.1
+#44 31.23 Uninstalling pip-25.0.1:
+#44 31.46   Successfully uninstalled pip-25.0.1
+#44 31.48 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#44 31.64 useradd warning: reporting's uid 10003 is greater than SYS_UID_MAX 999
+#44 DONE 31.7s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 31.27 Collecting asyncpg==0.32.0 (from -r requirements.txt (line 7))
+#42 31.36   Downloading asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+#42 ...
+
+#54 [reporting-api stage-1 3/7] WORKDIR /app
+#54 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 31.46 Collecting alembic==1.20.1 (from -r requirements.txt (line 8))
+#42 31.54   Downloading alembic-1.20.1-py3-none-any.whl.metadata (7.3 kB)
+#42 31.62 Collecting redis==8.1.0 (from -r requirements.txt (line 9))
+#42 31.75   Downloading redis-8.1.0-py3-none-any.whl.metadata (16 kB)
+#42 31.88 Collecting PyJWT==2.15.1 (from -r requirements.txt (line 10))
+#42 32.01   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+#42 32.19 Collecting httpx==0.28.1 (from -r requirements.txt (line 11))
+#42 ...
+
+#48 [frontend build 4/6] RUN npm ci || npm install
+#48 32.21 
+#48 32.21 added 67 packages, and audited 68 packages in 32s
+#48 32.21 
+#48 32.21 10 packages are looking for funding
+#48 32.21   run `npm fund` for details
+#48 32.21 
+#48 32.21 found 0 vulnerabilities
+#48 32.21 npm notice
+#48 32.21 npm notice New major version of npm available! 10.9.9 -> 12.2.2
+#48 32.21 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+#48 32.21 npm notice To update run: npm install -g npm@12.2.2
+#48 32.21 npm notice
+#48 DONE 32.3s
+
+#55 [frontend build 5/6] COPY frontend/ ./
+#55 DONE 0.1s
+
+#56 [frontend build 6/6] RUN npm run build
+#56 0.356 
+#56 0.356 > sovereign-ai-gateway-dashboard@0.1.0 build
+#56 0.356 > tsc -b && vite build
+#56 0.356 
+#56 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 23.26 Get:12 http://archive.ubuntu.com/ubuntu jammy/main amd64 Packages [1,792 kB]
+#43 24.21 Get:13 http://archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [104 kB]
+#43 24.44 Get:14 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1,631 kB]
+#43 24.92 Get:15 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [4,825 kB]
+#43 26.12 Get:16 http://archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [8,334 kB]
+#43 28.87 Get:17 http://archive.ubuntu.com/ubuntu jammy-backports/main amd64 Packages [82.9 kB]
+#43 29.00 Get:18 http://archive.ubuntu.com/ubuntu jammy-backports/universe amd64 Packages [35.6 kB]
+#43 29.33 Fetched 49.3 MB in 29s (1,710 kB/s)
+#43 29.33 Reading package lists...
+#43 31.60 Reading package lists...
+#43 33.06 Building dependency tree...
+#43 33.46 Reading state information...
+#43 ...
+
+#49 [reporting-api builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-reporting.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#49 23.87 Collecting starlette>=0.46.0 (from fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 24.02   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+#49 24.23 Collecting typing-extensions>=4.8.0 (from fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 24.45   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#49 24.64 Collecting typing-inspection>=0.4.2 (from fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 24.72   Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+#49 24.84 Collecting annotated-doc>=0.0.2 (from fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 25.07   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+#49 25.35 Collecting opentelemetry-api>=1.44.0 (from fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 25.61   Downloading opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+#49 25.87 Collecting click>=7.0 (from uvicorn==0.54.0->uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 25.94   Downloading click-8.5.1-py3-none-any.whl.metadata (2.6 kB)
+#49 26.04 Collecting h11>=0.8 (from uvicorn==0.54.0->uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 26.18   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#49 26.42 Collecting annotated-types>=0.6.0 (from pydantic==2.14.2->-r requirements-reporting.txt (line 5))
+#49 26.66   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#49 28.88 Collecting pydantic-core==2.50.2 (from pydantic==2.14.2->-r requirements-reporting.txt (line 5))
+#49 28.91   Downloading pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.5 kB)
+#49 28.98 Collecting python-dotenv>=1.2.2 (from pydantic-settings==2.16.2->-r requirements-reporting.txt (line 6))
+#49 29.01   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+#49 29.38 Collecting greenlet>=1 (from SQLAlchemy[asyncio]==2.1.6->-r requirements-reporting.txt (line 7))
+#49 29.46   Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+#49 29.61 Collecting httptools>=0.8.0 (from uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 29.64   Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#49 29.74 Collecting pyyaml>=5.1 (from uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 29.78   Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+#49 29.89 Collecting uvloop>=0.15.1 (from uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 29.93   Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+#49 30.12 Collecting watchfiles>=0.20 (from uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 30.21   Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#49 30.61 Collecting websockets>=13.0 (from uvicorn[standard]==0.54.0->-r requirements-reporting.txt (line 4))
+#49 30.64   Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+#49 30.71 Collecting anyio<5,>=4.0.0 (from starlette>=0.46.0->fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 30.76   Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+#49 30.82 Collecting idna>=2.8 (from anyio<5,>=4.0.0->starlette>=0.46.0->fastapi==0.162.0->-r requirements-reporting.txt (line 3))
+#49 30.87   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#49 30.94 Downloading fastapi-0.162.0-py3-none-any.whl (148 kB)
+#49 31.06 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+#49 31.18 Downloading pydantic-2.14.2-py3-none-any.whl (490 kB)
+#49 31.53 Downloading pydantic_settings-2.16.2-py3-none-any.whl (81 kB)
+#49 31.60 Downloading sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.7 MB)
+#49 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 33.56 Calculating upgrade...
+#43 ...
+
+#56 [frontend build 6/6] RUN npm run build
+#56 1.054 vite v8.3.5 building client environment for production...
+#56 1.079 transforming...
+#56 1.269 ✓ 617 modules transformed.
+#56 1.368 rendering chunks...
+#56 1.553 computing gzip size...
+#56 1.565 dist/index.html                   0.41 kB │ gzip:   0.28 kB
+#56 1.565 dist/assets/index-BLsfu0pl.css    4.83 kB │ gzip:   1.67 kB
+#56 1.565 dist/assets/index-DfZNwVfC.js   680.86 kB │ gzip: 200.76 kB
+#56 1.565 
+#56 1.567 [plugin builtin:vite-reporter] 
+#56 1.567 (!) Some chunks are larger than 500 kB after minification. Consider:
+#56 1.567 - Using dynamic import() to code-split the application
+#56 1.567 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+#56 1.567 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#56 1.569 ✓ built in 510ms
+#56 DONE 1.6s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 32.47   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#42 32.77 Collecting structlog==26.1.0 (from -r requirements.txt (line 12))
+#42 33.15   Downloading structlog-26.1.0-py3-none-any.whl.metadata (9.7 kB)
+#42 33.53 Collecting prometheus-client==0.26.0 (from -r requirements.txt (line 13))
+#42 33.80   Downloading prometheus_client-0.26.0-py3-none-any.whl.metadata (2.1 kB)
+#42 34.19 Collecting PyYAML==6.0.3 (from -r requirements.txt (line 14))
+#42 34.24   Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+#42 ...
+
+#57 [frontend stage-1 4/4] COPY --from=build /app/dist /usr/share/nginx/html
+#57 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 34.35 Collecting jsonschema==4.26.0 (from -r requirements.txt (line 15))
+#42 34.40   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+#42 34.64 Collecting phonenumbers==9.0.42 (from -r requirements.txt (line 16))
+#42 34.79   Downloading phonenumbers-9.0.42-py2.py3-none-any.whl.metadata (10 kB)
+#42 34.94 Collecting presidio-analyzer==2.2.366 (from -r requirements.txt (line 17))
+#42 34.99   Downloading presidio_analyzer-2.2.366-py3-none-any.whl.metadata (6.5 kB)
+#42 ...
+
+#58 [frontend] exporting to image
+#58 exporting layers 0.6s done
+#58 exporting manifest sha256:bd5866160bddaebae903eb54aff148b0094fce1c19529d97810cbce9c1a0f843 0.0s done
+#58 exporting config sha256:b5dd67b665e1d50b9b44bb572d2bd2e2c6092ef8347c524a6313bdb90373f87f 0.0s done
+#58 exporting attestation manifest sha256:18fccef7105b105bfb414afb1099c7f3f83af7973b6ede01793cfce58f6847d9 0.0s done
+#58 exporting manifest list sha256:999bef2f55814bb4f24c9c9317a64d376dda44bc97993741ea673f8176b04778 0.0s done
+#58 naming to docker.io/library/clean-frontend:latest done
+#58 unpacking to docker.io/library/clean-frontend:latest 0.3s done
+#58 DONE 1.0s
+
+#59 [frontend] resolving provenance for metadata file
+#59 DONE 0.0s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 34.53 The following packages will be upgraded:
+#43 34.53   apt bind9-host bind9-libs bsdutils bzip2 ca-certificates coreutils cpp-11
+#43 34.53   curl diffutils g++-11 gcc-11 gcc-11-base gcc-12-base gzip krb5-user
+#43 34.53   libapt-pkg6.0 libasan6 libatomic1 libattr1 libaudit-common libaudit1
+#43 34.53   libblkid1 libbrotli1 libbz2-1.0 libc-bin libc-dev-bin libc-devtools libc6
+#43 34.53   libc6-dev libcap2 libcc1-0 libcurl4 libexpat1 libexpat1-dev libfreetype6
+#43 34.53   libgcc-11-dev libgcc-s1 libgcrypt20 libgnutls30 libgomp1 libgssapi-krb5-2
+#43 34.53   libgssrpc4 libitm1 libk5crypto3 libkadm5clnt-mit12 libkadm5srv-mit12
+#43 34.53   libkdb5-10 libkrb5-3 libkrb5support0 libldap-2.5-0 liblsan0 liblzma5
+#43 34.53   libmount1 libncurses6 libncursesw6 libnghttp2-14 libnss3 libp11-kit0
+#43 34.53   libpam-modules libpam-modules-bin libpam-runtime libpam0g libpcre2-8-0
+#43 34.53   libperl5.34 libpng16-16 libpython3.10 libpython3.10-dev
+#43 34.53   libpython3.10-minimal libpython3.10-stdlib libquadmath0 libsmartcols1
+#43 34.53   libsqlite3-0 libssh-4 libssl3 libstdc++-11-dev libstdc++6 libsystemd0
+#43 34.53   libtasn1-6 libtiff5 libtinfo6 libtsan0 libubsan1 libudev1 libuuid1 libx11-6
+#43 34.53   libx11-data libxml2 libxpm4 linux-libc-dev locales mount ncurses-base
+#43 34.53   ncurses-bin openssl p11-kit p11-kit-modules perl perl-base perl-modules-5.34
+#43 34.53   python3.10 python3.10-dev python3.10-minimal sed tar tzdata util-linux wget
+#43 34.53   xz-utils
+#43 35.06 109 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#43 35.06 Need to get 111 MB of archives.
+#43 35.06 After this operation, 289 kB of additional disk space will be used.
+#43 35.06 Get:1 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 bsdutils amd64 1:2.37.2-4ubuntu3.6 [81.1 kB]
+#43 35.73 Get:2 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 coreutils amd64 8.32-4.1ubuntu1.4 [1,437 kB]
+#43 38.17 Get:3 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 diffutils amd64 1:3.8-0ubuntu2.1 [173 kB]
+#43 38.36 Get:4 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 gzip amd64 1.10-4ubuntu4.2 [96.1 kB]
+#43 38.38 Get:5 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 ncurses-bin amd64 6.3-2ubuntu0.3 [184 kB]
+#43 38.57 Get:6 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libperl5.34 amd64 5.34.0-3ubuntu1.9 [4,796 kB]
+#43 ...
+
+#50 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 31.58    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 4.4 MB/s  0:00:01
+#50 31.61 Downloading asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl (3.8 MB)
+#50 33.59    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.8/3.8 MB 1.9 MB/s  0:00:01
+#50 33.86 Downloading pydantic-2.14.2-py3-none-any.whl (490 kB)
+#50 34.22 Downloading pydantic_settings-2.16.2-py3-none-any.whl (81 kB)
+#50 34.26 Downloading structlog-26.1.0-py3-none-any.whl (73 kB)
+#50 34.32 Downloading prometheus_client-0.26.0-py3-none-any.whl (64 kB)
+#50 34.39 Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+#50 34.45 Downloading pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+#50 34.97    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 4.3 MB/s  0:00:00
+#50 35.02 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#50 35.09 Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#50 35.18 Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+#50 35.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 621.4/621.4 kB 4.2 MB/s  0:00:00
+#50 35.43 Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+#50 35.49 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+#50 35.57 Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+#50 35.66 Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (371 kB)
+#50 35.79 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#50 35.82 Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+#50 36.01 Installing collected packages: typing-extensions, structlog, rpds-py, python-dotenv, prometheus-client, greenlet, attrs, asyncpg, annotated-types, aiokafka, typing-inspection, SQLAlchemy, referencing, pydantic-core, pydantic, jsonschema-specifications, pydantic-settings, jsonschema
+#50 38.65 
+#50 38.65 Successfully installed SQLAlchemy-2.1.6 aiokafka-0.15.0 annotated-types-0.8.0 asyncpg-0.32.0 attrs-26.1.0 greenlet-3.5.6 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 prometheus-client-0.26.0 pydantic-2.14.2 pydantic-core-2.50.2 pydantic-settings-2.16.2 python-dotenv-1.2.4 referencing-0.37.0 rpds-py-2026.9.1 structlog-26.1.0 typing-extensions-4.16.0 typing-inspection-0.4.5
+#50 39.23 Found existing installation: pip 26.2.2
+#50 39.29 Uninstalling pip-26.2.2:
+#50 39.30   Successfully uninstalled pip-26.2.2
+#50 DONE 39.5s
+
+#49 [reporting-api builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-reporting.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#49 34.88    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 1.4 MB/s  0:00:03
+#49 34.97 Downloading asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl (3.8 MB)
+#49 35.78    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.8/3.8 MB 4.7 MB/s  0:00:00
+#49 35.81 Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+#49 35.84 Downloading structlog-26.1.0-py3-none-any.whl (73 kB)
+#49 35.88 Downloading prometheus_client-0.26.0-py3-none-any.whl (64 kB)
+#49 35.91 Downloading pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+#49 36.45    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 4.1 MB/s  0:00:00
+#49 36.71 Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+#49 36.96 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#49 37.23 Downloading click-8.5.1-py3-none-any.whl (126 kB)
+#49 37.54 Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+#49 37.84    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 621.4/621.4 kB 2.1 MB/s  0:00:00
+#49 38.12 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#49 38.22 Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (552 kB)
+#49 38.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 552.8/552.8 kB 5.5 MB/s  0:00:00
+#49 38.39 Downloading opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+#49 38.42 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+#49 38.45 Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+#49 38.58    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 6.5 MB/s  0:00:00
+#49 38.69 Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+#49 38.77 Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+#49 38.84 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#49 38.91 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#49 38.96 Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+#49 39.01 Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+#49 ...
+
+#50 [event-producer builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#50 DONE 39.5s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 35.60 Collecting spacy==3.8.18 (from -r requirements.txt (line 18))
+#42 35.74   Downloading spacy-3.8.18-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (28 kB)
+#42 35.82 Collecting starlette>=0.46.0 (from fastapi==0.162.0->-r requirements.txt (line 1))
+#42 35.85   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+#42 35.94 Collecting typing-extensions>=4.8.0 (from fastapi==0.162.0->-r requirements.txt (line 1))
+#42 36.07   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#42 36.25 Collecting typing-inspection>=0.4.2 (from fastapi==0.162.0->-r requirements.txt (line 1))
+#42 36.58   Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+#42 36.84 Collecting annotated-doc>=0.0.2 (from fastapi==0.162.0->-r requirements.txt (line 1))
+#42 37.10   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+#42 37.42 Collecting opentelemetry-api>=1.44.0 (from fastapi==0.162.0->-r requirements.txt (line 1))
+#42 37.76   Downloading opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+#42 38.05 Collecting click>=7.0 (from uvicorn==0.54.0->uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 38.17   Downloading click-8.5.1-py3-none-any.whl.metadata (2.6 kB)
+#42 38.24 Collecting h11>=0.8 (from uvicorn==0.54.0->uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 38.31   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#42 38.35 Collecting annotated-types>=0.6.0 (from pydantic==2.14.2->-r requirements.txt (line 3))
+#42 38.39   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#42 ...
+
+#60 [event-publisher stage-1 4/9] COPY --from=builder /opt/venv /opt/venv
+#60 DONE 0.4s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 40.10 Collecting pydantic-core==2.50.2 (from pydantic==2.14.2->-r requirements.txt (line 3))
+#42 40.13   Downloading pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.5 kB)
+#42 40.18 Collecting python-dotenv>=1.2.2 (from pydantic-settings==2.16.2->-r requirements.txt (line 4))
+#42 ...
+
+#60 [event-producer stage-1 4/9] COPY --from=builder /opt/venv /opt/venv
+#60 DONE 0.4s
+
+#61 [event-producer stage-1 5/9] COPY --chown=root:root events ./events
+#61 DONE 0.1s
+
+#62 [event-publisher stage-1 6/9] COPY --chown=root:root schemas ./schemas
+#62 DONE 0.0s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 40.21   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+#42 40.26 Collecting dnspython>=2.0.0 (from email-validator==2.3.0->-r requirements.txt (line 5))
+#42 40.28   Downloading dnspython-2.9.2-py3-none-any.whl.metadata (5.8 kB)
+#42 ...
+
+#62 [event-producer stage-1 6/9] COPY --chown=root:root schemas ./schemas
+#62 DONE 0.0s
+
+#63 [event-publisher stage-1 7/9] COPY --chown=root:root producer ./producer
+#63 DONE 0.0s
+
+#64 [event-producer stage-1 8/9] COPY --chown=root:root publisher ./publisher
+#64 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 40.32 Collecting idna>=2.0.0 (from email-validator==2.3.0->-r requirements.txt (line 5))
+#42 40.35   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#42 40.39 Collecting Mako (from alembic==1.20.1->-r requirements.txt (line 8))
+#42 ...
+
+#64 [event-publisher stage-1 8/9] COPY --chown=root:root publisher ./publisher
+#64 DONE 0.1s
+
+#65 [event-publisher stage-1 9/9] COPY --chown=root:root gateway/__init__.py gateway/db.py gateway/config.py gateway/models.py gateway/logging_config.py ./gateway/
+#65 DONE 0.1s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 40.42   Downloading mako-1.4.3-py3-none-any.whl.metadata (2.9 kB)
+#42 40.47 Collecting anyio (from httpx==0.28.1->-r requirements.txt (line 11))
+#42 40.49   Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+#42 40.54 Collecting certifi (from httpx==0.28.1->-r requirements.txt (line 11))
+#42 40.57   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+#42 40.61 Collecting httpcore==1.* (from httpx==0.28.1->-r requirements.txt (line 11))
+#42 40.64   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#42 40.68 Collecting attrs>=22.2.0 (from jsonschema==4.26.0->-r requirements.txt (line 15))
+#42 40.71   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+#42 40.74 Collecting jsonschema-specifications>=2023.03.6 (from jsonschema==4.26.0->-r requirements.txt (line 15))
+#42 40.77   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+#42 40.82 Collecting referencing>=0.28.4 (from jsonschema==4.26.0->-r requirements.txt (line 15))
+#42 40.85   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+#42 41.49 Collecting rpds-py>=0.25.0 (from jsonschema==4.26.0->-r requirements.txt (line 15))
+#42 41.52   Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+#42 41.92 Collecting numpy<2.5.0,>=1.19.0 (from presidio-analyzer==2.2.366->-r requirements.txt (line 17))
+#42 41.95   Downloading numpy-2.4.6-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+#42 42.10 Collecting preshed<3.0.14 (from presidio-analyzer==2.2.366->-r requirements.txt (line 17))
+#42 42.13   Downloading preshed-3.0.13-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.2 kB)
+#42 42.87 Collecting regex>=2023.0.0 (from presidio-analyzer==2.2.366->-r requirements.txt (line 17))
+#42 42.90   Downloading regex-2026.11.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+#42 42.95 Collecting tldextract<6.0.0,>=5.3.1 (from presidio-analyzer==2.2.366->-r requirements.txt (line 17))
+#42 42.98   Downloading tldextract-5.4.0-py3-none-any.whl.metadata (9.2 kB)
+#42 43.02 Collecting spacy-legacy<3.1.0,>=3.0.11 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 43.05   Downloading spacy_legacy-3.0.12-py2.py3-none-any.whl.metadata (2.8 kB)
+#42 43.08 Collecting spacy-loggers<2.0.0,>=1.0.0 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 43.11   Downloading spacy_loggers-1.0.5-py3-none-any.whl.metadata (23 kB)
+#42 43.20 Collecting murmurhash<1.1.0,>=0.28.0 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 43.23   Downloading murmurhash-1.0.16-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata (2.3 kB)
+#42 43.31 Collecting cymem<2.1.0,>=2.0.2 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 43.34   Downloading cymem-2.0.16-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (9.7 kB)
+#42 43.63 Collecting thinc<8.4.0,>=8.3.12 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 43.67   Downloading thinc-8.3.14-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (14 kB)
+#42 43.78 Collecting wasabi<1.2.0,>=0.9.1 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 43.83   Downloading wasabi-1.1.3-py3-none-any.whl.metadata (28 kB)
+#42 43.97 Collecting srsly<3.0.0,>=2.5.3 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.00   Downloading srsly-2.5.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (20 kB)
+#42 44.04 Collecting catalogue<2.1.0,>=2.0.6 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.06   Downloading catalogue-2.0.10-py3-none-any.whl.metadata (14 kB)
+#42 44.10 Collecting weasel<2.0.0,>=1.0.1 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.13   Downloading weasel-1.0.1-py3-none-any.whl.metadata (4.8 kB)
+#42 44.17 Collecting confection<2.0.0,>=1.3.4 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.20   Downloading confection-1.3.4-py3-none-any.whl.metadata (19 kB)
+#42 44.33 Collecting typer<1.0.0,>=0.3.0 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.36   Downloading typer-0.28.0-py3-none-any.whl.metadata (16 kB)
+#42 44.44 Collecting tqdm<5.0.0,>=4.38.0 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.49   Downloading tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+#42 44.61 Collecting requests<3.0.0,>=2.13.0 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.66   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+#42 44.74 Collecting jinja2 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 44.81   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+#42 45.13 Collecting setuptools (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 45.34   Downloading setuptools-84.2.1-py3-none-any.whl.metadata (6.6 kB)
+#42 ...
+
+#66 [event-producer] exporting to image
+#66 exporting layers 3.8s done
+#66 exporting manifest sha256:9f664f9d0f89f3c74e4b8bf420e19adbeaf8c731d2ec95d63d41d879574f4902 0.0s done
+#66 exporting config sha256:3fa199cb32b3a64d733bccec155a29d49b391930d4eede77c8cf4b5477da439c 0.0s done
+#66 exporting attestation manifest sha256:3835efde9760c3403e15abdf690bfd97699d8328dae8e6868ffc7c6f335b1cef 0.0s done
+#66 exporting manifest list sha256:198bfaf10751aac05bd01fb4f9d59f0c854036ed5664795e366d2145b6014897 0.0s done
+#66 naming to docker.io/library/clean-event-producer:latest done
+#66 unpacking to docker.io/library/clean-event-producer:latest 1.2s done
+#66 DONE 5.2s
+
+#67 [event-publisher] exporting to image
+#67 exporting layers 3.8s done
+#67 exporting manifest sha256:a2be1f6d7127dc14d7c763d48cc5b38fb392040a1ea3ed18bbd1f5504d035cbe 0.0s done
+#67 exporting config sha256:352d37ab90666b828dd6912df1c9ca9b3076d1ce9d206fb11d8520d5126df19a 0.0s done
+#67 exporting attestation manifest sha256:5c6e220b528a6ab55ca43decb36e013f0b72bec6767cdf753b9a2a8aa6086792 0.0s done
+#67 exporting manifest list sha256:2975e0595bb2a9fe9b669103e38240a031afb53c91f15abf2f92637275b5b9a8 0.0s done
+#67 naming to docker.io/library/clean-event-publisher:latest done
+#67 unpacking to docker.io/library/clean-event-publisher:latest 1.2s done
+#67 DONE 5.2s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 42.05 Get:7 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 perl amd64 5.34.0-3ubuntu1.9 [232 kB]
+#43 42.13 Get:8 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 perl-base amd64 5.34.0-3ubuntu1.9 [1,762 kB]
+#43 42.71 Get:9 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 perl-modules-5.34 all 5.34.0-3ubuntu1.9 [2,977 kB]
+#43 43.55 Get:10 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libc-devtools amd64 2.35-0ubuntu3.15 [29.0 kB]
+#43 43.56 Get:11 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libc6-dev amd64 2.35-0ubuntu3.15 [2,100 kB]
+#43 44.06 Get:12 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libc-dev-bin amd64 2.35-0ubuntu3.15 [20.3 kB]
+#43 44.06 Get:13 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 linux-libc-dev amd64 5.15.0-203.213 [1,408 kB]
+#43 44.31 Get:14 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libatomic1 amd64 12.3.0-1ubuntu1~22.04.3 [10.5 kB]
+#43 44.31 Get:15 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libubsan1 amd64 12.3.0-1ubuntu1~22.04.3 [976 kB]
+#43 44.48 Get:16 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libquadmath0 amd64 12.3.0-1ubuntu1~22.04.3 [154 kB]
+#43 44.51 Get:17 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 liblsan0 amd64 12.3.0-1ubuntu1~22.04.3 [1,069 kB]
+#43 44.66 Get:18 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libitm1 amd64 12.3.0-1ubuntu1~22.04.3 [30.2 kB]
+#43 44.67 Get:19 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgomp1 amd64 12.3.0-1ubuntu1~22.04.3 [127 kB]
+#43 44.69 Get:20 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 gcc-12-base amd64 12.3.0-1ubuntu1~22.04.3 [216 kB]
+#43 44.73 Get:21 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgcc-s1 amd64 12.3.0-1ubuntu1~22.04.3 [53.9 kB]
+#43 44.74 Get:22 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libcc1-0 amd64 12.3.0-1ubuntu1~22.04.3 [48.3 kB]
+#43 44.74 Get:23 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libstdc++6 amd64 12.3.0-1ubuntu1~22.04.3 [699 kB]
+#43 44.85 Get:24 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libc6 amd64 2.35-0ubuntu3.15 [3,234 kB]
+#43 45.44 Get:25 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 bzip2 amd64 1.0.8-5ubuntu0.1 [34.8 kB]
+#43 45.45 Get:26 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libbz2-1.0 amd64 1.0.8-5ubuntu0.1 [34.5 kB]
+#43 45.46 Get:27 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 sed amd64 4.8-1ubuntu2.1 [188 kB]
+#43 45.48 Get:28 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 tar amd64 1.34+dfsg-1ubuntu0.1.22.04.6 [298 kB]
+#43 45.58 Get:29 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 util-linux amd64 2.37.2-4ubuntu3.6 [1,067 kB]
+#43 45.96 Get:30 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libc-bin amd64 2.35-0ubuntu3.15 [706 kB]
+#43 46.12 Get:31 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 ncurses-base all 6.3-2ubuntu0.3 [20.1 kB]
+#43 ...
+
+#49 [reporting-api builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-reporting.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#49 39.83    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 5.6 MB/s  0:00:00
+#49 39.86 Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+#49 39.96 Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+#49 40.22 Installing collected packages: websockets, uvloop, typing-extensions, structlog, pyyaml, python-dotenv, PyJWT, prometheus-client, idna, httptools, h11, greenlet, click, asyncpg, annotated-types, annotated-doc, uvicorn, typing-inspection, SQLAlchemy, pydantic-core, opentelemetry-api, anyio, watchfiles, starlette, pydantic, pydantic-settings, fastapi
+#49 44.95 
+#49 44.96 Successfully installed PyJWT-2.15.1 SQLAlchemy-2.1.6 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 asyncpg-0.32.0 click-8.5.1 fastapi-0.162.0 greenlet-3.5.6 h11-0.16.0 httptools-0.9.0 idna-3.20 opentelemetry-api-1.45.2 prometheus-client-0.26.0 pydantic-2.14.2 pydantic-core-2.50.2 pydantic-settings-2.16.2 python-dotenv-1.2.4 pyyaml-6.0.3 starlette-1.10.0 structlog-26.1.0 typing-extensions-4.16.0 typing-inspection-0.4.5 uvicorn-0.54.0 uvloop-0.23.0 watchfiles-1.3.0 websockets-17.4
+#49 45.66 Found existing installation: pip 26.2.2
+#49 45.72 Uninstalling pip-26.2.2:
+#49 45.73   Successfully uninstalled pip-26.2.2
+#49 DONE 46.1s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 46.12 Get:32 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgcrypt20 amd64 1.9.4-3ubuntu3.3 [521 kB]
+#43 ...
+
+#68 [event-producer] resolving provenance for metadata file
+#68 DONE 0.1s
+
+#69 [event-publisher] resolving provenance for metadata file
+#69 DONE 0.0s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 46.37 Get:33 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 liblzma5 amd64 5.2.5-2ubuntu1.2 [99.8 kB]
+#43 46.39 Get:34 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libsystemd0 amd64 249.11-0ubuntu3.23 [316 kB]
+#43 46.47 Get:35 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libudev1 amd64 249.11-0ubuntu3.23 [75.7 kB]
+#43 46.48 Get:36 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libapt-pkg6.0 amd64 2.4.15ubuntu0.1 [1,068 kB]
+#43 46.84 Get:37 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libtasn1-6 amd64 4.18.0-4ubuntu0.2 [43.6 kB]
+#43 46.85 Get:38 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 p11-kit-modules amd64 0.24.0-6ubuntu0.1 [225 kB]
+#43 46.90 Get:39 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libp11-kit0 amd64 0.24.0-6ubuntu0.1 [252 kB]
+#43 46.94 Get:40 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgnutls30 amd64 3.7.3-4ubuntu1.9 [971 kB]
+#43 47.09 Get:41 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 apt amd64 2.4.15ubuntu0.1 [1,525 kB]
+#43 ...
+
+#70 [reporting-api stage-1 4/7] COPY --from=builder /opt/venv /opt/venv
+#70 DONE 0.5s
+
+#71 [reporting-api stage-1 5/7] COPY --chown=root:root reporting ./reporting
+#71 DONE 0.1s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 47.32 Get:42 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libaudit-common all 1:3.0.7-1ubuntu0.1 [4,720 B]
+#43 47.32 Get:43 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libaudit1 amd64 1:3.0.7-1ubuntu0.1 [46.9 kB]
+#43 47.32 Get:44 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpam0g amd64 1.4.0-11ubuntu2.8 [59.8 kB]
+#43 47.33 Get:45 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpam-modules-bin amd64 1.4.0-11ubuntu2.8 [37.6 kB]
+#43 47.34 Get:46 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpam-modules amd64 1.4.0-11ubuntu2.8 [282 kB]
+#43 47.38 Get:47 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 mount amd64 2.37.2-4ubuntu3.6 [114 kB]
+#43 ...
+
+#72 [reporting-api stage-1 6/7] COPY --chown=root:root gateway/__init__.py gateway/config.py gateway/logging_config.py ./gateway/
+#72 DONE 0.1s
+
+#73 [reporting-api stage-1 7/7] COPY --chown=root:root gateway/core/__init__.py gateway/core/errors.py gateway/core/security.py ./gateway/core/
+#73 DONE 0.1s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 47.40 Get:48 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libexpat1-dev amd64 2.4.7-1ubuntu0.9 [151 kB]
+#43 47.42 Get:49 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libexpat1 amd64 2.4.7-1ubuntu0.9 [96.9 kB]
+#43 47.44 Get:50 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 python3.10-dev amd64 3.10.12-1~22.04.18 [508 kB]
+#43 47.52 Get:51 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpython3.10-dev amd64 3.10.12-1~22.04.18 [4,765 kB]
+#43 48.33 Get:52 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpython3.10 amd64 3.10.12-1~22.04.18 [1,950 kB]
+#43 48.63 Get:53 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libssl3 amd64 3.0.2-0ubuntu1.30 [1,907 kB]
+#43 48.95 Get:54 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 python3.10 amd64 3.10.12-1~22.04.18 [508 kB]
+#43 49.03 Get:55 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpython3.10-stdlib amd64 3.10.12-1~22.04.18 [1,850 kB]
+#43 49.35 Get:56 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 python3.10-minimal amd64 3.10.12-1~22.04.18 [2,277 kB]
+#43 49.99 Get:57 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpython3.10-minimal amd64 3.10.12-1~22.04.18 [817 kB]
+#43 50.31 Get:58 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libncurses6 amd64 6.3-2ubuntu0.3 [111 kB]
+#43 50.34 Get:59 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libncursesw6 amd64 6.3-2ubuntu0.3 [147 kB]
+#43 50.37 Get:60 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libtinfo6 amd64 6.3-2ubuntu0.3 [105 kB]
+#43 50.41 Get:61 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libsqlite3-0 amd64 3.37.2-2ubuntu0.8 [642 kB]
+#43 50.68 Get:62 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libuuid1 amd64 2.37.2-4ubuntu3.6 [24.0 kB]
+#43 50.69 Get:63 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libattr1 amd64 1:2.5.1-1ubuntu0.1 [13.0 kB]
+#43 50.69 Get:64 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libblkid1 amd64 2.37.2-4ubuntu3.6 [103 kB]
+#43 50.72 Get:65 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libcap2 amd64 1:2.44-1ubuntu0.22.04.3 [18.5 kB]
+#43 50.72 Get:66 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 krb5-user amd64 1.19.2-2ubuntu0.10 [110 kB]
+#43 50.76 Get:67 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libk5crypto3 amd64 1.19.2-2ubuntu0.10 [86.5 kB]
+#43 50.80 Get:68 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libkrb5support0 amd64 1.19.2-2ubuntu0.10 [32.7 kB]
+#43 50.82 Get:69 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libkrb5-3 amd64 1.19.2-2ubuntu0.10 [356 kB]
+#43 50.90 Get:70 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgssapi-krb5-2 amd64 1.19.2-2ubuntu0.10 [145 kB]
+#43 51.16 Get:71 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgssrpc4 amd64 1.19.2-2ubuntu0.10 [58.7 kB]
+#43 51.51 Get:72 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libkadm5clnt-mit12 amd64 1.19.2-2ubuntu0.10 [41.9 kB]
+#43 51.56 Get:73 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libkdb5-10 amd64 1.19.2-2ubuntu0.10 [40.5 kB]
+#43 51.63 Get:74 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libkadm5srv-mit12 amd64 1.19.2-2ubuntu0.10 [54.7 kB]
+#43 51.69 Get:75 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libmount1 amd64 2.37.2-4ubuntu3.6 [122 kB]
+#43 51.78 Get:76 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpam-runtime all 1.4.0-11ubuntu2.8 [40.2 kB]
+#43 51.80 Get:77 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpcre2-8-0 amd64 10.39-3ubuntu0.2 [222 kB]
+#43 51.88 Get:78 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libsmartcols1 amd64 2.37.2-4ubuntu3.6 [51.0 kB]
+#43 51.88 Get:79 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 openssl amd64 3.0.2-0ubuntu1.30 [1,186 kB]
+#43 52.39 Get:80 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 ca-certificates all 20260816ubuntu0.22.04.2 [140 kB]
+#43 52.42 Get:81 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libxml2 amd64 2.9.13+dfsg-1ubuntu0.14 [765 kB]
+#43 52.57 Get:82 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 locales all 2.35-0ubuntu3.15 [4,245 kB]
+#43 ...
+
+#74 [reporting-api] exporting to image
+#74 exporting layers 4.1s done
+#74 exporting manifest sha256:fca07ce66e70b1829da6e1196dcbb755d95f93cae91d0fe212cbc139a891f341 0.0s done
+#74 exporting config sha256:1da974cc452fe3d29feafc9367bd0cde1edb976f8dcf20dd9fda32f3cfe486a7 0.0s done
+#74 exporting attestation manifest sha256:649049d41ebcbd36c98284ca50091f9461a60cd1280a29ee11a249485bff80cb 0.0s done
+#74 exporting manifest list sha256:848a828062b9f8622cd52c25b77e0bfa46c24d28e81e8b24e0ce5912ee9caa26 0.0s done
+#74 naming to docker.io/library/clean-reporting-api:latest done
+#74 unpacking to docker.io/library/clean-reporting-api:latest 1.0s done
+#74 DONE 5.3s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 45.77 Collecting packaging>=20.0 (from spacy==3.8.18->-r requirements.txt (line 18))
+#42 46.14   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+#42 46.94 Collecting greenlet>=1 (from SQLAlchemy[asyncio]==2.1.6->-r requirements.txt (line 6))
+#42 47.07   Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+#42 47.30 Collecting httptools>=0.8.0 (from uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 47.42   Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#42 47.63 Collecting uvloop>=0.15.1 (from uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 47.85   Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+#42 48.16 Collecting watchfiles>=0.20 (from uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 48.29   Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#42 48.76 Collecting websockets>=13.0 (from uvicorn[standard]==0.54.0->-r requirements.txt (line 2))
+#42 48.90   Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+#42 49.46 Collecting charset_normalizer<4,>=2 (from requests<3.0.0,>=2.13.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 49.88   Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+#42 50.41 Collecting urllib3<3,>=1.26 (from requests<3.0.0,>=2.13.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 50.76   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+#42 50.90 Collecting blis<1.4.0,>=1.3.0 (from thinc<8.4.0,>=8.3.12->spacy==3.8.18->-r requirements.txt (line 18))
+#42 50.95   Downloading blis-1.3.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.4 kB)
+#42 51.03 Collecting requests-file>=1.4 (from tldextract<6.0.0,>=5.3.1->presidio-analyzer==2.2.366->-r requirements.txt (line 17))
+#42 51.06   Downloading requests_file-3.0.1-py2.py3-none-any.whl.metadata (1.7 kB)
+#42 51.10 Collecting filelock>=3.0.8 (from tldextract<6.0.0,>=5.3.1->presidio-analyzer==2.2.366->-r requirements.txt (line 17))
+#42 51.13   Downloading filelock-4.2.9-py3-none-any.whl.metadata (2.3 kB)
+#42 51.18 Collecting shellingham>=1.3.0 (from typer<1.0.0,>=0.3.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.21   Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+#42 51.26 Collecting rich>=13.8.0 (from typer<1.0.0,>=0.3.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.30   Downloading rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+#42 51.36 Collecting cloudpathlib>=0.7.0 (from weasel<2.0.0,>=1.0.1->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.39   Downloading cloudpathlib-0.26.0-py3-none-any.whl.metadata (16 kB)
+#42 51.43 Collecting smart-open>=5.2.1 (from smart-open[http]>=5.2.1->weasel<2.0.0,>=1.0.1->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.46   Downloading smart_open-9.0.2-py3-none-any.whl.metadata (25 kB)
+#42 51.53 Collecting markdown-it-py>=2.2.0 (from rich>=13.8.0->typer<1.0.0,>=0.3.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.56   Downloading markdown_it_py-4.2.0-py3-none-any.whl.metadata (7.4 kB)
+#42 51.61 Collecting pygments<3.0.0,>=2.13.0 (from rich>=13.8.0->typer<1.0.0,>=0.3.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.64   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+#42 51.68 Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.8.0->typer<1.0.0,>=0.3.0->spacy==3.8.18->-r requirements.txt (line 18))
+#42 51.71   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+#42 ...
+
+#75 [reporting-api] resolving provenance for metadata file
+#75 DONE 0.0s
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 52.94 Collecting wrapt (from smart-open>=5.2.1->smart-open[http]>=5.2.1->weasel<2.0.0,>=1.0.1->spacy==3.8.18->-r requirements.txt (line 18))
+#42 52.98   Downloading wrapt-2.5.2-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (7.6 kB)
+#42 53.24 Collecting MarkupSafe>=2.0 (from jinja2->spacy==3.8.18->-r requirements.txt (line 18))
+#42 53.33   Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+#42 53.42 Downloading fastapi-0.162.0-py3-none-any.whl (148 kB)
+#42 53.62 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+#42 53.79 Downloading pydantic-2.14.2-py3-none-any.whl (490 kB)
+#42 54.42 Downloading pydantic_settings-2.16.2-py3-none-any.whl (81 kB)
+#42 54.71 Downloading email_validator-2.3.0-py3-none-any.whl (35 kB)
+#42 54.91 Downloading sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.7 MB)
+#42 60.14    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 897.2 kB/s  0:00:05
+#42 60.29 Downloading asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl (3.8 MB)
+#42 62.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.8/3.8 MB 2.0 MB/s  0:00:02
+#42 62.60 Downloading alembic-1.20.1-py3-none-any.whl (270 kB)
+#42 62.66 Downloading redis-8.1.0-py3-none-any.whl (560 kB)
+#42 62.87    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 560.6/560.6 kB 2.7 MB/s  0:00:00
+#42 62.96 Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+#42 63.05 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#42 63.20 Downloading structlog-26.1.0-py3-none-any.whl (73 kB)
+#42 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 53.26 Get:83 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 tzdata all 2026e-0ubuntu0.22.04.1 [346 kB]
+#43 53.35 Get:84 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libnghttp2-14 amd64 1.43.0-1ubuntu0.4 [76.9 kB]
+#43 53.36 Get:85 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 bind9-host amd64 1:9.18.39-0ubuntu0.22.04.8 [52.5 kB]
+#43 53.37 Get:86 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 bind9-libs amd64 1:9.18.39-0ubuntu0.22.04.8 [1,266 kB]
+#43 53.56 Get:87 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpng16-16 amd64 1.6.37-3ubuntu0.7 [192 kB]
+#43 53.58 Get:88 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libx11-data all 2:1.7.5-1ubuntu0.4 [120 kB]
+#43 53.60 Get:89 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libx11-6 amd64 2:1.7.5-1ubuntu0.4 [668 kB]
+#43 53.72 Get:90 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 wget amd64 1.21.2-2ubuntu1.5 [339 kB]
+#43 53.78 Get:91 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 xz-utils amd64 5.2.5-2ubuntu1.2 [84.8 kB]
+#43 53.79 Get:92 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 g++-11 amd64 11.4.0-1ubuntu1~22.04.3 [11.4 MB]
+#43 55.81 Get:93 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libstdc++-11-dev amd64 11.4.0-1ubuntu1~22.04.3 [2,101 kB]
+#43 56.24 Get:94 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libasan6 amd64 11.4.0-1ubuntu1~22.04.3 [2,283 kB]
+#43 56.72 Get:95 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 gcc-11 amd64 11.4.0-1ubuntu1~22.04.3 [20.1 MB]
+#43 62.84 Get:96 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgcc-11-dev amd64 11.4.0-1ubuntu1~22.04.3 [2,517 kB]
+#43 ...
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 63.54 Downloading prometheus_client-0.26.0-py3-none-any.whl (64 kB)
+#42 63.80 Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+#42 64.30    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 1.7 MB/s  0:00:00
+#42 64.71 Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+#42 64.76 Downloading phonenumbers-9.0.42-py2.py3-none-any.whl (2.6 MB)
+#42 65.89    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.6/2.6 MB 2.3 MB/s  0:00:01
+#42 66.01 Downloading presidio_analyzer-2.2.366-py3-none-any.whl (295 kB)
+#42 66.23 Downloading spacy-3.8.18-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (35.5 MB)
+#42 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 64.24 Get:97 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libtsan0 amd64 11.4.0-1ubuntu1~22.04.3 [2,260 kB]
+#43 64.93 Get:98 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 cpp-11 amd64 11.4.0-1ubuntu1~22.04.3 [10.0 MB]
+#43 67.05 Get:99 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 gcc-11-base amd64 11.4.0-1ubuntu1~22.04.3 [216 kB]
+#43 67.10 Get:100 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libbrotli1 amd64 1.0.9-2ubuntu0.1 [315 kB]
+#43 67.16 Get:101 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libldap-2.5-0 amd64 2.5.20+dfsg-0ubuntu0.22.04.1 [184 kB]
+#43 67.21 Get:102 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libssh-4 amd64 0.9.6-2ubuntu0.22.04.8 [189 kB]
+#43 67.25 Get:103 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 curl amd64 7.81.0-1ubuntu1.30 [194 kB]
+#43 67.29 Get:104 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libcurl4 amd64 7.81.0-1ubuntu1.30 [293 kB]
+#43 67.36 Get:105 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libfreetype6 amd64 2.11.1+dfsg-1ubuntu0.4 [388 kB]
+#43 67.44 Get:106 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libnss3 amd64 2:3.98-0ubuntu0.22.04.5 [1,346 kB]
+#43 67.73 Get:107 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libtiff5 amd64 4.3.0-6ubuntu0.13 [185 kB]
+#43 67.77 Get:108 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libxpm4 amd64 1:3.5.12-1ubuntu0.22.04.4 [36.5 kB]
+#43 67.77 Get:109 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 p11-kit amd64 0.24.0-6ubuntu0.1 [101 kB]
+#43 68.05 debconf: delaying package configuration, since apt-utils is not installed
+#43 68.10 Fetched 111 MB in 33s (3,337 kB/s)
+#43 68.13 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 68.21 Preparing to unpack .../bsdutils_1%3a2.37.2-4ubuntu3.6_amd64.deb ...
+#43 68.22 Unpacking bsdutils (1:2.37.2-4ubuntu3.6) over (1:2.37.2-4ubuntu3.4) ...
+#43 68.32 Setting up bsdutils (1:2.37.2-4ubuntu3.6) ...
+#43 68.36 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 68.38 Preparing to unpack .../coreutils_8.32-4.1ubuntu1.4_amd64.deb ...
+#43 68.39 Unpacking coreutils (8.32-4.1ubuntu1.4) over (8.32-4.1ubuntu1.2) ...
+#43 68.82 Setting up coreutils (8.32-4.1ubuntu1.4) ...
+#43 68.86 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 68.87 Preparing to unpack .../diffutils_1%3a3.8-0ubuntu2.1_amd64.deb ...
+#43 68.89 Unpacking diffutils (1:3.8-0ubuntu2.1) over (1:3.8-0ubuntu2) ...
+#43 68.95 Setting up diffutils (1:3.8-0ubuntu2.1) ...
+#43 68.98 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 68.99 Preparing to unpack .../gzip_1.10-4ubuntu4.2_amd64.deb ...
+#43 69.01 Unpacking gzip (1.10-4ubuntu4.2) over (1.10-4ubuntu4.1) ...
+#43 69.09 Setting up gzip (1.10-4ubuntu4.2) ...
+#43 69.13 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 69.14 Preparing to unpack .../ncurses-bin_6.3-2ubuntu0.3_amd64.deb ...
+#43 69.16 Unpacking ncurses-bin (6.3-2ubuntu0.3) over (6.3-2ubuntu0.1) ...
+#43 69.22 Setting up ncurses-bin (6.3-2ubuntu0.3) ...
+#43 69.26 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 69.28 Preparing to unpack .../libperl5.34_5.34.0-3ubuntu1.9_amd64.deb ...
+#43 69.29 Unpacking libperl5.34:amd64 (5.34.0-3ubuntu1.9) over (5.34.0-3ubuntu1.5) ...
+#43 70.63 Preparing to unpack .../perl_5.34.0-3ubuntu1.9_amd64.deb ...
+#43 70.66 Unpacking perl (5.34.0-3ubuntu1.9) over (5.34.0-3ubuntu1.5) ...
+#43 70.80 Preparing to unpack .../perl-base_5.34.0-3ubuntu1.9_amd64.deb ...
+#43 70.83 Unpacking perl-base (5.34.0-3ubuntu1.9) over (5.34.0-3ubuntu1.5) ...
+#43 72.70 Setting up perl-base (5.34.0-3ubuntu1.9) ...
+#43 72.74 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 72.76 Preparing to unpack .../00-perl-modules-5.34_5.34.0-3ubuntu1.9_all.deb ...
+#43 72.78 Unpacking perl-modules-5.34 (5.34.0-3ubuntu1.9) over (5.34.0-3ubuntu1.5) ...
+#43 ...
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 73.88    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.5/35.5 MB 4.7 MB/s  0:00:07
+#42 73.92 Downloading pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+#42 74.26    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 6.8 MB/s  0:00:00
+#42 74.29 Downloading catalogue-2.0.10-py3-none-any.whl (17 kB)
+#42 74.32 Downloading click-8.5.1-py3-none-any.whl (126 kB)
+#42 74.37 Downloading confection-1.3.4-py3-none-any.whl (35 kB)
+#42 74.42 Downloading cymem-2.0.16-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (274 kB)
+#42 74.49 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#42 74.54 Downloading murmurhash-1.0.16-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (132 kB)
+#42 74.59 Downloading numpy-2.4.6-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.6 MB)
+#42 78.18    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.6/16.6 MB 4.6 MB/s  0:00:03
+#42 78.22 Downloading preshed-3.0.13-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (868 kB)
+#42 78.35    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 869.0/869.0 kB 6.9 MB/s  0:00:00
+#42 78.38 Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+#42 78.42 Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (257 kB)
+#42 78.69 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#42 78.73 Downloading spacy_legacy-3.0.12-py2.py3-none-any.whl (29 kB)
+#42 78.78 Downloading spacy_loggers-1.0.5-py3-none-any.whl (22 kB)
+#42 78.81 Downloading srsly-2.5.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.3 MB)
+#42 78.99    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 7.1 MB/s  0:00:00
+#42 79.02 Downloading thinc-8.3.14-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (4.3 MB)
+#42 79.72    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.3/4.3 MB 6.1 MB/s  0:00:00
+#42 79.75 Downloading blis-1.3.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (14.3 MB)
+#42 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 76.36 Preparing to unpack .../01-libc-devtools_2.35-0ubuntu3.15_amd64.deb ...
+#43 76.37 Unpacking libc-devtools (2.35-0ubuntu3.15) over (2.35-0ubuntu3.11) ...
+#43 76.43 Preparing to unpack .../02-libc6-dev_2.35-0ubuntu3.15_amd64.deb ...
+#43 76.44 Unpacking libc6-dev:amd64 (2.35-0ubuntu3.15) over (2.35-0ubuntu3.11) ...
+#43 78.01 Preparing to unpack .../03-libc-dev-bin_2.35-0ubuntu3.15_amd64.deb ...
+#43 78.03 Unpacking libc-dev-bin (2.35-0ubuntu3.15) over (2.35-0ubuntu3.11) ...
+#43 78.07 Preparing to unpack .../04-linux-libc-dev_5.15.0-203.213_amd64.deb ...
+#43 78.08 Unpacking linux-libc-dev:amd64 (5.15.0-203.213) over (5.15.0-164.174) ...
+#43 80.93 Preparing to unpack .../05-libatomic1_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 80.94 Unpacking libatomic1:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 80.98 Preparing to unpack .../06-libubsan1_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.00 Unpacking libubsan1:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.06 Preparing to unpack .../07-libquadmath0_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.07 Unpacking libquadmath0:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.11 Preparing to unpack .../08-liblsan0_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.12 Unpacking liblsan0:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.18 Preparing to unpack .../09-libitm1_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.20 Unpacking libitm1:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.24 Preparing to unpack .../10-libgomp1_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.26 Unpacking libgomp1:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.29 Preparing to unpack .../11-gcc-12-base_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.30 Unpacking gcc-12-base:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.35 Setting up gcc-12-base:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 81.39 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 81.41 Preparing to unpack .../libgcc-s1_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.42 Unpacking libgcc-s1:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.47 Setting up libgcc-s1:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 81.51 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 81.52 Preparing to unpack .../libcc1-0_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.54 Unpacking libcc1-0:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.59 Preparing to unpack .../libstdc++6_12.3.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 81.62 Unpacking libstdc++6:amd64 (12.3.0-1ubuntu1~22.04.3) over (12.3.0-1ubuntu1~22.04.2) ...
+#43 81.68 Setting up libstdc++6:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 81.74 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 81.75 Preparing to unpack .../libc6_2.35-0ubuntu3.15_amd64.deb ...
+#43 81.84 debconf: unable to initialize frontend: Dialog
+#43 81.84 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 81.84 debconf: falling back to frontend: Readline
+#43 81.89 Unpacking libc6:amd64 (2.35-0ubuntu3.15) over (2.35-0ubuntu3.11) ...
+#43 82.80 Setting up libc6:amd64 (2.35-0ubuntu3.15) ...
+#43 82.89 debconf: unable to initialize frontend: Dialog
+#43 82.89 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 82.89 debconf: falling back to frontend: Readline
+#43 ...
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 83.69    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.6 MB/s  0:00:03
+#42 83.72 Downloading tldextract-5.4.0-py3-none-any.whl (107 kB)
+#42 83.76 Downloading tqdm-4.70.1-py3-none-any.whl (80 kB)
+#42 83.80 Downloading typer-0.28.0-py3-none-any.whl (123 kB)
+#42 83.84 Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+#42 83.89 Downloading wasabi-1.1.3-py3-none-any.whl (27 kB)
+#42 83.92 Downloading weasel-1.0.1-py3-none-any.whl (51 kB)
+#42 83.97 Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+#42 84.01 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#42 84.05 Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#42 84.10 Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+#42 84.15 Downloading cloudpathlib-0.26.0-py3-none-any.whl (66 kB)
+#42 84.18 Downloading dnspython-2.9.2-py3-none-any.whl (360 kB)
+#42 84.25 Downloading filelock-4.2.9-py3-none-any.whl (164 kB)
+#42 84.31 Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+#42 84.39    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 621.4/621.4 kB 8.1 MB/s  0:00:00
+#42 84.42 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#42 84.46 Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (552 kB)
+#42 84.53    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 552.8/552.8 kB 7.8 MB/s  0:00:00
+#42 84.56 Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+#42 84.59 Downloading opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+#42 84.63 Downloading packaging-26.3-py3-none-any.whl (129 kB)
+#42 84.67 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+#42 84.70 Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+#42 84.73 Downloading regex-2026.11.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (808 kB)
+#42 84.84    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 808.4/808.4 kB 7.2 MB/s  0:00:00
+#42 84.87 Downloading requests_file-3.0.1-py2.py3-none-any.whl (4.5 kB)
+#42 84.90 Downloading rich-15.0.0-py3-none-any.whl (310 kB)
+#42 84.97 Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+#42 85.15    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 7.3 MB/s  0:00:00
+#42 85.18 Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+#42 85.21 Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+#42 85.25 Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (371 kB)
+#42 85.32 Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+#42 85.35 Downloading smart_open-9.0.2-py3-none-any.whl (76 kB)
+#42 85.38 Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+#42 85.42 Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+#42 85.46 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#42 85.49 Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+#42 85.52 Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+#42 86.20    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 6.7 MB/s  0:00:00
+#42 86.23 Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+#42 86.72 Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+#42 87.04 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#42 87.29 Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+#42 87.32 Downloading mako-1.4.3-py3-none-any.whl (80 kB)
+#42 87.37 Downloading setuptools-84.2.1-py3-none-any.whl (876 kB)
+#42 87.59    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 876.3/876.3 kB 3.5 MB/s  0:00:00
+#42 87.62 Downloading wrapt-2.5.2-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (250 kB)
+#42 88.37 Installing collected packages: en_core_web_sm, wrapt, websockets, wasabi, uvloop, urllib3, typing-extensions, tqdm, structlog, spacy-loggers, spacy-legacy, shellingham, setuptools, rpds-py, regex, redis, PyYAML, python-dotenv, PyJWT, pygments, prometheus-client, phonenumbers, packaging, numpy, murmurhash, mdurl, MarkupSafe, idna, httptools, h11, greenlet, filelock, dnspython, cymem, confection, cloudpathlib, click, charset_normalizer, certifi, catalogue, attrs, asyncpg, annotated-types, annotated-doc, uvicorn, typing-inspection, srsly, SQLAlchemy, smart-open, requests, referencing, pydantic-core, preshed, opentelemetry-api, markdown-it-py, Mako, jinja2, httpcore, email-validator, blis, anyio, watchfiles, starlette, rich, requests-file, pydantic, jsonschema-specifications, httpx, alembic, typer, tldextract, thinc, pydantic-settings, jsonschema, fastapi, weasel, spacy, presidio-analyzer
+#42 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 83.98 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 84.00 Preparing to unpack .../bzip2_1.0.8-5ubuntu0.1_amd64.deb ...
+#43 84.01 Unpacking bzip2 (1.0.8-5ubuntu0.1) over (1.0.8-5build1) ...
+#43 84.08 Preparing to unpack .../libbz2-1.0_1.0.8-5ubuntu0.1_amd64.deb ...
+#43 84.09 Unpacking libbz2-1.0:amd64 (1.0.8-5ubuntu0.1) over (1.0.8-5build1) ...
+#43 84.14 Setting up libbz2-1.0:amd64 (1.0.8-5ubuntu0.1) ...
+#43 84.18 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 84.19 Preparing to unpack .../sed_4.8-1ubuntu2.1_amd64.deb ...
+#43 84.20 Unpacking sed (4.8-1ubuntu2.1) over (4.8-1ubuntu2) ...
+#43 84.25 Setting up sed (4.8-1ubuntu2.1) ...
+#43 84.30 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 84.31 Preparing to unpack .../tar_1.34+dfsg-1ubuntu0.1.22.04.6_amd64.deb ...
+#43 84.33 Unpacking tar (1.34+dfsg-1ubuntu0.1.22.04.6) over (1.34+dfsg-1ubuntu0.1.22.04.2) ...
+#43 84.38 Setting up tar (1.34+dfsg-1ubuntu0.1.22.04.6) ...
+#43 84.45 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 84.46 Preparing to unpack .../util-linux_2.37.2-4ubuntu3.6_amd64.deb ...
+#43 84.48 Unpacking util-linux (2.37.2-4ubuntu3.6) over (2.37.2-4ubuntu3.4) ...
+#43 84.99 Setting up util-linux (2.37.2-4ubuntu3.6) ...
+#43 85.19 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 85.21 Preparing to unpack .../libc-bin_2.35-0ubuntu3.15_amd64.deb ...
+#43 85.22 Unpacking libc-bin (2.35-0ubuntu3.15) over (2.35-0ubuntu3.11) ...
+#43 85.37 Setting up libc-bin (2.35-0ubuntu3.15) ...
+#43 85.60 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 85.62 Preparing to unpack .../ncurses-base_6.3-2ubuntu0.3_all.deb ...
+#43 85.63 Unpacking ncurses-base (6.3-2ubuntu0.3) over (6.3-2ubuntu0.1) ...
+#43 85.82 Setting up ncurses-base (6.3-2ubuntu0.3) ...
+#43 85.87 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 85.88 Preparing to unpack .../libgcrypt20_1.9.4-3ubuntu3.3_amd64.deb ...
+#43 85.90 Unpacking libgcrypt20:amd64 (1.9.4-3ubuntu3.3) over (1.9.4-3ubuntu3) ...
+#43 85.96 Setting up libgcrypt20:amd64 (1.9.4-3ubuntu3.3) ...
+#43 86.01 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.02 Preparing to unpack .../liblzma5_5.2.5-2ubuntu1.2_amd64.deb ...
+#43 86.04 Unpacking liblzma5:amd64 (5.2.5-2ubuntu1.2) over (5.2.5-2ubuntu1) ...
+#43 86.09 Setting up liblzma5:amd64 (5.2.5-2ubuntu1.2) ...
+#43 86.14 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.15 Preparing to unpack .../libsystemd0_249.11-0ubuntu3.23_amd64.deb ...
+#43 86.17 Unpacking libsystemd0:amd64 (249.11-0ubuntu3.23) over (249.11-0ubuntu3.17) ...
+#43 86.24 Setting up libsystemd0:amd64 (249.11-0ubuntu3.23) ...
+#43 86.28 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.30 Preparing to unpack .../libudev1_249.11-0ubuntu3.23_amd64.deb ...
+#43 86.31 Unpacking libudev1:amd64 (249.11-0ubuntu3.23) over (249.11-0ubuntu3.17) ...
+#43 86.36 Setting up libudev1:amd64 (249.11-0ubuntu3.23) ...
+#43 86.41 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.42 Preparing to unpack .../libapt-pkg6.0_2.4.15ubuntu0.1_amd64.deb ...
+#43 86.43 Unpacking libapt-pkg6.0:amd64 (2.4.15ubuntu0.1) over (2.4.14) ...
+#43 86.50 Setting up libapt-pkg6.0:amd64 (2.4.15ubuntu0.1) ...
+#43 86.55 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.56 Preparing to unpack .../libtasn1-6_4.18.0-4ubuntu0.2_amd64.deb ...
+#43 86.57 Unpacking libtasn1-6:amd64 (4.18.0-4ubuntu0.2) over (4.18.0-4ubuntu0.1) ...
+#43 86.62 Setting up libtasn1-6:amd64 (4.18.0-4ubuntu0.2) ...
+#43 86.66 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.67 Preparing to unpack .../p11-kit-modules_0.24.0-6ubuntu0.1_amd64.deb ...
+#43 86.68 Unpacking p11-kit-modules:amd64 (0.24.0-6ubuntu0.1) over (0.24.0-6build1) ...
+#43 86.74 Preparing to unpack .../libp11-kit0_0.24.0-6ubuntu0.1_amd64.deb ...
+#43 86.75 Unpacking libp11-kit0:amd64 (0.24.0-6ubuntu0.1) over (0.24.0-6build1) ...
+#43 86.80 Setting up libp11-kit0:amd64 (0.24.0-6ubuntu0.1) ...
+#43 86.85 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 86.86 Preparing to unpack .../libgnutls30_3.7.3-4ubuntu1.9_amd64.deb ...
+#43 86.87 Unpacking libgnutls30:amd64 (3.7.3-4ubuntu1.9) over (3.7.3-4ubuntu1.7) ...
+#43 86.93 Setting up libgnutls30:amd64 (3.7.3-4ubuntu1.9) ...
+#43 86.99 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 87.01 Preparing to unpack .../apt_2.4.15ubuntu0.1_amd64.deb ...
+#43 87.04 Unpacking apt (2.4.15ubuntu0.1) over (2.4.14) ...
+#43 87.21 Setting up apt (2.4.15ubuntu0.1) ...
+#43 87.52 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 87.53 Preparing to unpack .../libaudit-common_1%3a3.0.7-1ubuntu0.1_all.deb ...
+#43 87.54 Unpacking libaudit-common (1:3.0.7-1ubuntu0.1) over (1:3.0.7-1build1) ...
+#43 87.59 Setting up libaudit-common (1:3.0.7-1ubuntu0.1) ...
+#43 87.64 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 87.65 Preparing to unpack .../libaudit1_1%3a3.0.7-1ubuntu0.1_amd64.deb ...
+#43 87.67 Unpacking libaudit1:amd64 (1:3.0.7-1ubuntu0.1) over (1:3.0.7-1build1) ...
+#43 87.72 Setting up libaudit1:amd64 (1:3.0.7-1ubuntu0.1) ...
+#43 87.77 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 87.78 Preparing to unpack .../libpam0g_1.4.0-11ubuntu2.8_amd64.deb ...
+#43 87.80 Unpacking libpam0g:amd64 (1.4.0-11ubuntu2.8) over (1.4.0-11ubuntu2.6) ...
+#43 87.86 Setting up libpam0g:amd64 (1.4.0-11ubuntu2.8) ...
+#43 87.94 debconf: unable to initialize frontend: Dialog
+#43 87.94 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 87.94 debconf: falling back to frontend: Readline
+#43 88.00 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 88.01 Preparing to unpack .../libpam-modules-bin_1.4.0-11ubuntu2.8_amd64.deb ...
+#43 88.03 Unpacking libpam-modules-bin (1.4.0-11ubuntu2.8) over (1.4.0-11ubuntu2.6) ...
+#43 88.09 Setting up libpam-modules-bin (1.4.0-11ubuntu2.8) ...
+#43 88.14 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 88.15 Preparing to unpack .../libpam-modules_1.4.0-11ubuntu2.8_amd64.deb ...
+#43 88.23 debconf: unable to initialize frontend: Dialog
+#43 88.23 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 88.23 debconf: falling back to frontend: Readline
+#43 88.26 Unpacking libpam-modules:amd64 (1.4.0-11ubuntu2.8) over (1.4.0-11ubuntu2.6) ...
+#43 88.44 Setting up libpam-modules:amd64 (1.4.0-11ubuntu2.8) ...
+#43 88.52 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 88.53 Preparing to unpack .../0-mount_2.37.2-4ubuntu3.6_amd64.deb ...
+#43 88.55 Unpacking mount (2.37.2-4ubuntu3.6) over (2.37.2-4ubuntu3.4) ...
+#43 88.62 Preparing to unpack .../1-libexpat1-dev_2.4.7-1ubuntu0.9_amd64.deb ...
+#43 88.63 Unpacking libexpat1-dev:amd64 (2.4.7-1ubuntu0.9) over (2.4.7-1ubuntu0.6) ...
+#43 88.72 Preparing to unpack .../2-libexpat1_2.4.7-1ubuntu0.9_amd64.deb ...
+#43 88.73 Unpacking libexpat1:amd64 (2.4.7-1ubuntu0.9) over (2.4.7-1ubuntu0.6) ...
+#43 88.78 Preparing to unpack .../3-python3.10-dev_3.10.12-1~22.04.18_amd64.deb ...
+#43 88.79 Unpacking python3.10-dev (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 88.83 Preparing to unpack .../4-libpython3.10-dev_3.10.12-1~22.04.18_amd64.deb ...
+#43 88.84 Unpacking libpython3.10-dev:amd64 (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 89.51 Preparing to unpack .../5-libpython3.10_3.10.12-1~22.04.18_amd64.deb ...
+#43 89.52 Unpacking libpython3.10:amd64 (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 89.61 Preparing to unpack .../6-libssl3_3.0.2-0ubuntu1.30_amd64.deb ...
+#43 89.62 Unpacking libssl3:amd64 (3.0.2-0ubuntu1.30) over (3.0.2-0ubuntu1.20) ...
+#43 89.72 Setting up libssl3:amd64 (3.0.2-0ubuntu1.30) ...
+#43 89.80 debconf: unable to initialize frontend: Dialog
+#43 89.80 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 89.80 debconf: falling back to frontend: Readline
+#43 89.87 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 89.88 Preparing to unpack .../0-python3.10_3.10.12-1~22.04.18_amd64.deb ...
+#43 89.95 Unpacking python3.10 (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 90.01 Preparing to unpack .../1-libpython3.10-stdlib_3.10.12-1~22.04.18_amd64.deb ...
+#43 90.06 Unpacking libpython3.10-stdlib:amd64 (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 91.01 Preparing to unpack .../2-python3.10-minimal_3.10.12-1~22.04.18_amd64.deb ...
+#43 91.03 Unpacking python3.10-minimal (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 91.12 Preparing to unpack .../3-libpython3.10-minimal_3.10.12-1~22.04.18_amd64.deb ...
+#43 91.18 Unpacking libpython3.10-minimal:amd64 (3.10.12-1~22.04.18) over (3.10.12-1~22.04.13) ...
+#43 91.96 Preparing to unpack .../4-libncurses6_6.3-2ubuntu0.3_amd64.deb ...
+#43 91.97 Unpacking libncurses6:amd64 (6.3-2ubuntu0.3) over (6.3-2ubuntu0.1) ...
+#43 92.03 Preparing to unpack .../5-libncursesw6_6.3-2ubuntu0.3_amd64.deb ...
+#43 92.04 Unpacking libncursesw6:amd64 (6.3-2ubuntu0.3) over (6.3-2ubuntu0.1) ...
+#43 92.09 Preparing to unpack .../6-libtinfo6_6.3-2ubuntu0.3_amd64.deb ...
+#43 92.10 Unpacking libtinfo6:amd64 (6.3-2ubuntu0.3) over (6.3-2ubuntu0.1) ...
+#43 92.16 Setting up libtinfo6:amd64 (6.3-2ubuntu0.3) ...
+#43 92.20 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 92.21 Preparing to unpack .../libsqlite3-0_3.37.2-2ubuntu0.8_amd64.deb ...
+#43 92.23 Unpacking libsqlite3-0:amd64 (3.37.2-2ubuntu0.8) over (3.37.2-2ubuntu0.5) ...
+#43 92.28 Preparing to unpack .../libuuid1_2.37.2-4ubuntu3.6_amd64.deb ...
+#43 92.30 Unpacking libuuid1:amd64 (2.37.2-4ubuntu3.6) over (2.37.2-4ubuntu3.4) ...
+#43 92.34 Setting up libuuid1:amd64 (2.37.2-4ubuntu3.6) ...
+#43 92.39 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 92.40 Preparing to unpack .../libattr1_1%3a2.5.1-1ubuntu0.1_amd64.deb ...
+#43 92.42 Unpacking libattr1:amd64 (1:2.5.1-1ubuntu0.1) over (1:2.5.1-1build1) ...
+#43 92.46 Setting up libattr1:amd64 (1:2.5.1-1ubuntu0.1) ...
+#43 92.51 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 92.52 Preparing to unpack .../libblkid1_2.37.2-4ubuntu3.6_amd64.deb ...
+#43 92.53 Unpacking libblkid1:amd64 (2.37.2-4ubuntu3.6) over (2.37.2-4ubuntu3.4) ...
+#43 92.58 Setting up libblkid1:amd64 (2.37.2-4ubuntu3.6) ...
+#43 92.63 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 92.64 Preparing to unpack .../libcap2_1%3a2.44-1ubuntu0.22.04.3_amd64.deb ...
+#43 92.65 Unpacking libcap2:amd64 (1:2.44-1ubuntu0.22.04.3) over (1:2.44-1ubuntu0.22.04.2) ...
+#43 92.70 Setting up libcap2:amd64 (1:2.44-1ubuntu0.22.04.3) ...
+#43 92.74 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 92.75 Preparing to unpack .../krb5-user_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 92.77 Unpacking krb5-user (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 92.84 Preparing to unpack .../libk5crypto3_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 92.85 Unpacking libk5crypto3:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 92.99 Setting up libk5crypto3:amd64 (1.19.2-2ubuntu0.10) ...
+#43 93.03 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 93.04 Preparing to unpack .../libkrb5support0_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.06 Unpacking libkrb5support0:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.10 Setting up libkrb5support0:amd64 (1.19.2-2ubuntu0.10) ...
+#43 93.15 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 93.17 Preparing to unpack .../libkrb5-3_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.18 Unpacking libkrb5-3:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.24 Setting up libkrb5-3:amd64 (1.19.2-2ubuntu0.10) ...
+#43 93.29 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 93.30 Preparing to unpack .../libgssapi-krb5-2_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.31 Unpacking libgssapi-krb5-2:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.36 Setting up libgssapi-krb5-2:amd64 (1.19.2-2ubuntu0.10) ...
+#43 93.41 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 93.43 Preparing to unpack .../libgssrpc4_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.44 Unpacking libgssrpc4:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.49 Preparing to unpack .../libkadm5clnt-mit12_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.50 Unpacking libkadm5clnt-mit12:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.54 Preparing to unpack .../libkdb5-10_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.55 Unpacking libkdb5-10:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.60 Preparing to unpack .../libkadm5srv-mit12_1.19.2-2ubuntu0.10_amd64.deb ...
+#43 93.62 Unpacking libkadm5srv-mit12:amd64 (1.19.2-2ubuntu0.10) over (1.19.2-2ubuntu0.7) ...
+#43 93.66 Preparing to unpack .../libmount1_2.37.2-4ubuntu3.6_amd64.deb ...
+#43 93.67 Unpacking libmount1:amd64 (2.37.2-4ubuntu3.6) over (2.37.2-4ubuntu3.4) ...
+#43 93.73 Setting up libmount1:amd64 (2.37.2-4ubuntu3.6) ...
+#43 93.78 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 93.79 Preparing to unpack .../libpam-runtime_1.4.0-11ubuntu2.8_all.deb ...
+#43 93.80 Unpacking libpam-runtime (1.4.0-11ubuntu2.8) over (1.4.0-11ubuntu2.6) ...
+#43 93.88 Setting up libpam-runtime (1.4.0-11ubuntu2.8) ...
+#43 93.97 debconf: unable to initialize frontend: Dialog
+#43 93.97 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 93.97 debconf: falling back to frontend: Readline
+#43 94.08 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 94.09 Preparing to unpack .../libpcre2-8-0_10.39-3ubuntu0.2_amd64.deb ...
+#43 94.11 Unpacking libpcre2-8-0:amd64 (10.39-3ubuntu0.2) over (10.39-3ubuntu0.1) ...
+#43 94.16 Setting up libpcre2-8-0:amd64 (10.39-3ubuntu0.2) ...
+#43 94.20 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 94.22 Preparing to unpack .../libsmartcols1_2.37.2-4ubuntu3.6_amd64.deb ...
+#43 94.23 Unpacking libsmartcols1:amd64 (2.37.2-4ubuntu3.6) over (2.37.2-4ubuntu3.4) ...
+#43 94.28 Setting up libsmartcols1:amd64 (2.37.2-4ubuntu3.6) ...
+#43 94.32 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18971 files and directories currently installed.)
+#43 94.33 Preparing to unpack .../00-openssl_3.0.2-0ubuntu1.30_amd64.deb ...
+#43 94.35 Unpacking openssl (3.0.2-0ubuntu1.30) over (3.0.2-0ubuntu1.20) ...
+#43 94.42 Preparing to unpack .../01-ca-certificates_20260816ubuntu0.22.04.2_all.deb ...
+#43 94.44 Unpacking ca-certificates (20260816ubuntu0.22.04.2) over (20240203~22.04.1) ...
+#43 94.78 Preparing to unpack .../02-libxml2_2.9.13+dfsg-1ubuntu0.14_amd64.deb ...
+#43 94.80 Unpacking libxml2:amd64 (2.9.13+dfsg-1ubuntu0.14) over (2.9.13+dfsg-1ubuntu0.10) ...
+#43 94.86 Preparing to unpack .../03-locales_2.35-0ubuntu3.15_all.deb ...
+#43 94.88 Unpacking locales (2.35-0ubuntu3.15) over (2.35-0ubuntu3.11) ...
+#43 96.66 Preparing to unpack .../04-tzdata_2026e-0ubuntu0.22.04.1_all.deb ...
+#43 96.68 Unpacking tzdata (2026e-0ubuntu0.22.04.1) over (2025b-0ubuntu0.22.04.1) ...
+#43 100.4 Preparing to unpack .../05-libnghttp2-14_1.43.0-1ubuntu0.4_amd64.deb ...
+#43 100.5 Unpacking libnghttp2-14:amd64 (1.43.0-1ubuntu0.4) over (1.43.0-1ubuntu0.2) ...
+#43 100.5 Preparing to unpack .../06-bind9-host_1%3a9.18.39-0ubuntu0.22.04.8_amd64.deb ...
+#43 100.5 Unpacking bind9-host (1:9.18.39-0ubuntu0.22.04.8) over (1:9.18.39-0ubuntu0.22.04.2) ...
+#43 100.6 Preparing to unpack .../07-bind9-libs_1%3a9.18.39-0ubuntu0.22.04.8_amd64.deb ...
+#43 100.6 Unpacking bind9-libs:amd64 (1:9.18.39-0ubuntu0.22.04.8) over (1:9.18.39-0ubuntu0.22.04.2) ...
+#43 100.6 Preparing to unpack .../08-libpng16-16_1.6.37-3ubuntu0.7_amd64.deb ...
+#43 100.7 Unpacking libpng16-16:amd64 (1.6.37-3ubuntu0.7) over (1.6.37-3ubuntu0.3) ...
+#43 100.7 Preparing to unpack .../09-libx11-data_2%3a1.7.5-1ubuntu0.4_all.deb ...
+#43 100.7 Unpacking libx11-data (2:1.7.5-1ubuntu0.4) over (2:1.7.5-1ubuntu0.3) ...
+#43 101.3 Preparing to unpack .../10-libx11-6_2%3a1.7.5-1ubuntu0.4_amd64.deb ...
+#43 101.3 Unpacking libx11-6:amd64 (2:1.7.5-1ubuntu0.4) over (2:1.7.5-1ubuntu0.3) ...
+#43 101.3 Preparing to unpack .../11-wget_1.21.2-2ubuntu1.5_amd64.deb ...
+#43 101.4 Unpacking wget (1.21.2-2ubuntu1.5) over (1.21.2-2ubuntu1.1) ...
+#43 101.4 Preparing to unpack .../12-xz-utils_5.2.5-2ubuntu1.2_amd64.deb ...
+#43 101.4 Unpacking xz-utils (5.2.5-2ubuntu1.2) over (5.2.5-2ubuntu1) ...
+#43 101.5 Preparing to unpack .../13-g++-11_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 101.5 Unpacking g++-11 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 101.8 Preparing to unpack .../14-libstdc++-11-dev_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 101.8 Unpacking libstdc++-11-dev:amd64 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 104.1 Preparing to unpack .../15-libasan6_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 104.2 Unpacking libasan6:amd64 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 104.2 Preparing to unpack .../16-gcc-11_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 104.3 Unpacking gcc-11 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 104.9 Preparing to unpack .../17-libgcc-11-dev_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 104.9 Unpacking libgcc-11-dev:amd64 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 ...
+
+#42 [migrate builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#42 104.9 
+#42 104.9 Successfully installed Mako-1.4.3 MarkupSafe-3.0.4 PyJWT-2.15.1 PyYAML-6.0.3 SQLAlchemy-2.1.6 alembic-1.20.1 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 asyncpg-0.32.0 attrs-26.1.0 blis-1.3.4 catalogue-2.0.10 certifi-2026.10.23 charset_normalizer-3.5.2 click-8.5.1 cloudpathlib-0.26.0 confection-1.3.4 cymem-2.0.16 dnspython-2.9.2 email-validator-2.3.0 en_core_web_sm-3.8.0 fastapi-0.162.0 filelock-4.2.9 greenlet-3.5.6 h11-0.16.0 httpcore-1.0.9 httptools-0.9.0 httpx-0.28.1 idna-3.20 jinja2-3.1.6 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 markdown-it-py-4.2.0 mdurl-0.1.2 murmurhash-1.0.16 numpy-2.4.6 opentelemetry-api-1.45.2 packaging-26.3 phonenumbers-9.0.42 preshed-3.0.13 presidio-analyzer-2.2.366 prometheus-client-0.26.0 pydantic-2.14.2 pydantic-core-2.50.2 pydantic-settings-2.16.2 pygments-2.21.0 python-dotenv-1.2.4 redis-8.1.0 referencing-0.37.0 regex-2026.11.7 requests-2.34.2 requests-file-3.0.1 rich-15.0.0 rpds-py-2026.9.1 setuptools-84.2.1 shellingham-1.5.4 smart-open-9.0.2 spacy-3.8.18 spacy-legacy-3.0.12 spacy-loggers-1.0.5 srsly-2.5.6 starlette-1.10.0 structlog-26.1.0 thinc-8.3.14 tldextract-5.4.0 tqdm-4.70.1 typer-0.28.0 typing-extensions-4.16.0 typing-inspection-0.4.5 urllib3-2.8.0 uvicorn-0.54.0 uvloop-0.23.0 wasabi-1.1.3 watchfiles-1.3.0 weasel-1.0.1 websockets-17.4 wrapt-2.5.2
+#42 105.7 Found existing installation: pip 26.2.2
+#42 105.7 Uninstalling pip-26.2.2:
+#42 105.8   Successfully uninstalled pip-26.2.2
+#42 DONE 105.9s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 105.4 Preparing to unpack .../18-libtsan0_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 105.4 Unpacking libtsan0:amd64 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 105.5 Preparing to unpack .../19-cpp-11_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 105.6 Unpacking cpp-11 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 105.8 Preparing to unpack .../20-gcc-11-base_11.4.0-1ubuntu1~22.04.3_amd64.deb ...
+#43 105.8 Unpacking gcc-11-base:amd64 (11.4.0-1ubuntu1~22.04.3) over (11.4.0-1ubuntu1~22.04.2) ...
+#43 105.8 Preparing to unpack .../21-libbrotli1_1.0.9-2ubuntu0.1_amd64.deb ...
+#43 105.8 Unpacking libbrotli1:amd64 (1.0.9-2ubuntu0.1) over (1.0.9-2build6) ...
+#43 105.9 Preparing to unpack .../22-libldap-2.5-0_2.5.20+dfsg-0ubuntu0.22.04.1_amd64.deb ...
+#43 105.9 Unpacking libldap-2.5-0:amd64 (2.5.20+dfsg-0ubuntu0.22.04.1) over (2.5.19+dfsg-0ubuntu0.22.04.1) ...
+#43 106.0 Preparing to unpack .../23-libssh-4_0.9.6-2ubuntu0.22.04.8_amd64.deb ...
+#43 106.0 Unpacking libssh-4:amd64 (0.9.6-2ubuntu0.22.04.8) over (0.9.6-2ubuntu0.22.04.5) ...
+#43 106.0 Preparing to unpack .../24-curl_7.81.0-1ubuntu1.30_amd64.deb ...
+#43 106.0 Unpacking curl (7.81.0-1ubuntu1.30) over (7.81.0-1ubuntu1.21) ...
+#43 106.1 Preparing to unpack .../25-libcurl4_7.81.0-1ubuntu1.30_amd64.deb ...
+#43 106.1 Unpacking libcurl4:amd64 (7.81.0-1ubuntu1.30) over (7.81.0-1ubuntu1.21) ...
+#43 106.2 Preparing to unpack .../26-libfreetype6_2.11.1+dfsg-1ubuntu0.4_amd64.deb ...
+#43 106.2 Unpacking libfreetype6:amd64 (2.11.1+dfsg-1ubuntu0.4) over (2.11.1+dfsg-1ubuntu0.3) ...
+#43 106.2 Preparing to unpack .../27-libnss3_2%3a3.98-0ubuntu0.22.04.5_amd64.deb ...
+#43 106.3 Unpacking libnss3:amd64 (2:3.98-0ubuntu0.22.04.5) over (2:3.98-0ubuntu0.22.04.2) ...
+#43 106.4 Preparing to unpack .../28-libtiff5_4.3.0-6ubuntu0.13_amd64.deb ...
+#43 106.5 Unpacking libtiff5:amd64 (4.3.0-6ubuntu0.13) over (4.3.0-6ubuntu0.12) ...
+#43 106.5 Preparing to unpack .../29-libxpm4_1%3a3.5.12-1ubuntu0.22.04.4_amd64.deb ...
+#43 106.5 Unpacking libxpm4:amd64 (1:3.5.12-1ubuntu0.22.04.4) over (1:3.5.12-1ubuntu0.22.04.2) ...
+#43 106.6 Preparing to unpack .../30-p11-kit_0.24.0-6ubuntu0.1_amd64.deb ...
+#43 106.6 Unpacking p11-kit (0.24.0-6ubuntu0.1) over (0.24.0-6build1) ...
+#43 106.6 Setting up libexpat1:amd64 (2.4.7-1ubuntu0.9) ...
+#43 106.7 Setting up gcc-11-base:amd64 (11.4.0-1ubuntu1~22.04.3) ...
+#43 106.7 Setting up wget (1.21.2-2ubuntu1.5) ...
+#43 106.7 Setting up libbrotli1:amd64 (1.0.9-2ubuntu0.1) ...
+#43 106.7 Setting up libsqlite3-0:amd64 (3.37.2-2ubuntu0.8) ...
+#43 106.7 Setting up libnghttp2-14:amd64 (1.43.0-1ubuntu0.4) ...
+#43 106.7 Setting up linux-libc-dev:amd64 (5.15.0-203.213) ...
+#43 106.7 Setting up libnss3:amd64 (2:3.98-0ubuntu0.22.04.5) ...
+#43 106.8 Setting up libgomp1:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 106.8 Setting up perl-modules-5.34 (5.34.0-3ubuntu1.9) ...
+#43 106.8 Setting up bzip2 (1.0.8-5ubuntu0.1) ...
+#43 106.8 Setting up locales (2.35-0ubuntu3.15) ...
+#43 106.9 debconf: unable to initialize frontend: Dialog
+#43 106.9 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 106.9 debconf: falling back to frontend: Readline
+#43 107.3 Generating locales (this might take a while)...
+#43 107.3   en_US.UTF-8... done
+#43 108.7 Generation complete.
+#43 108.7 Setting up libldap-2.5-0:amd64 (2.5.20+dfsg-0ubuntu0.22.04.1) ...
+#43 108.8 Setting up libasan6:amd64 (11.4.0-1ubuntu1~22.04.3) ...
+#43 108.8 Setting up tzdata (2026e-0ubuntu0.22.04.1) ...
+#43 108.9 debconf: unable to initialize frontend: Dialog
+#43 108.9 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 108.9 debconf: falling back to frontend: Readline
+#43 108.9 
+#43 108.9 Current default time zone: 'Etc/UTC'
+#43 108.9 Local time is now:      Sat Nov  7 22:04:02 UTC 2026.
+#43 108.9 Universal Time is now:  Sat Nov  7 22:04:02 UTC 2026.
+#43 108.9 Run 'dpkg-reconfigure tzdata' if you wish to change it.
+#43 108.9 
+#43 108.9 Setting up libgssrpc4:amd64 (1.19.2-2ubuntu0.10) ...
+#43 108.9 Setting up p11-kit-modules:amd64 (0.24.0-6ubuntu0.1) ...
+#43 108.9 Setting up libx11-data (2:1.7.5-1ubuntu0.4) ...
+#43 109.0 Setting up libncurses6:amd64 (6.3-2ubuntu0.3) ...
+#43 109.0 Setting up xz-utils (5.2.5-2ubuntu1.2) ...
+#43 109.0 Setting up libquadmath0:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 109.0 Setting up libpng16-16:amd64 (1.6.37-3ubuntu0.7) ...
+#43 109.0 Setting up libatomic1:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 109.0 Setting up libpython3.10-minimal:amd64 (3.10.12-1~22.04.18) ...
+#43 109.1 Setting up libncursesw6:amd64 (6.3-2ubuntu0.3) ...
+#43 109.1 Setting up libssh-4:amd64 (0.9.6-2ubuntu0.22.04.8) ...
+#43 109.1 Setting up libubsan1:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 109.1 Setting up mount (2.37.2-4ubuntu3.6) ...
+#43 109.1 Setting up libcurl4:amd64 (7.81.0-1ubuntu1.30) ...
+#43 109.1 Setting up libx11-6:amd64 (2:1.7.5-1ubuntu0.4) ...
+#43 109.1 Setting up libtiff5:amd64 (4.3.0-6ubuntu0.13) ...
+#43 109.1 Setting up curl (7.81.0-1ubuntu1.30) ...
+#43 109.2 Setting up p11-kit (0.24.0-6ubuntu0.1) ...
+#43 109.2 Setting up libc-dev-bin (2.35-0ubuntu3.15) ...
+#43 109.2 Setting up openssl (3.0.2-0ubuntu1.30) ...
+#43 109.2 Setting up libxml2:amd64 (2.9.13+dfsg-1ubuntu0.14) ...
+#43 109.2 Setting up libcc1-0:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 109.2 Setting up liblsan0:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 109.2 Setting up libitm1:amd64 (12.3.0-1ubuntu1~22.04.3) ...
+#43 109.3 Setting up libc-devtools (2.35-0ubuntu3.15) ...
+#43 109.3 Setting up libkadm5clnt-mit12:amd64 (1.19.2-2ubuntu0.10) ...
+#43 109.3 Setting up libtsan0:amd64 (11.4.0-1ubuntu1~22.04.3) ...
+#43 109.3 Setting up cpp-11 (11.4.0-1ubuntu1~22.04.3) ...
+#43 109.3 Setting up libperl5.34:amd64 (5.34.0-3ubuntu1.9) ...
+#43 109.3 Setting up libkdb5-10:amd64 (1.19.2-2ubuntu0.10) ...
+#43 109.3 Setting up libxpm4:amd64 (1:3.5.12-1ubuntu0.22.04.4) ...
+#43 109.3 Setting up bind9-libs:amd64 (1:9.18.39-0ubuntu0.22.04.8) ...
+#43 109.4 Setting up python3.10-minimal (3.10.12-1~22.04.18) ...
+#43 110.0 Setting up libpython3.10-stdlib:amd64 (3.10.12-1~22.04.18) ...
+#43 ...
+
+#76 [gateway stage-1  4/14] COPY --from=builder /opt/venv /opt/venv
+#76 DONE 2.1s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 110.0 Setting up ca-certificates (20260816ubuntu0.22.04.2) ...
+#43 110.1 debconf: unable to initialize frontend: Dialog
+#43 110.1 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#43 110.1 debconf: falling back to frontend: Readline
+#43 ...
+
+#77 [migrate stage-1  5/14] COPY --chown=root:root gateway ./gateway
+#77 DONE 0.1s
+
+#78 [gateway stage-1  6/14] COPY --chown=root:root policy ./policy
+#78 DONE 0.0s
+
+#79 [gateway stage-1  7/14] COPY --chown=root:root audit ./audit
+#79 DONE 0.0s
+
+#79 [migrate stage-1  7/14] COPY --chown=root:root audit ./audit
+#79 DONE 0.0s
+
+#80 [migrate stage-1  8/14] COPY --chown=root:root detection ./detection
+#80 DONE 0.0s
+
+#81 [migrate stage-1  9/14] COPY --chown=root:root agents ./agents
+#81 DONE 0.0s
+
+#82 [migrate stage-1 10/14] COPY --chown=root:root events ./events
+#82 DONE 0.0s
+
+#83 [migrate stage-1 11/14] COPY --chown=root:root schemas ./schemas
+#83 DONE 0.0s
+
+#84 [migrate stage-1 12/14] COPY --chown=root:root ops ./ops
+#84 DONE 0.0s
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 ...
+
+#84 [gateway stage-1 12/14] COPY --chown=root:root ops ./ops
+#84 DONE 0.0s
+
+#85 [gateway stage-1 13/14] COPY --chown=root:root migrations ./migrations
+#85 DONE 0.0s
+
+#86 [migrate stage-1 14/14] COPY --chown=root:root alembic.ini ./
+#86 DONE 0.0s
+
+#86 [gateway stage-1 14/14] COPY --chown=root:root alembic.ini ./
+#86 DONE 0.0s
+
+#87 [migrate] exporting to image
+#87 exporting layers
+#87 ...
+
+#43 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#43 111.5 Setting up perl (5.34.0-3ubuntu1.9) ...
+#43 111.5 Setting up libfreetype6:amd64 (2.11.1+dfsg-1ubuntu0.4) ...
+#43 111.6 Setting up libgcc-11-dev:amd64 (11.4.0-1ubuntu1~22.04.3) ...
+#43 111.6 Setting up gcc-11 (11.4.0-1ubuntu1~22.04.3) ...
+#43 111.6 Setting up libkadm5srv-mit12:amd64 (1.19.2-2ubuntu0.10) ...
+#43 111.6 Setting up libc6-dev:amd64 (2.35-0ubuntu3.15) ...
+#43 111.6 Setting up bind9-host (1:9.18.39-0ubuntu0.22.04.8) ...
+#43 111.6 Setting up libpython3.10:amd64 (3.10.12-1~22.04.18) ...
+#43 111.6 Setting up python3.10 (3.10.12-1~22.04.18) ...
+#43 112.2 Setting up libexpat1-dev:amd64 (2.4.7-1ubuntu0.9) ...
+#43 112.2 Setting up krb5-user (1.19.2-2ubuntu0.10) ...
+#43 112.2 Setting up libpython3.10-dev:amd64 (3.10.12-1~22.04.18) ...
+#43 112.3 Setting up libstdc++-11-dev:amd64 (11.4.0-1ubuntu1~22.04.3) ...
+#43 112.3 Setting up python3.10-dev (3.10.12-1~22.04.18) ...
+#43 112.3 Setting up g++-11 (11.4.0-1ubuntu1~22.04.3) ...
+#43 112.3 Processing triggers for libc-bin (2.35-0ubuntu3.15) ...
+#43 112.3 Processing triggers for ca-certificates (20260816ubuntu0.22.04.2) ...
+#43 112.3 Updating certificates in /etc/ssl/certs...
+#43 113.0 rehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL
+#43 113.1 17 added, 43 removed; done.
+#43 113.1 Running hooks in /etc/ca-certificates/update.d...
+#43 113.1 done.
+#43 DONE 113.2s
+
+#88 [spark-stream-processor runtime  3/12] ADD --chmod=644 --checksum=sha256:d2b7068eabce2a1267103625e58efae32f7ee384db1cbc22424532ad2ed95fb4     https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#88 DONE 0.1s
+
+#89 [gateway] exporting to image
+#89 ...
+
+#90 [spark-stream-processor runtime  4/12] ADD --chmod=644 --checksum=sha256:85f44359b60943d262f37d1327ebb7931fe47e0392286fe3023299e25b84b0d8     https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#90 DONE 0.0s
+
+#91 [spark-stream-processor runtime  5/12] ADD --chmod=644 --checksum=sha256:9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6     https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar /opt/spark/jars/
+#91 DONE 0.0s
+
+#92 [spark-stream-processor runtime  6/12] ADD --chmod=644 --checksum=sha256:ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83     https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar /opt/spark/jars/
+#92 DONE 0.0s
+
+#93 [spark-stream-processor runtime  7/12] COPY requirements-spark.txt /tmp/requirements-spark.txt
+#93 DONE 0.0s
+
+#94 [spark-stream-processor runtime  8/12] RUN python3 -m pip install --no-cache-dir --disable-pip-version-check -r /tmp/requirements-spark.txt  && rm /tmp/requirements-spark.txt  && mkdir -p /checkpoints /tmp/spark  && chown 185:185 /checkpoints /tmp/spark  && ls /opt/spark/python/lib/py4j-*-src.zip
+#94 0.895 Collecting jsonschema==4.26.0
+#94 1.042   Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+#94 1.092      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.6/90.6 KB 2.0 MB/s eta 0:00:00
+#94 1.152 Collecting psycopg[binary]==3.3.8
+#94 1.187   Downloading psycopg-3.3.8-py3-none-any.whl (216 kB)
+#94 1.257      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 216.2/216.2 KB 3.0 MB/s eta 0:00:00
+#94 1.305 Collecting prometheus-client==0.26.0
+#94 1.339   Downloading prometheus_client-0.26.0-py3-none-any.whl (64 kB)
+#94 1.350      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.5/64.5 KB 6.1 MB/s eta 0:00:00
+#94 1.438 Collecting referencing>=0.28.4
+#94 1.469   Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+#94 2.412 Collecting rpds-py>=0.25.0
+#94 2.446   Downloading rpds_py-0.30.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (390 kB)
+#94 2.555      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 390.5/390.5 KB 3.6 MB/s eta 0:00:00
+#94 2.603 Collecting attrs>=22.2.0
+#94 2.633   Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#94 2.649      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 KB 6.1 MB/s eta 0:00:00
+#94 2.697 Collecting jsonschema-specifications>=2023.03.6
+#94 2.770   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+#94 2.897 Collecting typing-extensions>=4.6
+#94 2.931   Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#94 2.938      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 KB 9.1 MB/s eta 0:00:00
+#94 3.485 Collecting psycopg-binary==3.3.8
+#94 3.520   Downloading psycopg_binary-3.3.8-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.3 MB)
+#94 5.253      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.3/5.3 MB 3.0 MB/s eta 0:00:00
+#94 5.349 Installing collected packages: typing-extensions, rpds-py, psycopg-binary, prometheus-client, attrs, referencing, psycopg, jsonschema-specifications, jsonschema
+#94 5.842 Successfully installed attrs-26.1.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 prometheus-client-0.26.0 psycopg-3.3.8 psycopg-binary-3.3.8 referencing-0.37.0 rpds-py-0.30.0 typing-extensions-4.16.0
+#94 5.842 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#94 5.992 /opt/spark/python/lib/py4j-0.10.9.7-src.zip
+#94 DONE 6.1s
+
+#95 [spark-stream-processor runtime  9/12] WORKDIR /app
+#95 DONE 0.0s
+
+#89 [gateway] exporting to image
+#89 ...
+
+#96 [spark-stream-processor runtime 10/12] COPY --chown=root:root events ./events
+#96 DONE 0.0s
+
+#97 [spark-stream-processor runtime 11/12] COPY --chown=root:root schemas ./schemas
+#97 DONE 0.0s
+
+#98 [spark-stream-processor runtime 12/12] COPY --chown=root:root streaming ./streaming
+#98 DONE 0.0s
+
+#99 [spark-stream-processor] exporting to image
+#99 exporting layers
+#99 ...
+
+#89 [gateway] exporting to image
+#89 exporting layers 18.0s done
+#89 exporting manifest sha256:728e2ba0358e62891663c1e92eb27761fe29c9556f0c3a36ab38aa29cb730187 0.0s done
+#89 exporting config sha256:abcbec799956b052ced2d79ceb881d589cd70cceabd9899b74799632633c4e56 0.0s done
+#89 exporting attestation manifest sha256:9f2b6e4b0d4b6de96bc829f559c042269f85f213f6f85cf70fafd0b85ad85b7a 0.0s done
+#89 exporting manifest list sha256:b9a95067267df89725dacf153abe7c38b3f2bfc82b607e3199a8892b2b5aa6dc
+#89 exporting manifest list sha256:b9a95067267df89725dacf153abe7c38b3f2bfc82b607e3199a8892b2b5aa6dc 0.0s done
+#89 naming to docker.io/library/clean-gateway:latest done
+#89 unpacking to docker.io/library/clean-gateway:latest
+#89 unpacking to docker.io/library/clean-gateway:latest 5.0s done
+#89 DONE 23.2s
+
+#87 [migrate] exporting to image
+#87 exporting layers 18.0s done
+#87 exporting manifest sha256:f33065611bb80567ef2f4377767e4d3f5314a335057d54fe648dc2429588a596 0.0s done
+#87 exporting config sha256:9c42017a00fa365286e03c55d6471cd1a74da4fc3f1c5c4abd5f33ad183d27ff 0.0s done
+#87 exporting attestation manifest sha256:340dde2659151c61cda77348f1a8b73fcd4301120246051f9e727d5ec4ed533b 0.0s done
+#87 exporting manifest list sha256:0cdb00827d3b4be2bda6f42c922b6a4f4992fa60232ae44a30e350d01d88b3ed 0.0s done
+#87 naming to docker.io/library/clean-migrate:latest done
+#87 unpacking to docker.io/library/clean-migrate:latest 5.0s done
+#87 DONE 23.2s
+
+#99 [spark-stream-processor] exporting to image
+#99 ...
+
+#100 [migrate] resolving provenance for metadata file
+#100 DONE 0.1s
+
+#101 [gateway] resolving provenance for metadata file
+#101 DONE 0.0s
+
+#99 [spark-stream-processor] exporting to image
+#99 exporting layers 17.3s done
+#99 exporting manifest sha256:a3a27e502b84e61797dcfe87ebd73d2a1676d4e107dbd76f4224c6321979ad05 0.0s done
+#99 exporting config sha256:31182e07774f8e93743a0f328b858f74c3d509be9b202f1d4096b011e6134850 0.0s done
+#99 exporting attestation manifest sha256:9242b4954c78e38a9a20c896e7bb5b6dbd8638d7aa35d163148f960e580ed78f 0.0s done
+#99 exporting manifest list sha256:ff90ee15cb00244c76bf2302b66c4a48fb01abafa1e2f97125090ad439b338e8 0.0s done
+#99 naming to docker.io/library/clean-spark-stream-processor:latest done
+#99 unpacking to docker.io/library/clean-spark-stream-processor:latest
+#99 unpacking to docker.io/library/clean-spark-stream-processor:latest 3.7s done
+#99 DONE 21.1s
+
+#102 [spark-stream-processor] resolving provenance for metadata file
+#102 DONE 0.0s
+ Image clean-frontend Built 
+ Image clean-migrate Built 
+ Image clean-reporting-api Built 
+ Image clean-gateway Built 
+ Image clean-spark-stream-processor Built 
+ Image clean-event-producer Built 
+ Image clean-event-publisher Built 
+[22:04:35] README: docker compose up --build -d
+ Image clean-gateway Building 
+ Image clean-spark-stream-processor Building 
+ Image clean-event-publisher Building 
+ Image clean-reporting-api Building 
+ Image clean-frontend Building 
+ Image clean-event-producer Building 
+ Image clean-migrate Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 3.30kB done
+#1 DONE 0.0s
+
+#2 [reporting-api internal] load build definition from reporting.Dockerfile
+#2 transferring dockerfile: 1.70kB done
+#2 DONE 0.0s
+
+#3 [event-publisher internal] load build definition from streaming.Dockerfile
+#3 transferring dockerfile: 1.82kB done
+#3 DONE 0.0s
+
+#4 [frontend internal] load build definition from frontend.Dockerfile
+#4 transferring dockerfile: 551B done
+#4 DONE 0.0s
+
+#5 [gateway internal] load build definition from gateway.Dockerfile
+#5 transferring dockerfile: 1.82kB done
+#5 DONE 0.0s
+
+#6 [spark-stream-processor internal] load build definition from spark.Dockerfile
+#6 transferring dockerfile: 3.32kB done
+#6 DONE 0.1s
+
+#7 [gateway] resolve image config for docker-image://docker.io/docker/dockerfile:1
+#7 ...
+
+#8 [spark-stream-processor] resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#8 DONE 0.5s
+
+#7 [gateway] resolve image config for docker-image://docker.io/docker/dockerfile:1
+#7 DONE 0.5s
+
+#9 [spark-stream-processor] docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#9 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#9 CACHED
+
+#10 [migrate] docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#10 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#10 CACHED
+
+#11 [spark-stream-processor internal] load build definition from spark.Dockerfile
+#11 transferring dockerfile: 3.32kB done
+#11 DONE 0.0s
+
+#12 [event-publisher internal] load metadata for docker.io/library/python:3.12-slim
+#12 ...
+
+#13 [spark-stream-processor internal] load metadata for docker.io/apache/spark:3.5.8-scala2.12-java17-python3-ubuntu
+#13 DONE 0.4s
+
+#14 [spark-stream-processor internal] load .dockerignore
+#14 transferring context: 268B done
+#14 DONE 0.0s
+
+#15 [frontend internal] load metadata for docker.io/library/node:22-alpine
+#15 DONE 0.4s
+
+#16 [frontend internal] load metadata for docker.io/nginxinc/nginx-unprivileged:1.30-alpine
+#16 DONE 0.4s
+
+#17 [frontend internal] load .dockerignore
+#17 transferring context: 268B done
+#17 DONE 0.1s
+
+#12 [event-publisher internal] load metadata for docker.io/library/python:3.12-slim
+#12 DONE 0.5s
+
+#17 [event-publisher internal] load .dockerignore
+#17 transferring context: 268B done
+#17 DONE 0.1s
+
+#18 [spark-stream-processor runtime  3/12] ADD --chmod=644 --checksum=sha256:d2b7068eabce2a1267103625e58efae32f7ee384db1cbc22424532ad2ed95fb4     https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#18 DONE 0.0s
+
+#19 [spark-stream-processor runtime  5/12] ADD --chmod=644 --checksum=sha256:9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6     https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar /opt/spark/jars/
+#19 DONE 0.0s
+
+#20 [spark-stream-processor runtime  4/12] ADD --chmod=644 --checksum=sha256:85f44359b60943d262f37d1327ebb7931fe47e0392286fe3023299e25b84b0d8     https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#20 DONE 0.0s
+
+#21 [spark-stream-processor runtime  6/12] ADD --chmod=644 --checksum=sha256:ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83     https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar /opt/spark/jars/
+#21 DONE 0.0s
+
+#22 [frontend build 1/6] FROM docker.io/library/node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
+#22 resolve docker.io/library/node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 0.1s done
+#22 DONE 0.1s
+
+#23 [event-producer builder 1/4] FROM docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54
+#23 resolve docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54 0.1s done
+#23 DONE 0.1s
+
+#24 [frontend stage-1 1/4] FROM docker.io/nginxinc/nginx-unprivileged:1.30-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03
+#24 resolve docker.io/nginxinc/nginx-unprivileged:1.30-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03 0.1s done
+#24 DONE 0.1s
+
+#25 [spark-stream-processor runtime  1/12] FROM docker.io/apache/spark:3.5.8-scala2.12-java17-python3-ubuntu@sha256:dbe5f3b3926b01fa0b818ae8463c2994bfd2945d8db96d2337e23dc62d6fa73d
+#25 resolve docker.io/apache/spark:3.5.8-scala2.12-java17-python3-ubuntu@sha256:dbe5f3b3926b01fa0b818ae8463c2994bfd2945d8db96d2337e23dc62d6fa73d 0.1s done
+#25 DONE 0.1s
+
+#26 [event-publisher internal] load build context
+#26 transferring context: 57.21kB 0.0s done
+#26 DONE 0.1s
+
+#27 [migrate internal] load build context
+#27 transferring context: 5.55kB 0.0s done
+#27 DONE 0.1s
+
+#28 [spark-stream-processor internal] load build context
+#28 transferring context: 43.48kB 0.0s done
+#28 DONE 0.0s
+
+#29 [reporting-api internal] load build context
+#29 transferring context: 38.07kB 0.0s done
+#29 DONE 0.0s
+
+#30 [frontend internal] load build context
+#30 transferring context: 126.20kB 0.0s done
+#30 DONE 0.1s
+
+#31 [spark-stream-processor runtime  7/12] COPY requirements-spark.txt /tmp/requirements-spark.txt
+#31 CACHED
+
+#32 [spark-stream-processor runtime  2/12] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
+#32 CACHED
+
+#33 [spark-stream-processor runtime  3/12] ADD --chmod=644 --checksum=sha256:d2b7068eabce2a1267103625e58efae32f7ee384db1cbc22424532ad2ed95fb4     https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/3.5.8/spark-sql-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#33 CACHED
+
+#34 [spark-stream-processor runtime  9/12] WORKDIR /app
+#34 CACHED
+
+#35 [spark-stream-processor runtime  5/12] ADD --chmod=644 --checksum=sha256:9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6     https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.4.1/kafka-clients-3.4.1.jar /opt/spark/jars/
+#35 CACHED
+
+#36 [spark-stream-processor runtime  4/12] ADD --chmod=644 --checksum=sha256:85f44359b60943d262f37d1327ebb7931fe47e0392286fe3023299e25b84b0d8     https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.12/3.5.8/spark-token-provider-kafka-0-10_2.12-3.5.8.jar /opt/spark/jars/
+#36 CACHED
+
+#37 [spark-stream-processor runtime 10/12] COPY --chown=root:root events ./events
+#37 CACHED
+
+#38 [spark-stream-processor runtime  6/12] ADD --chmod=644 --checksum=sha256:ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83     https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar /opt/spark/jars/
+#38 CACHED
+
+#39 [spark-stream-processor runtime 11/12] COPY --chown=root:root schemas ./schemas
+#39 CACHED
+
+#40 [spark-stream-processor runtime  8/12] RUN python3 -m pip install --no-cache-dir --disable-pip-version-check -r /tmp/requirements-spark.txt  && rm /tmp/requirements-spark.txt  && mkdir -p /checkpoints /tmp/spark  && chown 185:185 /checkpoints /tmp/spark  && ls /opt/spark/python/lib/py4j-*-src.zip
+#40 CACHED
+
+#41 [spark-stream-processor runtime 12/12] COPY --chown=root:root streaming ./streaming
+#41 CACHED
+
+#42 [frontend build 5/6] COPY frontend/ ./
+#42 CACHED
+
+#43 [frontend build 2/6] WORKDIR /app
+#43 CACHED
+
+#44 [frontend stage-1 2/4] RUN apk upgrade --no-cache
+#44 CACHED
+
+#45 [frontend build 4/6] RUN npm ci || npm install
+#45 CACHED
+
+#46 [frontend build 6/6] RUN npm run build
+#46 CACHED
+
+#47 [frontend build 3/6] COPY frontend/package.json frontend/package-lock.json* ./
+#47 CACHED
+
+#48 [frontend stage-1 3/4] COPY infra/docker/nginx.conf /etc/nginx/conf.d/default.conf
+#48 CACHED
+
+#49 [frontend stage-1 4/4] COPY --from=build /app/dist /usr/share/nginx/html
+#49 CACHED
+
+#50 [event-publisher stage-1 8/9] COPY --chown=root:root publisher ./publisher
+#50 CACHED
+
+#51 [event-publisher stage-1 6/9] COPY --chown=root:root schemas ./schemas
+#51 CACHED
+
+#52 [event-publisher stage-1 2/9] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10002 stream  && useradd --system --uid 10002 --gid stream --no-create-home stream
+#52 CACHED
+
+#53 [event-publisher stage-1 5/9] COPY --chown=root:root events ./events
+#53 CACHED
+
+#54 [event-publisher stage-1 4/9] COPY --from=builder /opt/venv /opt/venv
+#54 CACHED
+
+#55 [event-publisher stage-1 7/9] COPY --chown=root:root producer ./producer
+#55 CACHED
+
+#56 [event-publisher stage-1 3/9] WORKDIR /app
+#56 CACHED
+
+#57 [event-publisher builder 3/4] COPY requirements-stream.txt .
+#57 CACHED
+
+#58 [event-publisher builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-stream.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#58 CACHED
+
+#59 [event-publisher stage-1 9/9] COPY --chown=root:root gateway/__init__.py gateway/db.py gateway/config.py gateway/models.py gateway/logging_config.py ./gateway/
+#59 CACHED
+
+#60 [gateway stage-1 10/14] COPY --chown=root:root events ./events
+#60 CACHED
+
+#61 [gateway stage-1  5/14] COPY --chown=root:root gateway ./gateway
+#61 CACHED
+
+#62 [gateway stage-1  8/14] COPY --chown=root:root detection ./detection
+#62 CACHED
+
+#63 [gateway builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#63 CACHED
+
+#64 [gateway stage-1  6/14] COPY --chown=root:root policy ./policy
+#64 CACHED
+
+#65 [gateway stage-1 11/14] COPY --chown=root:root schemas ./schemas
+#65 CACHED
+
+#66 [gateway stage-1  9/14] COPY --chown=root:root agents ./agents
+#66 CACHED
+
+#67 [gateway stage-1  2/14] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10001 app  && useradd --system --uid 10001 --gid app --no-create-home app
+#67 CACHED
+
+#68 [gateway stage-1  7/14] COPY --chown=root:root audit ./audit
+#68 CACHED
+
+#69 [gateway stage-1 13/14] COPY --chown=root:root migrations ./migrations
+#69 CACHED
+
+#70 [gateway stage-1 12/14] COPY --chown=root:root ops ./ops
+#70 CACHED
+
+#71 [gateway stage-1  3/14] WORKDIR /app
+#71 CACHED
+
+#72 [gateway builder 3/4] COPY requirements.txt .
+#72 CACHED
+
+#73 [gateway stage-1  4/14] COPY --from=builder /opt/venv /opt/venv
+#73 CACHED
+
+#74 [gateway stage-1 14/14] COPY --chown=root:root alembic.ini ./
+#74 CACHED
+
+#75 [reporting-api builder 4/4] RUN python -m venv /opt/venv  && /opt/venv/bin/pip install pip==26.2.2  && /opt/venv/bin/pip install -r requirements-reporting.txt  && /opt/venv/bin/python -m pip uninstall -y pip
+#75 CACHED
+
+#76 [gateway builder 2/4] WORKDIR /build
+#76 CACHED
+
+#77 [reporting-api builder 3/4] COPY requirements-reporting.txt .
+#77 CACHED
+
+#78 [reporting-api stage-1 3/7] WORKDIR /app
+#78 CACHED
+
+#79 [reporting-api stage-1 5/7] COPY --chown=root:root reporting ./reporting
+#79 CACHED
+
+#80 [reporting-api stage-1 2/7] RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*  && python -m pip uninstall -y pip  && groupadd --system --gid 10003 reporting  && useradd --system --uid 10003 --gid reporting --no-create-home reporting
+#80 CACHED
+
+#81 [reporting-api stage-1 4/7] COPY --from=builder /opt/venv /opt/venv
+#81 CACHED
+
+#82 [reporting-api stage-1 6/7] COPY --chown=root:root gateway/__init__.py gateway/config.py gateway/logging_config.py ./gateway/
+#82 CACHED
+
+#83 [reporting-api stage-1 7/7] COPY --chown=root:root gateway/core/__init__.py gateway/core/errors.py gateway/core/security.py ./gateway/core/
+#83 CACHED
+
+#84 [reporting-api] exporting to image
+#84 exporting layers done
+#84 exporting manifest sha256:fca07ce66e70b1829da6e1196dcbb755d95f93cae91d0fe212cbc139a891f341 done
+#84 exporting config sha256:1da974cc452fe3d29feafc9367bd0cde1edb976f8dcf20dd9fda32f3cfe486a7
+#84 exporting config sha256:1da974cc452fe3d29feafc9367bd0cde1edb976f8dcf20dd9fda32f3cfe486a7 0.0s done
+#84 exporting attestation manifest sha256:2f5bded27c2a45c822692ff9b58848585b92fca9f687d0df5f0ead4d39ab9211
+#84 exporting attestation manifest sha256:2f5bded27c2a45c822692ff9b58848585b92fca9f687d0df5f0ead4d39ab9211 0.1s done
+#84 exporting manifest list sha256:da297a184be1f8e91f34e67939f455cf1480429435244ce3597f7a5e99d21c75
+#84 exporting manifest list sha256:da297a184be1f8e91f34e67939f455cf1480429435244ce3597f7a5e99d21c75 0.1s done
+#84 naming to docker.io/library/clean-reporting-api:latest 0.0s done
+#84 unpacking to docker.io/library/clean-reporting-api:latest
+#84 unpacking to docker.io/library/clean-reporting-api:latest 0.0s done
+#84 DONE 0.4s
+
+#85 [frontend] exporting to image
+#85 exporting layers done
+#85 exporting manifest sha256:bd5866160bddaebae903eb54aff148b0094fce1c19529d97810cbce9c1a0f843 0.0s done
+#85 exporting config sha256:b5dd67b665e1d50b9b44bb572d2bd2e2c6092ef8347c524a6313bdb90373f87f 0.0s done
+#85 exporting attestation manifest sha256:c83bab07911acd441f9c5ab2c10269960a2ab83946c44522c2d03fa606eddbbe 0.1s done
+#85 exporting manifest list sha256:49b1d0d599b4e360fb66c532e34c288af23c420ece22c0253d6e21d1f2fb41ec 0.1s done
+#85 naming to docker.io/library/clean-frontend:latest 0.0s done
+#85 unpacking to docker.io/library/clean-frontend:latest 0.0s done
+#85 DONE 0.4s
+
+#86 [event-publisher] exporting to image
+#86 exporting layers done
+#86 exporting manifest sha256:a2be1f6d7127dc14d7c763d48cc5b38fb392040a1ea3ed18bbd1f5504d035cbe done
+#86 exporting config sha256:352d37ab90666b828dd6912df1c9ca9b3076d1ce9d206fb11d8520d5126df19a 0.0s done
+#86 exporting attestation manifest sha256:1e9ef1f8f26aa49c98aa1baf1da3270a36289196f4d84999a2945a5c5f61a3dd 0.1s done
+#86 exporting manifest list sha256:fb7cbc155df351517a893654d8021df393287aff214f9249ac1b1d787e9c7d4a 0.1s done
+#86 naming to docker.io/library/clean-event-publisher:latest 0.0s done
+#86 unpacking to docker.io/library/clean-event-publisher:latest 0.0s done
+#86 DONE 0.4s
+
+#87 [event-producer] exporting to image
+#87 exporting layers done
+#87 exporting manifest sha256:9f664f9d0f89f3c74e4b8bf420e19adbeaf8c731d2ec95d63d41d879574f4902 done
+#87 exporting config sha256:3fa199cb32b3a64d733bccec155a29d49b391930d4eede77c8cf4b5477da439c 0.0s done
+#87 exporting attestation manifest sha256:bfce60a22ce075ed5b4eb4887d1531b5fdb83615505e52d70cbc8bcff84afa3b 0.1s done
+#87 exporting manifest list sha256:146e84e9e184156fb443e2568e8a616237786c2fa3c50fbc865ec6bdb57a2e78 0.1s done
+#87 naming to docker.io/library/clean-event-producer:latest 0.0s done
+#87 unpacking to docker.io/library/clean-event-producer:latest 0.0s done
+#87 DONE 0.4s
+
+#88 [spark-stream-processor] exporting to image
+#88 exporting layers done
+#88 exporting manifest sha256:a3a27e502b84e61797dcfe87ebd73d2a1676d4e107dbd76f4224c6321979ad05 0.0s done
+#88 exporting config sha256:31182e07774f8e93743a0f328b858f74c3d509be9b202f1d4096b011e6134850 0.0s done
+#88 exporting attestation manifest sha256:3793f3f6c9b29648e5977f3f4743515480711b99b3262a9fbdb02cca98310c7f 0.1s done
+#88 exporting manifest list sha256:74e5b9c7d9d3f4594a64b1ad2788df8b1d2efda9e316ed30f11ff09a91c84600 0.1s done
+#88 naming to docker.io/library/clean-spark-stream-processor:latest 0.0s done
+#88 unpacking to docker.io/library/clean-spark-stream-processor:latest 0.0s done
+#88 DONE 0.5s
+
+#89 [migrate] exporting to image
+#89 exporting layers done
+#89 exporting manifest sha256:f33065611bb80567ef2f4377767e4d3f5314a335057d54fe648dc2429588a596 0.0s done
+#89 exporting config sha256:9c42017a00fa365286e03c55d6471cd1a74da4fc3f1c5c4abd5f33ad183d27ff 0.0s done
+#89 exporting attestation manifest sha256:9a61d951b3383eeda94a791cae13305b1d826b7602701e181e329581d154c5de 0.1s done
+#89 exporting manifest list sha256:6d9e9989f850f8cf67128a1e624b02f36850846d311cb7cc3a0615e5a5f55a95 0.1s done
+#89 naming to docker.io/library/clean-migrate:latest 0.0s done
+#89 unpacking to docker.io/library/clean-migrate:latest 0.0s done
+#89 DONE 0.5s
+
+#90 [gateway] exporting to image
+#90 exporting layers done
+#90 exporting manifest sha256:728e2ba0358e62891663c1e92eb27761fe29c9556f0c3a36ab38aa29cb730187 0.0s done
+#90 exporting config sha256:abcbec799956b052ced2d79ceb881d589cd70cceabd9899b74799632633c4e56 0.0s done
+#90 exporting attestation manifest sha256:9b8a26c90b984a0037bd328e12f4c23915d68745bebda49ea6715bc5bd66fb01 0.1s done
+#90 exporting manifest list sha256:ca2b32dc8c14eca3952ad240a6a8c8b18cd591191c8a9672b810371e17faeae7 0.1s done
+#90 naming to docker.io/library/clean-gateway:latest 0.0s done
+#90 unpacking to docker.io/library/clean-gateway:latest 0.0s done
+#90 DONE 0.5s
+
+#91 [event-producer] resolving provenance for metadata file
+#91 DONE 0.3s
+
+#92 [reporting-api] resolving provenance for metadata file
+#92 DONE 0.2s
+
+#93 [event-publisher] resolving provenance for metadata file
+#93 DONE 0.1s
+
+#94 [migrate] resolving provenance for metadata file
+#94 DONE 0.2s
+
+#95 [frontend] resolving provenance for metadata file
+#95 DONE 0.3s
+
+#96 [gateway] resolving provenance for metadata file
+#96 DONE 0.1s
+
+#97 [spark-stream-processor] resolving provenance for metadata file
+#97 DONE 0.0s
+ Image clean-event-publisher Built 
+ Image clean-gateway Built 
+ Image clean-frontend Built 
+ Image clean-migrate Built 
+ Image clean-reporting-api Built 
+ Image clean-spark-stream-processor Built 
+ Image clean-event-producer Built 
+ Volume clean_pgdata Creating 
+ Volume clean_kafkadata Creating 
+ Volume clean_pgdata Creating 
+ Volume clean_sparkcheckpoints Creating 
+ Volume clean_sparkcheckpoints Creating 
+ Volume clean_sparkwork Creating 
+ Volume clean_sparkwork Creating 
+ Network clean_default Creating 
+ Volume clean_kafkadata Creating 
+ Network clean_default Creating 
+ Volume clean_ollamadata Creating 
+ Volume clean_ollamadata Creating 
+ Volume clean_redisdata Creating 
+ Volume clean_redisdata Creating 
+ Volume clean_sparkcheckpoints Created 
+ Volume clean_sparkcheckpoints Created 
+ Volume clean_redisdata Created 
+ Volume clean_redisdata Created 
+ Volume clean_pgdata Created 
+ Volume clean_pgdata Created 
+ Volume clean_sparkwork Created 
+ Volume clean_sparkwork Created 
+ Volume clean_ollamadata Created 
+ Volume clean_ollamadata Created 
+ Volume clean_kafkadata Created 
+ Volume clean_kafkadata Created 
+ Network clean_default Created 
+ Network clean_default Created 
+ Container clean-ollama-1 Creating 
+ Container clean-kafka-1 Creating 
+ Container clean-postgres-1 Creating 
+ Container clean-redis-1 Creating 
+ Container clean-kafka-1 Created 
+ Container clean-kafka-init-1 Creating 
+ Container clean-ollama-1 Created 
+ Container clean-postgres-1 Created 
+ Container clean-migrate-1 Creating 
+ Container clean-redis-1 Created 
+ Container clean-kafka-init-1 Created 
+ Container clean-event-producer-1 Creating 
+ Container clean-migrate-1 Created 
+ Container clean-reporting-api-1 Creating 
+ Container clean-spark-stream-processor-1 Creating 
+ Container clean-gateway-1 Creating 
+ Container clean-event-publisher-1 Creating 
+ Container clean-event-producer-1 Created 
+ Container clean-reporting-api-1 Created 
+ Container clean-gateway-1 Created 
+ Container clean-frontend-1 Creating 
+ Container clean-event-publisher-1 Created 
+ Container clean-spark-stream-processor-1 Created 
+ Container clean-frontend-1 Created 
+ Container clean-postgres-1 Starting 
+ Container clean-kafka-1 Starting 
+ Container clean-ollama-1 Starting 
+ Container clean-redis-1 Starting 
+ Container clean-postgres-1 Started 
+ Container clean-postgres-1 Waiting 
+ Container clean-kafka-1 Started 
+ Container clean-kafka-1 Waiting 
+ Container clean-ollama-1 Started 
+ Container clean-redis-1 Started 
+ Container clean-postgres-1 Healthy 
+ Container clean-migrate-1 Starting 
+ Container clean-migrate-1 Started 
+ Container clean-migrate-1 Waiting 
+ Container clean-redis-1 Waiting 
+ Container clean-migrate-1 Waiting 
+ Container clean-redis-1 Healthy 
+ Container clean-kafka-1 Healthy 
+ Container clean-kafka-init-1 Starting 
+ Container clean-kafka-init-1 Started 
+ Container clean-migrate-1 Waiting 
+ Container clean-kafka-init-1 Waiting 
+ Container clean-kafka-init-1 Waiting 
+ Container clean-migrate-1 Waiting 
+ Container clean-kafka-init-1 Waiting 
+ Container clean-migrate-1 Exited 
+ Container clean-gateway-1 Starting 
+ Container clean-migrate-1 Exited 
+ Container clean-reporting-api-1 Starting 
+ Container clean-migrate-1 Exited 
+ Container clean-migrate-1 Exited 
+ Container clean-gateway-1 Started 
+ Container clean-reporting-api-1 Started 
+ Container clean-frontend-1 Starting 
+ Container clean-frontend-1 Started 
+ Container clean-kafka-init-1 Exited 
+ Container clean-kafka-init-1 Exited 
+ Container clean-event-producer-1 Starting 
+ Container clean-event-publisher-1 Starting 
+ Container clean-kafka-init-1 Exited 
+ Container clean-spark-stream-processor-1 Starting 
+ Container clean-event-producer-1 Started 
+ Container clean-event-publisher-1 Started 
+ Container clean-spark-stream-processor-1 Started 
+[22:05:27] services: event-producer=Up 24 seconds (healthy) event-publisher=Up 23 seconds (healthy) frontend=Up 36 seconds (healthy) gateway=Up 36 seconds (healthy) kafka=Up 45 seconds (healthy) ollama=Up 45 seconds (healthy) postgres=Up 46 seconds (healthy) redis=Up 45 seconds (healthy) reporting-api=Up 36 seconds (healthy) spark-stream-processor=Up 23 seconds (healthy) 
+[22:05:27] readyz: {"status":"ready","checks":{"database":true,"redis":true}}
+[22:05:28] migrations: 9 applied
+[22:05:28] README: docker compose --profile test run --rm --build tests
+[22:07:47] tests: 749 passed, 2 skipped in 111.04s (0:01:51)
+[22:07:47] README: docker compose --profile test run --rm --build spark-tests
+[22:08:29] spark-tests: 11 passed in 31.24s
+[22:08:29] README: python scripts/verify_pipeline.py --total 1000000
+[22:16:50] verify exit=1
+==================================================================
+Streaming pipeline verification (Kafka -> Spark -> PostgreSQL)
+==================================================================
+Run id / seed:                p2-628971d393 / 5153029
+Events produced:              1,000,000
+Events consumed:              1,000,000
+Events aggregated:            687,190
+Dead-letter events:           0
+Late (dropped by watermark):  312,810
+  tumbling sum, requests per tenant (1m):  687,190
+  tumbling sum, decisions by type (1m):    1,000,000
+  tumbling sum, PII per model (5m):        1,000,000
+  tumbling sum, sovereignty (10m):         1,000,000
+  sliding-window rows (latency, injections, agent risk): 4,575
+Processor killed/restarted at: 578,677 events consumed
+Produce time: 274 s   end-to-end until stable: 498 s
+------------------------------------------------------------------
+[PASS] consumed == produced
+[PASS] valid + dead-letter == consumed
+[PASS] valid == producer's valid count
+[FAIL] aggregated == valid (each event in exactly one 1-min window)
+[FAIL] every tumbling aggregation sums to the same total
+[PASS] sliding-window aggregates produced
+[PASS] processor restarted mid-run
+Processor restart recovery: FAILED
+RESULT: FAILED
+[22:16:50] retention dry run: docker compose --profile ops run --rm retention --dry-run
+ Container clean-retention-run-ac819cd088e2 Created 
+target                          cutoff                     would delete
+event_outbox                    2026-10-31T22:17:00+00:00  0
+agent_events                    2026-10-08T22:17:00+00:00  0
+aggregated_request_metrics      2026-08-09T22:17:00+00:00  0
+aggregated_policy_metrics       2026-08-09T22:17:00+00:00  0
+aggregated_latency_metrics      2026-08-09T22:17:00+00:00  0
+aggregated_pii_metrics          2026-08-09T22:17:00+00:00  0
+aggregated_injection_metrics    2026-08-09T22:17:00+00:00  0
+aggregated_agent_risk_metrics   2026-08-09T22:17:00+00:00  0
+aggregated_sovereignty_metrics  2026-08-09T22:17:00+00:00  0
+pipeline_progress               2026-10-08T22:17:00+00:00  0
+pipeline_run_counts             2026-10-08T22:17:00+00:00  0
+detections                      2025-11-07T22:17:00+00:00  0
+audit_events                    2025-11-07T22:17:00+00:00  0
+decisions                       2025-11-07T22:17:00+00:00  0
+[22:17:01] done

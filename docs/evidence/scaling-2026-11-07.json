@@ -1,0 +1,458 @@
+[
+  {
+    "producers": 1,
+    "events": 300000,
+    "acked": 300000,
+    "produce_seconds": 66.0,
+    "produce_rate_eps": 4545,
+    "consumed": 300000,
+    "aggregated": 300000,
+    "peak_spark_rate_eps": 17413,
+    "avg_spark_rate_eps": 1669,
+    "peak_kafka_lag": 245845,
+    "peak_pg_write_rate_rows_s": 609,
+    "pg_rows_written": 42594,
+    "median_latency_s": 79.8,
+    "completion_latency_s": 88.9,
+    "wall_seconds": 179.7,
+    "peak_cpu_pct": {
+      "clean-event-producer": 28.06,
+      "clean-event-producer-run": 120.4,
+      "clean-event-publisher": 24.87,
+      "clean-frontend": 0.0,
+      "clean-gateway": 52.83,
+      "clean-kafka": 165.77,
+      "clean-kafka-init": 196.63,
+      "clean-ollama": 0.0,
+      "clean-postgres": 30.05,
+      "clean-redis": 5.37,
+      "clean-reporting-api": 51.72,
+      "clean-spark-stream-processor": 493.45
+    },
+    "peak_mem_mib": {
+      "clean-event-producer": 46,
+      "clean-event-producer-run": 53,
+      "clean-event-publisher": 72,
+      "clean-frontend": 12,
+      "clean-gateway": 181,
+      "clean-kafka": 1883,
+      "clean-kafka-init": 56,
+      "clean-ollama": 43,
+      "clean-postgres": 89,
+      "clean-redis": 13,
+      "clean-reporting-api": 85,
+      "clean-spark-stream-processor": 3062
+    },
+    "complete": true,
+    "samples": [
+      {
+        "t": 0.0,
+        "produced": 30,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 30,
+        "pg_writes": 1334
+      },
+      {
+        "t": 9.5,
+        "produced": 125,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 125,
+        "pg_writes": 4496
+      },
+      {
+        "t": 18.7,
+        "produced": 221,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 221,
+        "pg_writes": 7270
+      },
+      {
+        "t": 28.0,
+        "produced": 43845,
+        "consumed": 4117,
+        "aggregated": 0,
+        "lag": 39728,
+        "pg_writes": 8891
+      },
+      {
+        "t": 39.6,
+        "produced": 88767,
+        "consumed": 4117,
+        "aggregated": 24691,
+        "lag": 84650,
+        "pg_writes": 14046
+      },
+      {
+        "t": 49.3,
+        "produced": 145543,
+        "consumed": 30000,
+        "aggregated": 30000,
+        "lag": 115543,
+        "pg_writes": 19956
+      },
+      {
+        "t": 60.8,
+        "produced": 190646,
+        "consumed": 30000,
+        "aggregated": 30000,
+        "lag": 160646,
+        "pg_writes": 19956
+      },
+      {
+        "t": 70.9,
+        "produced": 234595,
+        "consumed": 30000,
+        "aggregated": 41757,
+        "lag": 204595,
+        "pg_writes": 20874
+      },
+      {
+        "t": 80.9,
+        "produced": 275845,
+        "consumed": 30000,
+        "aggregated": 53807,
+        "lag": 245845,
+        "pg_writes": 23622
+      },
+      {
+        "t": 90.8,
+        "produced": 300948,
+        "consumed": 106619,
+        "aggregated": 106619,
+        "lag": 194329,
+        "pg_writes": 26644
+      },
+      {
+        "t": 100.8,
+        "produced": 301042,
+        "consumed": 106619,
+        "aggregated": 106619,
+        "lag": 194423,
+        "pg_writes": 26704
+      },
+      {
+        "t": 110.7,
+        "produced": 301140,
+        "consumed": 106619,
+        "aggregated": 106619,
+        "lag": 194521,
+        "pg_writes": 26704
+      },
+      {
+        "t": 120.5,
+        "produced": 301239,
+        "consumed": 106619,
+        "aggregated": 134238,
+        "lag": 194620,
+        "pg_writes": 27664
+      },
+      {
+        "t": 130.1,
+        "produced": 301341,
+        "consumed": 106619,
+        "aggregated": 134238,
+        "lag": 194722,
+        "pg_writes": 30740
+      },
+      {
+        "t": 140.6,
+        "produced": 301444,
+        "consumed": 106619,
+        "aggregated": 222111,
+        "lag": 194825,
+        "pg_writes": 31396
+      },
+      {
+        "t": 150.8,
+        "produced": 301543,
+        "consumed": 284236,
+        "aggregated": 222111,
+        "lag": 17307,
+        "pg_writes": 32410
+      },
+      {
+        "t": 160.3,
+        "produced": 301637,
+        "consumed": 284236,
+        "aggregated": 284236,
+        "lag": 17401,
+        "pg_writes": 34761
+      },
+      {
+        "t": 169.8,
+        "produced": 301733,
+        "consumed": 284236,
+        "aggregated": 292260,
+        "lag": 17497,
+        "pg_writes": 38213
+      },
+      {
+        "t": 179.7,
+        "produced": 301829,
+        "consumed": 300000,
+        "aggregated": 300000,
+        "lag": 1829,
+        "pg_writes": 42594
+      }
+    ]
+  },
+  {
+    "producers": 2,
+    "events": 600000,
+    "acked": 600000,
+    "produce_seconds": 76.5,
+    "produce_rate_eps": 7843,
+    "consumed": 130248,
+    "aggregated": 600000,
+    "peak_spark_rate_eps": 12025,
+    "avg_spark_rate_eps": 501,
+    "peak_kafka_lag": 575788,
+    "peak_pg_write_rate_rows_s": 680,
+    "pg_rows_written": 36110,
+    "median_latency_s": 145.1,
+    "completion_latency_s": 160.7,
+    "wall_seconds": 260.0,
+    "peak_cpu_pct": {
+      "clean-event-producer": 56.91,
+      "clean-event-producer-run": 92.41,
+      "clean-event-publisher": 36.14,
+      "clean-frontend": 4.3,
+      "clean-gateway": 15.21,
+      "clean-kafka": 230.19,
+      "clean-kafka-init": 112.76,
+      "clean-ollama": 6.86,
+      "clean-postgres": 50.98,
+      "clean-redis": 4.86,
+      "clean-reporting-api": 55.1,
+      "clean-spark-stream-processor": 487.78
+    },
+    "peak_mem_mib": {
+      "clean-event-producer": 54,
+      "clean-event-producer-run": 46,
+      "clean-event-publisher": 61,
+      "clean-frontend": 12,
+      "clean-gateway": 182,
+      "clean-kafka": 2156,
+      "clean-kafka-init": 46,
+      "clean-ollama": 42,
+      "clean-postgres": 93,
+      "clean-redis": 12,
+      "clean-reporting-api": 75,
+      "clean-spark-stream-processor": 3069
+    },
+    "complete": true,
+    "samples": [
+      {
+        "t": 0.0,
+        "produced": 50,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 50,
+        "pg_writes": 1462
+      },
+      {
+        "t": 11.7,
+        "produced": 144,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 144,
+        "pg_writes": 4236
+      },
+      {
+        "t": 21.2,
+        "produced": 245,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 245,
+        "pg_writes": 7392
+      },
+      {
+        "t": 31.2,
+        "produced": 51392,
+        "consumed": 0,
+        "aggregated": 0,
+        "lag": 51392,
+        "pg_writes": 9944
+      },
+      {
+        "t": 42.3,
+        "produced": 151255,
+        "consumed": 10000,
+        "aggregated": 10000,
+        "lag": 141255,
+        "pg_writes": 11077
+      },
+      {
+        "t": 52.9,
+        "produced": 242957,
+        "consumed": 10000,
+        "aggregated": 10000,
+        "lag": 232957,
+        "pg_writes": 18288
+      },
+      {
+        "t": 64.8,
+        "produced": 327754,
+        "consumed": 10000,
+        "aggregated": 10000,
+        "lag": 317754,
+        "pg_writes": 18288
+      },
+      {
+        "t": 77.0,
+        "produced": 420479,
+        "consumed": 10000,
+        "aggregated": 30271,
+        "lag": 410479,
+        "pg_writes": 18382
+      },
+      {
+        "t": 88.8,
+        "produced": 501086,
+        "consumed": 10000,
+        "aggregated": 30271,
+        "lag": 491086,
+        "pg_writes": 19617
+      },
+      {
+        "t": 99.3,
+        "produced": 585788,
+        "consumed": 10000,
+        "aggregated": 106142,
+        "lag": 575788,
+        "pg_writes": 20014
+      },
+      {
+        "t": 109.3,
+        "produced": 601133,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 470885,
+        "pg_writes": 24868
+      },
+      {
+        "t": 119.8,
+        "produced": 601231,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 470983,
+        "pg_writes": 25548
+      },
+      {
+        "t": 129.7,
+        "produced": 601327,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 471079,
+        "pg_writes": 25548
+      },
+      {
+        "t": 139.2,
+        "produced": 601423,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 471175,
+        "pg_writes": 25548
+      },
+      {
+        "t": 148.8,
+        "produced": 601528,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 471280,
+        "pg_writes": 25548
+      },
+      {
+        "t": 159.3,
+        "produced": 601624,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 471376,
+        "pg_writes": 25548
+      },
+      {
+        "t": 169.0,
+        "produced": 601725,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 471477,
+        "pg_writes": 25548
+      },
+      {
+        "t": 179.1,
+        "produced": 601825,
+        "consumed": 130248,
+        "aggregated": 130248,
+        "lag": 471577,
+        "pg_writes": 27948
+      },
+      {
+        "t": 188.9,
+        "produced": 601928,
+        "consumed": 130248,
+        "aggregated": 210379,
+        "lag": 471680,
+        "pg_writes": 28045
+      },
+      {
+        "t": 199.1,
+        "produced": 602031,
+        "consumed": 130248,
+        "aggregated": 210379,
+        "lag": 471783,
+        "pg_writes": 28499
+      },
+      {
+        "t": 209.8,
+        "produced": 602129,
+        "consumed": 130248,
+        "aggregated": 396842,
+        "lag": 471881,
+        "pg_writes": 28517
+      },
+      {
+        "t": 219.6,
+        "produced": 602230,
+        "consumed": 130248,
+        "aggregated": 396842,
+        "lag": 471982,
+        "pg_writes": 31499
+      },
+      {
+        "t": 229.6,
+        "produced": 602330,
+        "consumed": 130248,
+        "aggregated": 396842,
+        "lag": 472082,
+        "pg_writes": 31751
+      },
+      {
+        "t": 239.5,
+        "produced": 602429,
+        "consumed": 130248,
+        "aggregated": 396842,
+        "lag": 472181,
+        "pg_writes": 32001
+      },
+      {
+        "t": 249.3,
+        "produced": 602531,
+        "consumed": 130248,
+        "aggregated": 556648,
+        "lag": 472283,
+        "pg_writes": 32338
+      },
+      {
+        "t": 260.0,
+        "produced": 602633,
+        "consumed": 130248,
+        "aggregated": 600000,
+        "lag": 472385,
+        "pg_writes": 36110
+      }
+    ]
+  }
+]

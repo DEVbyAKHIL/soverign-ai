@@ -1,0 +1,27 @@
+groups:
+  - name: streaming-ingestion
+    rules:
+      - alert: OutboxBacklogGrowing
+        expr: outbox_backlog > 10000
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Outbox has more than 10k unpublished events (Kafka down or publisher stuck)"
+      - alert: OutboxPublishFailures
+        expr: sum(rate(outbox_publish_failures_total[5m])) > 1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "event-publisher is failing to deliver events to Kafka"
+      - alert: ProducerDeliveryFailures
+        expr: sum(rate(producer_delivery_failures_total[5m])) > 0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "event-producer messages are not being acknowledged by Kafka"
+      - alert: StreamingServiceDown
+        expr: up{job=~"event-publisher|event-producer|gateway"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.job }} is not reachable for scraping"

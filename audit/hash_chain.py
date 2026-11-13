@@ -62,9 +62,12 @@ class ChainVerification:
     reason: str | None = None
 
 
-def verify_chain(events: Iterable[Any]) -> ChainVerification:
-    """Verify events (ORM rows or objects with the same attributes) in seq order."""
-    previous = GENESIS_HASH
+def verify_chain(events: Iterable[Any], start_hash: str = GENESIS_HASH) -> ChainVerification:
+    """Verify events (ORM rows or objects with the same attributes) in seq order.
+
+    `start_hash` is the genesis hash, or - after retention pruned the oldest events - the
+    anchor hash recorded for the tenant (the event_hash of the last pruned event)."""
+    previous = start_hash
     count = 0
     for ev in events:
         count += 1

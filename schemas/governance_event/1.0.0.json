@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sovereign-ai-gateway.local/schemas/governance_event/1.0.0.json",
+  "title": "GovernanceEvent",
+  "description": "Governance and security telemetry emitted after every policy decision. Contains no prompts, model output, entity values, credentials or redaction maps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "event_id", "event_timestamp", "tenant_id", "agent_id", "caller_type",
+    "caller_id", "event_type", "decision", "action", "destination_model",
+    "destination_jurisdiction", "declared_purpose", "sensitivity_level", "pii_count",
+    "injection_risk_score", "policy_ids", "latency_ms", "tokens_processed", "status", "metadata"
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    }
+  },
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "event_id": { "$ref": "#/$defs/uuid" },
+    "event_timestamp": {
+      "description": "UTC, RFC 3339 with a mandatory Z suffix and millisecond precision.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "tenant_id": { "$ref": "#/$defs/uuid" },
+    "agent_id": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+    "caller_type": { "enum": ["user", "service", "agent"] },
+    "caller_id": {
+      "description": "Keyed HMAC pseudonym of the caller, formatted as a UUID. Never the raw id.",
+      "$ref": "#/$defs/uuid"
+    },
+    "event_type": {
+      "enum": ["policy_decision", "detection_result", "response_guardrail", "agent_event"]
+    },
+    "decision": {
+      "enum": ["allow", "deny", "redact", "route", "require_review", "quarantine"]
+    },
+    "action": { "type": "string", "pattern": "^[a-z_]{1,64}$" },
+    "destination_model": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "destination_jurisdiction": { "enum": ["eu", "non_eu", "unknown"] },
+    "declared_purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "sensitivity_level": {
+      "enum": ["public", "internal", "confidential", "restricted", "high_risk"]
+    },
+    "pii_count": { "type": "integer", "minimum": 0, "maximum": 100000 },
+    "injection_risk_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "policy_ids": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9_.@:-]{1,200}$" }
+    },
+    "latency_ms": { "type": "integer", "minimum": 0, "maximum": 3600000 },
+    "tokens_processed": { "type": "integer", "minimum": 0, "maximum": 10000000 },
+    "status": { "enum": ["completed", "failed", "blocked"] },
+    "metadata": {
+      "description": "Allow-listed operational fields only.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": { "enum": ["gateway", "producer"] },
+        "synthetic": { "type": "boolean" },
+        "run_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+        "endpoint": { "enum": ["infer", "embed", "rag"] },
+        "final_decision": { "enum": ["allow", "allow_with_modification", "deny", "review"] },
+        "intent_label": { "type": "string", "pattern": "^[a-z_]{1,64}$" },
+        "agent_anomaly_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "policy_set_version": { "type": "string", "maxLength": 100 },
+        "review_status": { "enum": ["not_required", "pending", "approved", "rejected"] }
+      }
+    }
+  }
+}

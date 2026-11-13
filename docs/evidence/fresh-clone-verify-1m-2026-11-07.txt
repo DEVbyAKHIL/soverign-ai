@@ -1,0 +1,30 @@
+run_id=p2-8de1f8f6cd seed=6884323 total=1,000,000
+killing spark-stream-processor at consumed=550,867
+
+==================================================================
+Streaming pipeline verification (Kafka -> Spark -> PostgreSQL)
+==================================================================
+Run id / seed:                p2-8de1f8f6cd / 6884323
+Events produced:              1,000,000
+Events consumed:              1,000,000
+Events aggregated:            1,000,000
+Dead-letter events:           0
+Not aggregated (late/missing): 0
+  tumbling sum, requests per tenant (1m):  1,000,000
+  tumbling sum, decisions by type (1m):    1,000,000
+  tumbling sum, PII per model (5m):        1,000,000
+  tumbling sum, sovereignty (10m):         1,000,000
+  sliding-window rows (latency, injections, agent risk): 4,455
+Processor killed/restarted at: 550,867 events consumed
+Produce time: 304 s   end-to-end until fully aggregated: 541 s
+------------------------------------------------------------------
+[PASS] consumed == produced
+[PASS] valid + dead-letter == consumed
+[PASS] valid == producer's valid count
+[PASS] aggregated == valid (each event in exactly one 1-min window)
+[PASS] every tumbling aggregation sums to the same total
+[PASS] sliding-window aggregates produced
+[PASS] processor restarted mid-run
+Processor restart recovery: PASSED
+RESULT: PASSED
+exit=0

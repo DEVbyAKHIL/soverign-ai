@@ -7,6 +7,13 @@ import Decisions from "./pages/Decisions";
 import Policies from "./pages/Policies";
 import Agents from "./pages/Agents";
 import AuditTrail from "./pages/AuditTrail";
+import LiveOverview from "./pages/live/LiveOverview";
+import LivePolicies from "./pages/live/LivePolicies";
+import LiveAgents from "./pages/live/LiveAgents";
+import LivePii from "./pages/live/LivePii";
+import LiveInjections from "./pages/live/LiveInjections";
+import LiveLatency from "./pages/live/LiveLatency";
+import LiveSovereignty from "./pages/live/LiveSovereignty";
 
 const NAV = [
   { to: "/", label: "Overview" },
@@ -15,6 +22,17 @@ const NAV = [
   { to: "/policies", label: "Policies" },
   { to: "/agents", label: "Agents" },
   { to: "/audit", label: "Audit trail" },
+];
+
+// Streaming aggregates from the reporting API (refreshed every 5 s).
+const LIVE_NAV = [
+  { to: "/live", label: "Real-time overview" },
+  { to: "/live/policies", label: "Policy decisions" },
+  { to: "/live/agents", label: "Agent risk" },
+  { to: "/live/pii", label: "PII detections" },
+  { to: "/live/injections", label: "Injection attempts" },
+  { to: "/live/latency", label: "Latency & reliability" },
+  { to: "/live/sovereignty", label: "Sovereignty" },
 ];
 
 const ROLES = ["admin", "security_analyst", "developer", "policy_author"];
@@ -52,6 +70,12 @@ export default function App() {
             {n.label}
           </NavLink>
         ))}
+        <div className="nav-group muted">Real-time (streaming)</div>
+        {LIVE_NAV.map((n) => (
+          <NavLink key={n.to} to={n.to} end>
+            {n.label}
+          </NavLink>
+        ))}
         <div className="whoami muted">
           {session.role}
           <button className="link" onClick={() => { setAccessToken(null); setSession(null); }}>
@@ -67,6 +91,13 @@ export default function App() {
           <Route path="/policies" element={<Policies />} />
           <Route path="/agents" element={<Agents />} />
           <Route path="/audit" element={<AuditTrail />} />
+          <Route path="/live" element={<LiveOverview />} />
+          <Route path="/live/policies" element={<LivePolicies />} />
+          <Route path="/live/agents" element={<LiveAgents />} />
+          <Route path="/live/pii" element={<LivePii />} />
+          <Route path="/live/injections" element={<LiveInjections />} />
+          <Route path="/live/latency" element={<LiveLatency />} />
+          <Route path="/live/sovereignty" element={<LiveSovereignty />} />
         </Routes>
       </main>
     </div>

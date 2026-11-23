@@ -33,7 +33,7 @@ const doc = new Document({
     ],
   },
   footnotes: {
-    1: { children: [new Paragraph({ style: "FootnoteText", children: [new TextRun(
+    1: { children: [new Paragraph({ style: "FootnoteText", alignment: AlignmentType.JUSTIFIED, children: [new TextRun(
       "Repository: https://github.com/DEVbyAKHIL/soverign-ai. Measurements, logs and the verification scripts are in EVALUATION.md and docs/evidence.")] })] },
   },
   sections: [{
@@ -42,7 +42,7 @@ const doc = new Document({
       new Paragraph({ style: "Title", children: [new TextRun(
         "Sovereign AI Access Gateway: A Real-Time Streaming Data Backend for AI Governance, Security, and Operational Analytics")] }),
       new Paragraph({ spacing: { after: 120 }, children: [new TextRun({
-        text: `DLMDSEDE02 Data Engineering · Phase 3 abstract · ${name} · ${matr} · ${date}`, color: "444444" })] }),
+        text: `DLMDSEDE02 Data Engineering · Phase 3 abstract · ${name} · ${matr} · ${date}` })] }),
 
       h("Problem and aim"),
       p("Organisations that let staff and AI agents use language models need two things at once: sensitive data must not reach models or countries it should not, and someone has to be able to show later that the rules were applied. I treated the second part as a data engineering problem. A security gateway already decides on every AI request, so I turned each decision into a timestamped event and built a real-time backend that ingests, processes, aggregates and delivers these events as live governance metrics."),
@@ -53,7 +53,7 @@ const doc = new Document({
       h("Were the requirements met?"),
       p("Mostly, yes. A producer generates the required one million timestamped events, and a script checks the whole path. On a fresh clone of the repository, 1,000,000 events were produced, consumed and aggregated, and none were lost although I killed the Spark processor halfway through. Two concurrent producers raised the ingest rate from about 4,500 to 7,800 events per second.",
         new FootnoteReferenceRun(1),
-        " The limits are real, though: everything runs on one machine with a single Kafka broker and Spark in local mode, so this shows local scaling, not cluster scaling."),
+        " Latency depends on load: during a burst of 300,000 events the median time from production to aggregation was about 80 seconds, because the single Spark process became the bottleneck, while the five-second trigger and dashboard refresh set the floor for normal traffic. The limits are real, though: everything runs on one machine with a single Kafka broker and Spark in local mode, so this shows local scaling, not cluster scaling."),
 
       h("What went wrong"),
       p("My first million-event run lost 8.4 % of the events. A per-batch read limit let quiet Kafka partitions run ahead in event time, and the watermark then discarded the busy partition's events as late. Removing the limit and widening the watermark fixed it. Spark also crashed at start-up because RocksDB could not load its native library from a temp folder without execute rights. Later a test run reported missing events that were only delayed, because my own script stopped waiting too early. Each time the lesson was the same: check the numbers before trusting either the system or the test."),
@@ -61,11 +61,14 @@ const doc = new Document({
       h("Reliability, scalability, maintainability and security"),
       p("Reliability comes from the outbox, acknowledged Kafka writes with retries, Spark checkpoints, deduplication and idempotent writes. Kafka partitions and a stateless publisher allow scaling out; Spark is the next bottleneck. Separate services, about 750 automated tests and a CI pipeline keep the code maintainable. Every service has its own least-privilege database account, events carry no prompts or personal values, user IDs are keyed hashes, a retention job deletes old data, and dependencies and images are scanned. Production would still need TLS between services, encrypted storage and a trusted model registry."),
 
-      h("Adding batch processing"),
-      p("A batch path could reuse the same data: a nightly Spark job would read an archive of the valid topic, recompute daily and monthly reports and retrain the agent anomaly model. Because Spark runs the same code in batch and streaming mode, the validation and window logic would exist only once."),
+      h("A second pipeline for batch processing"),
+      p("A batch pipeline could store and process the same events. A small consumer would write the valid topic into date-partitioned Parquet files, and a scheduled Spark job would read them every night to build daily and monthly reports and retrain the agent anomaly model. Because Spark runs the same code in batch and streaming mode, the validation and window logic would exist only once."),
+
+      h("Major steps and what I would do differently"),
+      p("I worked in four steps: the security gateway, then ingestion through the outbox and Kafka, then Spark processing and storage, and finally reporting, the dashboard and hardening. In the next project I would write the end-to-end verification and the fresh-clone test at the start instead of near the end, because both caught problems that unit tests missed, and I would measure throughput early to size Spark."),
 
       h("What I learned"),
-      p("Technically, I learned event-time processing with watermarks, the outbox pattern for reliable delivery, and how to make a multi-service stack reproducible with Docker and Infrastructure as Code. Beyond that, I learned to plan work in small steps that can each be checked, to write down decisions so that others can follow them, and to stay patient when a problem only appears under load."),
+      p("My three most valuable technical skills were event-time processing with watermarks, the outbox pattern for reliable delivery, and building a reproducible multi-service stack with Docker and Infrastructure as Code. My three most valuable soft skills were planning work in small steps that can each be checked, writing down decisions so that others can follow them, and staying patient when a problem only appears under load."),
     ],
   }],
 });
